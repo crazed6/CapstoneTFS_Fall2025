@@ -5,12 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void PlayGame()
+    public void PlayGame() //method to start the first game scene
     {
-        SceneManager.LoadSceneAsync("SampleScene");
+        SceneManager.LoadSceneAsync("SampleScene"); //Replace SampleScene with the name of the first game scene 
     }
-
-    public void QuitGame()
+    public void Settings() //method to start the first game scene
+    {
+        SceneManager.LoadSceneAsync("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
+    }
+    public void QuitGame() //method to close the game 
     {
     #if UNITY_EDITOR
     UnityEditor.EditorApplication.isPlaying = false;
