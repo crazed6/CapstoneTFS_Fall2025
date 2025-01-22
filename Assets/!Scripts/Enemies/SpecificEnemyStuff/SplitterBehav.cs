@@ -11,14 +11,18 @@ public class SplitterBehav : MonoBehaviour
     public float health;
 
     // Attacking
+    [Header("Attacking")]
     public float timeBetweenAttacks;
     bool alreadyAttacked;
     public float meleeAttackRange;
     public int meleeDamage;
+    public float sightRange;
+    public float attackRange;
 
     // States
-    public float sightRange, attackRange;
-    public bool playerInSightRange, playerInAttackRange;
+    [Header("States")]
+    public bool playerInAttackRange;
+    public bool playerInSightRange;
 
     private EnemyWander patrolScript;  // Reference to the patrol script
 
@@ -70,7 +74,7 @@ public class SplitterBehav : MonoBehaviour
 
             //foreach (Collider playerCollider in hitPlayers)
             // {
-            //     playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  // Assuming the player has a PlayerHealth script to handle health.
+            //     playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  
             // }
 
             alreadyAttacked = true;
@@ -98,9 +102,9 @@ public class SplitterBehav : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackRange); // Display attack range
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, sightRange);
+        Gizmos.DrawWireSphere(transform.position, sightRange); // Display detection range
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, meleeAttackRange);  // Display melee attack range
     }
