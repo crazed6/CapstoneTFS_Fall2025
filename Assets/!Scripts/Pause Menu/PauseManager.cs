@@ -3,55 +3,63 @@ using UnityEngine.SceneManagement;
 
 public class PauseManager : MonoBehaviour
 {
-    private static PauseManager instance; 
+    private static PauseManager instance;
+    private bool isPaused = false;
+    private string previousSceneName = ""; 
+
     
+    public static PauseManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                Debug.LogError("PauseManager instance is null!");
+            }
+            return instance;
+        }
+    }
 
     void Awake()
     {
-        
         if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        
         instance = this;
-        DontDestroyOnLoad(gameObject); 
+        DontDestroyOnLoad(gameObject);
     }
 
     void Update()
     {
-        
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (SceneManager.GetActiveScene().name == "PauseMenu")
+            if (isPaused)
             {
-                LoadingForSampleScene();
+                ResumeGame();
             }
-            
+            else
             {
-                GoToPauseMenu(); 
+                PauseGame();
             }
         }
     }
 
-    
-    private void GoToPauseMenu()
+    public void PauseGame()
     {
-        
-        SceneManager.LoadScene("PauseMenu");
+        previousSceneName = SceneManager.GetActiveScene().name;
+
+        isPaused = true;
+        Time.timeScale = 0f;
+        SceneManager.LoadScene("PauseMenu", LoadSceneMode.Additive);
     }
 
-    
-
-
-    
-    public void LoadingForSampleScene()
+    public void ResumeGame()
     {
-        SceneManager.LoadScene("SampleScene");
+        isPaused = false;
+        Time.timeScale = 1f;
+        SceneManager.UnloadSceneAsync("PauseMenu");
     }
-
-    
-
 }
