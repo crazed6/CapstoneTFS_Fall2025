@@ -36,7 +36,7 @@ public class CheckpointSystem : MonoBehaviour
         }
     }
 
-    void Respawn()
+    public void Respawn()
     {
         controller.enabled = false;
         transform.position = lastCheckpoint + Vector3.up * 1.5f; // Move player slightly above the checkpoint
