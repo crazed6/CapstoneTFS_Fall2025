@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class SplitterBehav : MonoBehaviour
+public class SplitterWayPointBehav : MonoBehaviour
 {
     [Header("Splitter")]
     public NavMeshAgent agent;
@@ -20,8 +20,8 @@ public class SplitterBehav : MonoBehaviour
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
 
-    private EnemyWander patrolScript;  // Reference to the patrol script
-   
+    // Reference to the patrol script
+    private EnemyWaypoints wayPointPatrolScript;
 
     // Splitting 
     public GameObject smallerEnemyPrefab;
@@ -35,8 +35,8 @@ public class SplitterBehav : MonoBehaviour
     {
         player = GameObject.FindWithTag("Player").transform;
         agent = GetComponent<NavMeshAgent>();
-        patrolScript = GetComponent<EnemyWander>(); // Initialize reference to patrol script
-        
+         // Initialize reference to patrol script
+        wayPointPatrolScript = GetComponent<EnemyWaypoints>();
     }
 
     private void Update()
@@ -48,12 +48,12 @@ public class SplitterBehav : MonoBehaviour
         // Control behavior based on player's position
         if (!playerInSightRange && !playerInAttackRange)
         {
-            patrolScript.StartPatrolling();  // Use the patrol method from the patrol script
-           
+              // Use the patrol method from the patrol script
+            wayPointPatrolScript.StartWayPointPatrolling();
         }
         if (playerInSightRange && !playerInAttackRange)
         {
-            patrolScript.StopPatrolling();
+            wayPointPatrolScript.StopWayPointPatrolling();
             ChasePlayer();
         }
         if (playerInAttackRange && playerInSightRange)
