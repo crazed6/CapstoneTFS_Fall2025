@@ -7,7 +7,7 @@ public class PlayerHealth : MonoBehaviour
 
     public Slider healthSlider;
     public float maxHealth = 100;
-    private float currentHealth;
+    public float currentHealth;
 
     void Start()
     {

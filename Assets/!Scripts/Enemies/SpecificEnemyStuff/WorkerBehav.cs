@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
@@ -5,27 +6,23 @@ using UnityEngine.AI;
 public class WorkerBehav : MonoBehaviour
 {
     //STATE TRACKING
-    public AIState currentState = AIState.Idle;
-    public bool isWorker = false;
+    public AIState currentState = AIState.Idle; //Worker Idles until attacked
+    private Vector3 startPosition; //Store spawn location
+    public int maxHealth = 50;
+    private int currentHealth;
 
-    //REFERENCES
+    //SCENE REFERENCES
     public Transform player;
     private NavMeshAgent agent;
     public LayerMask groundLayer, playerLayer;
     private PlayerHealth playerHealth;
 
-    //WORKER-SPECIFIC TRACKING
+    //WORKER-SPECIFIC BEHAVIOUR VARS
     private bool isProvoked = false;
-
-    //ENEMY HEALTH
-    public int maxHealth = 50;
-    private int currentHealth;
+    public bool isWorker = false;
     public int attackDamage = 10;
     public float attackRange = 1.5f; //Adjust to desired attack range
-    public Transform attackOrigin; //A transform marking the attacks starting point
-
-
-    //ATTACK COOLDOWN
+    public Transform attackOrigin; //Attack starting point (TBD)
     public float attackCooldown = 3f; //3 seconds between attacks - can adjust after playtesting
     private bool canAttack = true; //Check if enemy can attack
 
@@ -34,6 +31,7 @@ public class WorkerBehav : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>(); //Initialize navmesh
         currentHealth = maxHealth;
+        startPosition = transform.position; //Save initial position
 
         if (player == null)
         {
@@ -52,6 +50,12 @@ public class WorkerBehav : MonoBehaviour
         if (isWorker && !isProvoked)
         {
             return;
+        }
+
+        //Reset Worker if player dies
+        if (playerHealth != null && playerHealth.currentHealth <= 0)
+        {
+            ReturnToIdle();
         }
 
         switch (currentState)
@@ -73,6 +77,8 @@ public class WorkerBehav : MonoBehaviour
                 break;
         }
     }
+
+    
 
     //Enemy collider interactions
     private void OnTriggerEnter(Collider other)
@@ -205,7 +211,19 @@ public class WorkerBehav : MonoBehaviour
         }
     }
 
-    
+    private void ReturnToIdle()
+    {
+        Debug.Log($"{gameObject.name} returning to Idle state");
+
+        //Reset NavMesh agent to return to the spawn point
+        agent.isStopped = false;
+        agent.SetDestination(startPosition);
+
+        //Reset state vars
+        isProvoked = false;
+        currentState = AIState.Idle;
+    }
+
     #endregion
-    
+
 }
