@@ -78,8 +78,6 @@ public class WorkerBehav : MonoBehaviour
         }
     }
 
-    
-
     //Enemy collider interactions
     private void OnTriggerEnter(Collider other)
     {
@@ -97,13 +95,19 @@ public class WorkerBehav : MonoBehaviour
         Provoke();
     }
 
-
     public enum AIState
     {
         Idle,
         Chase,
         Attack
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+
     #endregion
 
     #region Enemy Behaviors
@@ -112,6 +116,8 @@ public class WorkerBehav : MonoBehaviour
         if (isWorker)
         {
             Debug.Log($"{gameObject.name} is idling.");
+            //Add animation trigger here once created
+            //animator.SetTrigger("Idle");
         }
     }
 
@@ -127,6 +133,8 @@ public class WorkerBehav : MonoBehaviour
                 currentState = AIState.Attack; //Switch to attack once in range
             }
             Debug.Log($"{gameObject.name} is chasing the player!");
+            //Add animation trigger here once created
+            //animator.SetTrigger("Chase");
         }
     }
 
@@ -193,12 +201,18 @@ public class WorkerBehav : MonoBehaviour
         {
             Provoke();
         }
+
+        //Add animation trigger here once created
+        //animator.SetTrigger("TakeDamage");
     }
 
     private void Die()
     {
         Debug.Log($"{gameObject.name} has died.");
         Destroy(gameObject);
+
+        //Add animation trigger here once created
+        //animator.SetTrigger("Die");
     }
 
     public void Provoke()
