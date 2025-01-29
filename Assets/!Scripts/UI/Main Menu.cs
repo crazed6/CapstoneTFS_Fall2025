@@ -11,7 +11,14 @@ public class MainMenu : MonoBehaviour
     }
     public void Settings() //method to start the first game scene
     {
-        SceneManager.LoadSceneAsync("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
+        //SoundManager.instance.StopAudio();
+        ChangeScene("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
+    }
+
+    public void ChangeScene(string SceneName)
+    {
+        SoundManager.Instance.StopAudio();
+        SceneManager.LoadSceneAsync(SceneName);
     }
     public void QuitGame() //method to close the game 
     {

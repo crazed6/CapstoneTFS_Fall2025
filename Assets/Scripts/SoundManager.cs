@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 public class SoundManager : SingletonInScene<SoundManager>
 {
+    public static SoundManager instance;
     public AudioClip[] backgroundMusic;
     public AudioClip sceneStartSound;
 
@@ -11,8 +12,13 @@ public class SoundManager : SingletonInScene<SoundManager>
 
     protected override void Awake()
     {
-        base.Awake();
+        if (instance == null)
+        {
+            instance = this;
+        }
 
+        base.Awake();
+        DontDestroyOnLoad(this);
         audioSource = GetComponent<AudioSource>();
 
         audioSource.loop = true; //Used to loop the audio
@@ -37,6 +43,11 @@ public class SoundManager : SingletonInScene<SoundManager>
         {
             audioSource.PlayOneShot(sceneStartSound);
         }
+    }
+
+    public void StopAudio()
+    {
+        audioSource.Stop();
     }
 } //AudioSource destroyed on load of Game Scene
 
