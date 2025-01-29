@@ -86,9 +86,18 @@ public class WorkerBehav : MonoBehaviour
             Debug.Log("Player has attacked the Worker enemy!");
         }
     }
+    private void OnMouseDown()
+    {
+        Provoke();
+    }
 
-    
 
+    public enum AIState
+    {
+        Idle,
+        Chase,
+        Attack
+    }
     #endregion
 
     #region Enemy Behaviors
@@ -125,7 +134,6 @@ public class WorkerBehav : MonoBehaviour
         if (distanceToPlayer <= attackRange)
         {
             currentState = AIState.Attack;
-            agent.isStopped = true;
 
             RaycastHit hit;
             if (Physics.Raycast(attackOrigin.position, directionToPlayer, out hit, attackRange, playerLayer))
@@ -147,7 +155,6 @@ public class WorkerBehav : MonoBehaviour
             }
             else if (currentState == AIState.Attack) //Return to chase if out of range
             {
-                agent.isStopped = false;
                 currentState = AIState.Chase;
                 agent.SetDestination(player.position);
             }
@@ -158,6 +165,12 @@ public class WorkerBehav : MonoBehaviour
         canAttack = false; //Prevent from attacking immediately
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
+        Debug.Log($"{gameObject.name} cooldown finished, can attack again");
+
+        if (currentState == AIState.Attack)
+        {
+            Attack();
+        }
     }
 
     public void TakeDamage(int amount)
@@ -192,18 +205,7 @@ public class WorkerBehav : MonoBehaviour
         }
     }
 
-    private void OnMouseDown()
-    {
-        Provoke();
-    }
     
-
-    public enum AIState
-    { 
-        Idle,
-        Chase,
-        Attack
-    }
     #endregion
     
 }
