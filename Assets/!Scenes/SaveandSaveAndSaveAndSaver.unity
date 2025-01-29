@@ -877,8 +877,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a2d803dc19ee74d8c0f4e73dfa3898, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointUI: {fileID: 1232432166}
-  player: {fileID: 0}
 --- !u!114 &900181392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -891,6 +889,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controller: {fileID: 0}
 --- !u!65 &900181393
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1807,9 +1806,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a0311bf69133194b9a9f364923ba75d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointUI: {fileID: 1232432166}
-  checkpointPosition: {x: 0, y: 0, z: 0}
-  isPaused: 0
 --- !u!1 &1307736993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2785,6 +2781,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controller: {fileID: 1920089815}
 --- !u!1 &1933711177
 GameObject:
   m_ObjectHideFlags: 0
@@ -3031,8 +3028,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a2d803dc19ee74d8c0f4e73dfa3898, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointUI: {fileID: 1232432166}
-  player: {fileID: 0}
 --- !u!65 &2013968585
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3066,6 +3061,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controller: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
