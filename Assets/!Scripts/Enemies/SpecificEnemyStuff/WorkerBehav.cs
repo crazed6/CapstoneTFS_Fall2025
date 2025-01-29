@@ -26,6 +26,8 @@ public class WorkerBehav : MonoBehaviour
     public float attackCooldown = 3f; //3 seconds between attacks - can adjust after playtesting
     private bool canAttack = true; //Check if enemy can attack
 
+
+    //Check player Transform so player isn't pushed by enemy worker = troubleshoot!
     #region Enemy Initial Setup Functions
     private void Awake()
     {
