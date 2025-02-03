@@ -3,11 +3,13 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.Audio;
 
 public class MenuSettings : MonoBehaviour
 {
     public TMP_Dropdown resolutionDropdown; // Resolution dropdown for settings
     Resolution[] resolutions;               // Array of available screen resolutions
+    public AudioMixer audioMixer;           // refers to Audio Mixer in inspector
 
     private void Start()
     {
@@ -63,11 +65,32 @@ public class MenuSettings : MonoBehaviour
         Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
     }
 
-    // Function to change the volume using AudioListener
-    public void SetVolume(float volume)
+    //// Function to change the volume using AudioListener
+    //public void SetVolume(float volume)
+    //{
+    //    // The AudioListener volume value ranges from 0 (mute) to 1 (full volume)
+    //    AudioListener.volume = volume;
+    //}
+
+    public void SetMasterVolume(float volume)
     {
-        // The AudioListener volume value ranges from 0 (mute) to 1 (full volume)
         AudioListener.volume = volume;
+        audioMixer.SetFloat("MasterVolume", Mathf.Log10(volume) * 20);
+    }
+
+    public void SetMusicVolume(float volume)
+    {
+        AudioListener.volume = volume;
+        audioMixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
+    }
+
+    public void SetSFXVolume(float volume)
+    {
+        audioMixer.SetFloat("SFXVolume", Mathf.Log10(volume) * 20);
+    }
+    public void SetVoiceVolume(float volume)
+    {
+        audioMixer.SetFloat("VoiceVolume", Mathf.Log10(volume) * 20);
     }
 
     // Function to change the quality of the game
