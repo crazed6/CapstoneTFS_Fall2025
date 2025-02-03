@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class SplitterBehav : MonoBehaviour
+public class LittleSplitterBehav : MonoBehaviour
 {
-    [Header("Splitter")]
+    [Header("LittleSplitter")]
     public NavMeshAgent agent;
     public Transform player;
 
@@ -22,12 +22,7 @@ public class SplitterBehav : MonoBehaviour
 
     private EnemyWander patrolScript;  // Reference to the patrol script
 
-    // Splitting 
-    public GameObject smallerEnemyPrefab;
-    private bool hasSplit = false;
-    public Transform splitSpawnPoint;
-
-    [Header("DeBug")] // DELETE WHEN OTHER STUFF ADDED
+    [Header("DeBug")] // DELETE WHEN OTHER STUFF ADDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     public float damageAmount = 10f;
 
     private void Awake()
@@ -58,19 +53,16 @@ public class SplitterBehav : MonoBehaviour
             AttackPlayer();
         }
 
-        if (Input.GetMouseButtonDown(0)) // 0 means left mouse button  DELETE WHEN OTHERE STUFF ADDED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (Input.GetMouseButtonDown(0))  //DELETE WHEN OTHERE STUFF ADDED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         {
-            // Raycast from the camera to where the mouse is pointing
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit))
             {
-                // Check if the raycast hits this enemy
                 if (hit.collider.CompareTag("Enemy"))
                 {
-                    // Call TakeDamage() on the enemy that was clicked
-                    SplitterBehav enemy = hit.collider.GetComponent<SplitterBehav>();
+                    LittleSplitterBehav enemy = hit.collider.GetComponent<LittleSplitterBehav>();
                     if (enemy != null)
                     {
                         enemy.TakeDamage((int)damageAmount);
@@ -116,18 +108,11 @@ public class SplitterBehav : MonoBehaviour
     {
         health -= damage;
 
-        if (health <= 0 && !hasSplit)
-        {
-            hasSplit = true;
-            Invoke(nameof(DestroyEnemy), 0.5f);
-        }
+        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
     }
 
     private void DestroyEnemy()
     {
-        Instantiate(smallerEnemyPrefab, transform.position + Vector3.left, Quaternion.identity);
-        Instantiate(smallerEnemyPrefab, transform.position + Vector3.right, Quaternion.identity);
-
         Destroy(gameObject);
     }
 

@@ -3,106 +3,134 @@ using UnityEngine.AI;
 
 public class WorkerBehav : MonoBehaviour
 {
-
-    //STATE VARIABLES
-    public float moveSpeed = 3f;
-    public int damage = 1;
-    private bool isIdle = true;
-
+    //STATE TRACKING
+    public AIState currentState = AIState.Idle;
+    public bool isWorker = false;
+    public int attackDamage = 10;
 
     //REFERENCES
     public Transform player;
     private NavMeshAgent agent;
-    public float detectionRange = 10f;
-    public float attackRange = 2f;
-    //private Animator animator; **once we have an Idle animation
+    public LayerMask groundLayer, playerLayer;
+    private PlayerHealth playerHealth;
 
+    //WORKER-SPECIFIC TRACKING
+    private bool isProvoked = false;
+
+    //ENEMY HEALTH
+    public int maxHealth = 50;
+    private int currentHealth;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-        //animator = GetComponent<Animator>();
+        currentHealth = maxHealth;
 
-        if (agent != null)
+        if (player == null)
         {
-            agent.speed = moveSpeed;
+            player = GameObject.FindWithTag("Player").transform;
         }
-    }
 
+        if (player != null)
+        {
+            playerHealth = player.GetComponent<PlayerHealth>();
+        }    
+    }
 
     private void Update()
     {
-        if (player != null)
+        if (isWorker && !isProvoked)
         {
-            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-            if (distanceToPlayer <= detectionRange)
-            {
-                isIdle = false;
-            }
-            else
-            {
-                isIdle = true;
-            }
-
-            if (!isIdle)
-            {
-                Chase();
-
-                //Check if within attack range
-                if (distanceToPlayer <= attackRange)
-                {
-                    Attack();
-                }
-            }
+            return;
         }
-        //if(animator != null)
-        //{
-        //    animator.SetBool("isIdle", isIdle);
-        //    animator.SetBool("isChasing", !isIdle);
-        //}
+
+        switch (currentState)
+        {
+            case AIState.Idle:
+                Idle();
+                break;
+            case AIState.Chase:
+                Chase();
+                break;
+            case AIState.Attack: 
+                Attack();
+                break;
+
+            default:
+                break;
+        }
     }
 
+    private void Idle()
+    {
+        if (isWorker)
+        {
+            Debug.Log($"{gameObject.name} is idling.");
+        }
+    }
 
-    //Follow player transform
     private void Chase()
     {
-        if (agent != null)
+        if (player != null)
         {
             agent.SetDestination(player.position);
+            Debug.Log($"{gameObject.name} is chasing the player!");
         }
     }
-
-    //Attack on collision
 
     private void Attack()
     {
-        Debug.Log($"{gameObject.name} is attacking the player!");
-
-        //Implement attack logic here (need player health/health manager)
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (!isIdle && collision.gameObject.CompareTag("Player"))
+        if (player != null && Vector3.Distance(transform.position, player.position) <= agent.stoppingDistance)
         {
-            Debug.Log($"{gameObject.name} has collided with the player!");
-            // Add collision-based attack logic here if needed
+            //Deal damage to the player
+            playerHealth?.TakeDamage(attackDamage);
+            Debug.Log($"{gameObject.name} is attacking the player!");
+        }
+    }
+    //add functionality for attack cooldown
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        Debug.Log($"{gameObject.name} took {amount} damage. Current health: {currentHealth}");
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+
+        if (isWorker && !isProvoked)
+        {
+            Provoke();
         }
     }
 
-    private void OnDrawGizmosSelected()
+    private void Die()
     {
-        if (player != null)
+        Debug.Log($"{gameObject.name} has died.");
+        Destroy(gameObject);
+    }
+    
+    public void Provoke()
+    {
+        if (isWorker && !isProvoked)
         {
-            //Detection range (green)
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position, detectionRange);
-
-            //Attack range (red)
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, attackRange);
+            isProvoked = true;
+            currentState = AIState.Chase;
+            Debug.Log($"{gameObject.name} has been provoked!");
         }
     }
+
+    private void OnMouseDown()
+    {
+        Provoke();
+    }
+
+    public enum AIState
+    { 
+        Idle,
+        Chase,
+        Attack
+    }
+
 
 }

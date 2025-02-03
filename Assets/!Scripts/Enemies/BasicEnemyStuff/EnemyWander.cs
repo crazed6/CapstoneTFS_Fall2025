@@ -56,7 +56,7 @@ public class EnemyWander : MonoBehaviour
         return false;
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
         if (centrePoint != null)
         {
