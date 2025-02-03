@@ -54,7 +54,7 @@ public class CheckpointSystem : MonoBehaviour
         }
     }
 
-    private void SaveCheckpoint() // Add coments on functionality
+    private void SaveCheckpoint()
     {
         PlayerPrefs.SetFloat("CheckpointX", lastCheckpoint.x);
         PlayerPrefs.SetFloat("CheckpointY", lastCheckpoint.y);
@@ -66,7 +66,7 @@ public class CheckpointSystem : MonoBehaviour
         Debug.Log("Checkpoint saved to file: " + saveFilePath);
     }
 
-    private void LoadCheckpoint() //add more coment
+    private void LoadCheckpoint()
     {
         if (File.Exists(saveFilePath))
         {

@@ -49,7 +49,7 @@ public class Health : MonoBehaviour
 
     void Die()
     {
-        if (isDead = true)
+        if (isDead == true)
         {
             Debug.Log("Player has died!");
             CheckpointSystem.Respawn();
