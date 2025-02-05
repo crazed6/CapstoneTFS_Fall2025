@@ -1,25 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    public void PlayGame() //method to start the first game scene
+    public void PlayGame()
     {
-        SceneManager.LoadSceneAsync("SampleScene"); //Replace SampleScene with the name of the first game scene 
+        // Load "SampleScene" additively
+        // Once it's loaded, unload the MainMenu
+        SceneManager.LoadSceneAsync("SampleScene", LoadSceneMode.Additive).completed += (op) =>
+        {
+            if (SceneManager.GetSceneByName("MainMenu").isLoaded)
+            {
+                SceneManager.UnloadSceneAsync("MainMenu");
+            }
+        };
     }
-    public void Settings() //method to start the first game scene
-    {
-        SceneManager.LoadSceneAsync("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
-    }
-    public void QuitGame() //method to close the game 
-    {
-    #if UNITY_EDITOR
-    UnityEditor.EditorApplication.isPlaying = false;
-    #else
-    Application.Quit();
-    #endif
 
+    public void Settings()
+    {
+        // SettingsMenu can be loaded single or additively
+        SceneManager.LoadSceneAsync("SettingsMenu");
+    }
+
+    public void QuitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }
