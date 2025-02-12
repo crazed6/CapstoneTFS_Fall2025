@@ -176,8 +176,6 @@ public class WorkerBehav : MonoBehaviour
         
         if (distanceToPlayer <= attackRange)
         {
-            currentState = AIState.Attack;
-
             RaycastHit hit;
             if (Physics.Raycast(attackOrigin.position, directionToPlayer, out hit, attackRange, playerLayer))
             {
@@ -196,7 +194,7 @@ public class WorkerBehav : MonoBehaviour
                 }
             
             }
-            else if (currentState == AIState.Attack) //Return to chase if out of range
+            else
             {
                 currentState = AIState.Chase;
                 agent.SetDestination(player.position);
@@ -209,11 +207,6 @@ public class WorkerBehav : MonoBehaviour
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
         Debug.Log($"{gameObject.name} cooldown finished, can attack again");
-
-        if (currentState == AIState.Attack)
-        {
-            Attack();
-        }
     }
 
     public void TakeDamage(int amount)
