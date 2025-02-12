@@ -54,7 +54,8 @@ public class MenuSettings : MonoBehaviour
     public void MainMenu()
     {
         // Load the main menu scene (assuming it has the name "Main Menu")
-        SceneManager.LoadScene("MainMenu");  // Change to your game's scene index or name
+        SceneManager.LoadSceneAsync("MainMenu");  // Change to your game's scene index or name
+        SoundManager.Instance.PlayBGM(0);
     }
 
     // Function to change the screen resolution
@@ -74,22 +75,24 @@ public class MenuSettings : MonoBehaviour
 
     public void SetMasterVolume(float volume)
     {
-        AudioListener.volume = volume;
+        volume = Mathf.Max(volume, 0.0001f);
         audioMixer.SetFloat("MasterVolume", Mathf.Log10(volume) * 20);
     }
 
-    public void SetMusicVolume(float volume)
+    public void SetBGMVolume(float volume)
     {
-        AudioListener.volume = volume;
-        audioMixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
+        volume = Mathf.Max(volume, 0.0001f);
+        audioMixer.SetFloat("BGMVolume", Mathf.Log10(volume) * 20);
     }
 
     public void SetSFXVolume(float volume)
     {
+        volume = Mathf.Max(volume, 0.0001f);
         audioMixer.SetFloat("SFXVolume", Mathf.Log10(volume) * 20);
     }
     public void SetVoiceVolume(float volume)
     {
+        volume = Mathf.Max(volume, 0.0001f);
         audioMixer.SetFloat("VoiceVolume", Mathf.Log10(volume) * 20);
     }
 
