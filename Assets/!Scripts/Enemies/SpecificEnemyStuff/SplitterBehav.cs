@@ -21,6 +21,7 @@ public class SplitterBehav : MonoBehaviour
     public bool playerInSightRange, playerInAttackRange;
 
     private EnemyWander patrolScript;  // Reference to the patrol script
+   
 
     // Splitting 
     public GameObject smallerEnemyPrefab;
@@ -35,6 +36,7 @@ public class SplitterBehav : MonoBehaviour
         player = GameObject.FindWithTag("Player").transform;
         agent = GetComponent<NavMeshAgent>();
         patrolScript = GetComponent<EnemyWander>(); // Initialize reference to patrol script
+        
     }
 
     private void Update()
@@ -47,6 +49,7 @@ public class SplitterBehav : MonoBehaviour
         if (!playerInSightRange && !playerInAttackRange)
         {
             patrolScript.StartPatrolling();  // Use the patrol method from the patrol script
+           
         }
         if (playerInSightRange && !playerInAttackRange)
         {
@@ -97,10 +100,10 @@ public class SplitterBehav : MonoBehaviour
             // Melee attack code here
             Collider[] hitPlayers = Physics.OverlapSphere(transform.position, meleeAttackRange, whatIsPlayer);
 
-            //foreach (Collider playerCollider in hitPlayers)
-            // {
-            //     playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  // Assuming the player has a PlayerHealth script to handle health.
-            // }
+            foreach (Collider playerCollider in hitPlayers)
+            {
+                playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  // Assuming the player has a PlayerHealth script to handle health.
+            }
 
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttacks);

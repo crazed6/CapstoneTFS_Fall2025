@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-public class LittleSplitterBehav : MonoBehaviour
+public class SplitterWayPointBehav : MonoBehaviour
 {
-    [Header("LittleSplitter")]
+    [Header("Splitter")]
     public NavMeshAgent agent;
     public Transform player;
 
@@ -20,16 +20,23 @@ public class LittleSplitterBehav : MonoBehaviour
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
 
-    private EnemyWander patrolScript;  // Reference to the patrol script
+    // Reference to the patrol script
+    private EnemyWaypoints wayPointPatrolScript;
 
-    [Header("DeBug")] // DELETE WHEN OTHER STUFF ADDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // Splitting 
+    public GameObject smallerEnemyPrefab;
+    private bool hasSplit = false;
+    public Transform splitSpawnPoint;
+
+    [Header("DeBug")] // DELETE WHEN OTHER STUFF ADDED
     public float damageAmount = 10f;
 
     private void Awake()
     {
         player = GameObject.FindWithTag("Player").transform;
         agent = GetComponent<NavMeshAgent>();
-        patrolScript = GetComponent<EnemyWander>(); // Initialize reference to patrol script
+         // Initialize reference to patrol script
+        wayPointPatrolScript = GetComponent<EnemyWaypoints>();
     }
 
     private void Update()
@@ -41,11 +48,12 @@ public class LittleSplitterBehav : MonoBehaviour
         // Control behavior based on player's position
         if (!playerInSightRange && !playerInAttackRange)
         {
-            patrolScript.StartPatrolling();  // Use the patrol method from the patrol script
+              // Use the patrol method from the patrol script
+            wayPointPatrolScript.StartWayPointPatrolling();
         }
         if (playerInSightRange && !playerInAttackRange)
         {
-            patrolScript.StopPatrolling();
+            wayPointPatrolScript.StopWayPointPatrolling();
             ChasePlayer();
         }
         if (playerInAttackRange && playerInSightRange)
@@ -53,16 +61,19 @@ public class LittleSplitterBehav : MonoBehaviour
             AttackPlayer();
         }
 
-        if (Input.GetMouseButtonDown(0))  //DELETE WHEN OTHERE STUFF ADDED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (Input.GetMouseButtonDown(0)) // 0 means left mouse button  DELETE WHEN OTHERE STUFF ADDED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         {
+            // Raycast from the camera to where the mouse is pointing
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit))
             {
+                // Check if the raycast hits this enemy
                 if (hit.collider.CompareTag("Enemy"))
                 {
-                    LittleSplitterBehav enemy = hit.collider.GetComponent<LittleSplitterBehav>();
+                    // Call TakeDamage() on the enemy that was clicked
+                    SplitterBehav enemy = hit.collider.GetComponent<SplitterBehav>();
                     if (enemy != null)
                     {
                         enemy.TakeDamage((int)damageAmount);
@@ -108,11 +119,18 @@ public class LittleSplitterBehav : MonoBehaviour
     {
         health -= damage;
 
-        if (health <= 0) Invoke(nameof(DestroyEnemy), 0.5f);
+        if (health <= 0 && !hasSplit)
+        {
+            hasSplit = true;
+            Invoke(nameof(DestroyEnemy), 0.5f);
+        }
     }
 
     private void DestroyEnemy()
     {
+        Instantiate(smallerEnemyPrefab, transform.position + Vector3.left, Quaternion.identity);
+        Instantiate(smallerEnemyPrefab, transform.position + Vector3.right, Quaternion.identity);
+
         Destroy(gameObject);
     }
 
