@@ -26,7 +26,7 @@ public class CheckpointSystem : MonoBehaviour
         */
     }
 
-    void Update()
+    void FixedUpdate()
     {
 
         if (Input.GetKeyDown(KeyCode.X) && hasCheckpoint)

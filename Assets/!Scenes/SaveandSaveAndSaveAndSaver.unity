@@ -787,7 +787,6 @@ GameObject:
   - component: {fileID: 900181390}
   - component: {fileID: 900181389}
   - component: {fileID: 900181388}
-  - component: {fileID: 900181391}
   - component: {fileID: 900181393}
   - component: {fileID: 900181392}
   m_Layer: 0
@@ -865,18 +864,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &900181391
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 900181385}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4a2d803dc19ee74d8c0f4e73dfa3898, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &900181392
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -889,7 +876,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  controller: {fileID: 1920089815}
 --- !u!65 &900181393
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1703,7 +1690,6 @@ GameObject:
   - component: {fileID: 1232432169}
   - component: {fileID: 1232432168}
   - component: {fileID: 1232432167}
-  - component: {fileID: 1232432172}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1795,18 +1781,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1232432172
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1232432166}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1a0311bf69133194b9a9f364923ba75d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1307736993
 GameObject:
   m_ObjectHideFlags: 0
@@ -2105,7 +2079,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1232432172}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
         m_MethodName: SaveCheckpoint
         m_Mode: 1
@@ -2117,7 +2091,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1232432172}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
         m_MethodName: CloseUI
         m_Mode: 1
@@ -2730,22 +2704,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c37d0d3eb4533444958e4803f9bbb31, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cc: {fileID: 0}
   cameraTransform: {fileID: 1178451534}
   groundCheckRayCast: {fileID: 264811387}
+  move: {x: 0, y: 0, z: 0}
+  input: {x: 0, y: 0, z: 0}
+  yVelocity: {x: 0, y: 0, z: 0}
+  gravity: 0
+  isGrounded: 0
+  speed: 0
   runSpeed: 20
   normalGravity: -30
   whatIsGround:
-    serializedVersion: 2
     m_Bits: 8
   increase: 35
   decrease: 10
+  originalHeight: 0
+  slideHeight: 0
   jumpHeight: 8
+  jumpCharges: 0
   AirSpeed: 15
   groundCheckDistance: 0.3
+  apexTime: -1
+  wasAscending: 0
+  forwardDirection: {x: 0, y: 0, z: 0}
+  isSliding: 0
+  slideTime: 0
   maxSlideTime: 0.5
   slideSpeedIncrease: 40
   slideSpeedDecrease: 20
   interactionDistance: 2
+  currentInteractable: {fileID: 0}
 --- !u!143 &1920089815
 CharacterController:
   m_ObjectHideFlags: 0
@@ -2882,7 +2871,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1232432172}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
         m_MethodName: CloseUI
         m_Mode: 1
@@ -2894,7 +2883,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1232432172}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
         m_MethodName: ResumeGame
         m_Mode: 1
@@ -2955,7 +2944,6 @@ GameObject:
   - component: {fileID: 2013968582}
   - component: {fileID: 2013968581}
   - component: {fileID: 2013968580}
-  - component: {fileID: 2013968584}
   - component: {fileID: 2013968586}
   - component: {fileID: 2013968585}
   m_Layer: 0
@@ -3033,18 +3021,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2013968584
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2013968578}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4a2d803dc19ee74d8c0f4e73dfa3898, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!65 &2013968585
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3078,7 +3054,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  controller: {fileID: 1920089815}
 --- !u!1 &2059107685
 GameObject:
   m_ObjectHideFlags: 0
