@@ -16,6 +16,7 @@ public class WorkerBehav : MonoBehaviour
     private NavMeshAgent agent;
     public LayerMask groundLayer, playerLayer;
     private PlayerHealth playerHealth;
+    public Animator animator;
 
     //WORKER-SPECIFIC BEHAVIOUR VARS
     private bool isProvoked = false;
@@ -26,6 +27,8 @@ public class WorkerBehav : MonoBehaviour
     public float attackCooldown = 3f; //3 seconds between attacks - can adjust after playtesting
     private bool canAttack = true; //Check if enemy can attack
 
+    public float aggroRange = 10f;
+
 
     //Check player Transform so player isn't pushed by enemy worker = troubleshoot!
     #region Enemy Initial Setup Functions
@@ -34,6 +37,8 @@ public class WorkerBehav : MonoBehaviour
         agent = GetComponent<NavMeshAgent>(); //Initialize navmesh
         currentHealth = maxHealth;
         startPosition = transform.position; //Save initial position
+        Collider enemyCollider = GetComponent<Collider>();
+        Collider playerCollider = player.GetComponent<Collider>();
 
         if (player == null)
         {
@@ -43,7 +48,12 @@ public class WorkerBehav : MonoBehaviour
         if (player != null)
         {
             playerHealth = player.GetComponent<PlayerHealth>();
-        }    
+        }
+        
+        if (enemyCollider != null && playerCollider != null)
+        {
+            Physics.IgnoreCollision(enemyCollider, playerCollider);
+        }
     }
 
     //Updates enemy state
@@ -58,6 +68,17 @@ public class WorkerBehav : MonoBehaviour
         if (playerHealth != null && playerHealth.currentHealth <= 0)
         {
             ReturnToIdle();
+            return;
+        }
+
+        if (isProvoked)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+            if (distanceToPlayer > aggroRange)
+            {
+                HealAndReset();
+                return;
+            }
         }
 
         switch (currentState)
@@ -79,6 +100,8 @@ public class WorkerBehav : MonoBehaviour
                 break;
         }
     }
+
+    
 
     //Enemy collider interactions
     private void OnTriggerEnter(Collider other)
@@ -106,8 +129,12 @@ public class WorkerBehav : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        //Attack Range for debugging
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+        //Aggro Range for debugging
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, aggroRange);
     }
 
     #endregion
@@ -196,13 +223,18 @@ public class WorkerBehav : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Die();
+            TriggerDeathSequence();
         }
 
         if (isWorker && !isProvoked)
         {
             Provoke();
         }
+
+        //Enemy dies
+        //Back to idle after player out of range
+        //Combat state option for Enemy so it can't regenerate while aggravated
+        //
 
         //Add animation trigger here once created
         //animator.SetTrigger("TakeDamage");
@@ -227,6 +259,19 @@ public class WorkerBehav : MonoBehaviour
         }
     }
 
+    public void TriggerDeathSequence()
+    {
+        Debug.Log($"{gameObject.name} death sequence triggered!");
+        if (animator != null)
+        {
+            animator.SetTrigger("Die");
+        }
+        // Delay death trigger until after animation sequence
+        Die();
+
+        //Add keypress to trigger death sequence
+    }
+
     private void ReturnToIdle()
     {
         Debug.Log($"{gameObject.name} returning to Idle state");
@@ -239,6 +284,17 @@ public class WorkerBehav : MonoBehaviour
         isProvoked = false;
         currentState = AIState.Idle;
     }
+
+    private void HealAndReset()
+    {
+        Debug.Log($"{gameObject.name} has lost aggro. Healing and returning to Idle state.");
+        currentHealth = maxHealth;
+        isProvoked = false;
+        currentState = AIState.Idle;
+        agent.isStopped = false;
+        agent.SetDestination(startPosition);
+    }
+
 
     #endregion
 
