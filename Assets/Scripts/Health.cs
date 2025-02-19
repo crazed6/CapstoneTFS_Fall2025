@@ -10,7 +10,7 @@ public class Health : MonoBehaviour
     
     public int damageAmount = 10;
     [SerializeField] private int maxHealth = 100;
-    private int _health = 1;
+    private int _health = 100;
     public bool IsDead => _health <= 0;
     private bool isDead = false;
     public CheckpointSystem CheckpointSystem; 
