@@ -62,6 +62,8 @@ public class CheckpointSystem : MonoBehaviour
         PlayerPrefs.Save();
 
         CheckpointData data = new CheckpointData { x = lastCheckpoint.x, y = lastCheckpoint.y, z = lastCheckpoint.z };
+
+
         File.WriteAllText(saveFilePath, JsonUtility.ToJson(data));
         Debug.Log("Checkpoint saved to file: " + saveFilePath);
     }

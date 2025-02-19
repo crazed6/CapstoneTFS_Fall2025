@@ -4,6 +4,14 @@ using System.Diagnostics.CodeAnalysis;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
+
+
+[System.Serializable]
+public class PlayerHealthData
+{
+    public int currentHealth;
+}
 
 public class Health : MonoBehaviour
 {
@@ -14,6 +22,7 @@ public class Health : MonoBehaviour
     public bool IsDead => _health <= 0;
     private bool isDead = false;
     public CheckpointSystem CheckpointSystem; 
+
 
     public int health
     {
@@ -34,6 +43,7 @@ public class Health : MonoBehaviour
         _health -= damage;
         if (_health <= 0)
         {
+            isDead = true;
             Die();
         }
     }
@@ -49,7 +59,7 @@ public class Health : MonoBehaviour
 
     void Die()
     {
-        if (isDead = true)
+        if (isDead == true)
         {
             Debug.Log("Player has died!");
             CheckpointSystem.Respawn();
@@ -57,9 +67,9 @@ public class Health : MonoBehaviour
             isDead = false;
         }
         
-        // Mark player as de
+        // Mark player as dead
         
-        // Optionally, disable playerusi movement or play a death animation here
+        // Optionally, disable players movement or play a death animation here
         
           // Allow player to die again
     }
@@ -84,6 +94,39 @@ public class Health : MonoBehaviour
             }
 
         }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            // Call the TakeDamage function on the player
+            Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
+            if (playerHealth != null)
+            {
+                playerHealth.HealDamage(damageAmount);  // Pass the damage amount to the player's TakeDamage function
+
+            }
+
+        }
     }
+
+    //previous way to save Health to File and load features
+
+    //public void SaveHealthToFile()
+    //{
+    //    PlayerHealthData data = new PlayerHealthData { currentHealth = _health };
+    //    string json = JsonUtility.ToJson(data);
+    //    File.WriteAllText(Application.persistentDataPath + "/playerHealth.json", json);
+    //}
+
+    //public void LoadHealthFromFile()
+    //{
+    //    string path = Application.persistentDataPath + "/playerHealth.json";
+    //    if (File.Exists(path))
+    //    {
+    //        string json = File.ReadAllText(path);
+    //        PlayerHealthData data = JsonUtility.FromJson<PlayerHealthData>(json);
+    //        _health = data.currentHealth;
+    //    }
+    //}
+
+
 }
-    
