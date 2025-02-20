@@ -48,6 +48,7 @@ public class CharacterController : MonoBehaviour
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
     public Transform playerCameraZRotator; // To be able to rotate the camera on the Z axis without affecting other rotations
     float wallRunStartingSpeed; // The speed that you begin wall running with, will be maintained while you keep wall running
+    public float wallrunJumpSpeedBoost = 1.2f;
 
     bool isWallRunning = false;
     bool onRightWall = false;
@@ -335,6 +336,7 @@ public class CharacterController : MonoBehaviour
                     jumpDirection += rightCollider.outHit.normal;
                     directionCount++;
                 }
+
                 else if (Input.GetAxisRaw("Horizontal") > 0 && !onRightWall)
                 {
                     jumpDirection += leftCollider.outHit.normal;
@@ -346,12 +348,15 @@ public class CharacterController : MonoBehaviour
                 jumpDirection = jumpDirection.normalized * magnitude;
 
                 rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
-
+                
+                rb.linearVelocity  = rb.linearVelocity *  wallrunJumpSpeedBoost;
                 StopWallRunning();
             }
-            else // Check to see if you can START wall running
+
+            // Check to see if you can START wall running and if a wall is in range 
+            else 
             {
-                // ... and have a wall in contact
+               
                 if (leftCollider.IsColliding) StartWallRunning(false);
                 else if (rightCollider.IsColliding) StartWallRunning(true);
             }
@@ -361,12 +366,15 @@ public class CharacterController : MonoBehaviour
 
         if (isWallRunning)
         {
-            //? Can't remove this (what happens when flat wall ends?)
+            
+            //stops wallrun if player is on the ground
             if (isGrounded)
             {
                 StopWallRunning();
                 return;
             }
+
+            //end wallrun if players left and  right raycast are no longer hitting 
             if (!leftCollider.IsColliding && !rightCollider.IsColliding)
             {
                 StopWallRunning();
@@ -375,16 +383,13 @@ public class CharacterController : MonoBehaviour
 
             //*  - THE DIRECITON -
 
-            // Which wall? where is the collider?
+            // determines if there is a wall in range and which side of the player it  is  on 
             onRightWall = rightCollider.IsColliding; // temp
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
-            // Direction to travel along
-            Vector3 wallForward = Vector3.Cross(
-                wallNormal,
-                transform.up
-            );
+            // find the wall normal to determine direction to appy force to player 
+            Vector3 wallForward = Vector3.Cross(wallNormal,transform.up);
 
             // Ensure the forward direction aligns with the player's orientation (aka changing direction while running along the wall)
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
@@ -410,13 +415,16 @@ public class CharacterController : MonoBehaviour
 
             // Add force TOWARDS the wall
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
+           
         }
     }
 
+    //initiate our wallrun movement 
     void StartWallRunning(bool rightWall)
     {
         SetIsWallRunning(true);
 
+        //disable players gravity (if set that way in inspector)
         if (!fallWhileWallRunning) rb.useGravity = false;
 
         // Rotate camera Z 20 degrees away from wall
@@ -428,19 +436,21 @@ public class CharacterController : MonoBehaviour
         // Debug.Log($"WALL RUN [START] (spd: {wallRunStartingSpeed})");
     }
 
+    //stop our wallrun movement 
     void StopWallRunning()
     {
         SetIsWallRunning(false);
 
+        //reactivate players gravity 
         if (!fallWhileWallRunning) rb.useGravity = true;
 
-        // Rotate Z to 0
+        // Rotate camera and player Z to 0
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f); ;
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
 
-        // Debug.Log("WALL RUN [STOP]");
     }
 
+    //manages switching to and from wallrun state
     void SetIsWallRunning(bool state)
     {
         isWallRunning = state;
@@ -449,6 +459,7 @@ public class CharacterController : MonoBehaviour
 
     #endregion
 
+    //limits the players speed to a max of 50  to prevent breaking levels
     void LimitVelocity(float maxVelocity)
     {
         // Get the current velocity
