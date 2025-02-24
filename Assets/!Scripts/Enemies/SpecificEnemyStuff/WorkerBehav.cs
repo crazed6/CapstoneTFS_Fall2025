@@ -10,6 +10,8 @@ public class WorkerBehav : MonoBehaviour
     private Vector3 startPosition; //Store spawn location
     public int maxHealth = 50;
     private int currentHealth;
+    private HealthBar healthBarInstance;
+    
 
     //SCENE REFERENCES
     public Transform player;
@@ -17,14 +19,15 @@ public class WorkerBehav : MonoBehaviour
     public LayerMask groundLayer, playerLayer;
     private PlayerHealth playerHealth;
     public Animator animator;
+    public GameObject healthBarPrefab;
 
     //WORKER-SPECIFIC BEHAVIOUR VARS
     private bool isProvoked = false;
-    public bool isWorker = false;
-    public int attackDamage = 10;
-    public float attackRange = 1.5f; //Adjust to desired attack range
-    public Transform attackOrigin; //Attack starting point (TBD)
-    public float attackCooldown = 3f; //3 seconds between attacks - can adjust after playtesting
+    private bool isWorker = false;
+    [SerializeField] private int attackDamage = 10;
+    [SerializeField] private float attackRange = 1.5f; //Adjust to desired attack range
+    [SerializeField] private Transform attackOrigin; //Attack starting point (TBD)
+    [SerializeField] private float attackCooldown = 3f; //3 seconds between attacks - can adjust after playtesting
     private bool canAttack = true; //Check if enemy can attack
 
     public float aggroRange = 10f;
@@ -37,22 +40,39 @@ public class WorkerBehav : MonoBehaviour
         agent = GetComponent<NavMeshAgent>(); //Initialize navmesh
         currentHealth = maxHealth;
         startPosition = transform.position; //Save initial position
-        Collider enemyCollider = GetComponent<Collider>();
-        Collider playerCollider = player.GetComponent<Collider>();
+        
 
         if (player == null)
         {
             player = GameObject.FindWithTag("Player").transform;
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                player = playerObj.transform;
+            }
         }
+
+        Collider enemyCollider = GetComponent<Collider>();
+        Collider playerCollider = null;
 
         if (player != null)
         {
+            playerCollider = player.GetComponent<Collider>();
             playerHealth = player.GetComponent<PlayerHealth>();
         }
         
         if (enemyCollider != null && playerCollider != null)
         {
             Physics.IgnoreCollision(enemyCollider, playerCollider);
+        }
+        //Instantiates the health bar on runtime
+        if (healthBarPrefab != null)
+        {
+            GameObject hb = Instantiate(healthBarPrefab, transform);
+            //Position above head, adjust local positiona as needed
+            hb.transform.localPosition = new Vector3(0, 1.5f, 0);
+            healthBarInstance = hb.GetComponent<HealthBar>();
+            hb.SetActive(false); //initially hidden until aggro occurs
         }
     }
 
@@ -176,8 +196,6 @@ public class WorkerBehav : MonoBehaviour
         
         if (distanceToPlayer <= attackRange)
         {
-            currentState = AIState.Attack;
-
             RaycastHit hit;
             if (Physics.Raycast(attackOrigin.position, directionToPlayer, out hit, attackRange, playerLayer))
             {
@@ -196,7 +214,7 @@ public class WorkerBehav : MonoBehaviour
                 }
             
             }
-            else if (currentState == AIState.Attack) //Return to chase if out of range
+            else
             {
                 currentState = AIState.Chase;
                 agent.SetDestination(player.position);
@@ -209,17 +227,22 @@ public class WorkerBehav : MonoBehaviour
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
         Debug.Log($"{gameObject.name} cooldown finished, can attack again");
-
-        if (currentState == AIState.Attack)
-        {
-            Attack();
-        }
     }
 
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
         Debug.Log($"{gameObject.name} took {amount} damage. Current health: {currentHealth}");
+
+        //Normalize health between 1 and 0
+        float normalizedHealth = (float)currentHealth / maxHealth;
+
+        //Update health bar if available
+        if(healthBarInstance != null)
+        {
+            healthBarInstance.gameObject.SetActive(true); //display healthbar if hidden
+            healthBarInstance.SetHealth(normalizedHealth);
+        }
 
         if (currentHealth <= 0)
         {
@@ -293,6 +316,13 @@ public class WorkerBehav : MonoBehaviour
         currentState = AIState.Idle;
         agent.isStopped = false;
         agent.SetDestination(startPosition);
+
+        //Hide the health bar when no longer engaged in combat
+        if (healthBarInstance != null)
+        {
+            healthBarInstance.gameObject.SetActive(false);
+            healthBarInstance.SetHealth(1f);
+        }
     }
 
 
