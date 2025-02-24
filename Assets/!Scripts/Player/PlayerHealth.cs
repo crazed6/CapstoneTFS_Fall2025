@@ -18,15 +18,15 @@ public class PlayerHealth : MonoBehaviour
     //For debugging purposes to Manually take damage or heal with keypress
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            TakeDamage(25);
-        }
+        //if (Input.GetKeyDown(KeyCode.Z))
+        //{
+        //    TakeDamage(25);
+        //}
 
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            Heal(25f);
-        }
+        //if (Input.GetKeyDown(KeyCode.X))
+        //{
+        //    Heal(25f);
+        //}
 
         //Listen for C, V, B keypress
         if(Input.GetKeyDown(KeyCode.C))
@@ -72,7 +72,7 @@ public class PlayerHealth : MonoBehaviour
     public void Heal(float amount)
     {
         currentHealth += amount;
-        currentHealth = Mathf.Min(currentHealth, 0, maxHealth);
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         
         UpdateHealthBar();
         
