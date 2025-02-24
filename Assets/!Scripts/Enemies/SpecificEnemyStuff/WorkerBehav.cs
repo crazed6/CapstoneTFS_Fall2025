@@ -11,7 +11,6 @@ public class WorkerBehav : MonoBehaviour
     public int maxHealth = 50;
     private int currentHealth;
     private HealthBar healthBarInstance;
-    
 
     //SCENE REFERENCES
     public Transform player;
@@ -23,7 +22,7 @@ public class WorkerBehav : MonoBehaviour
 
     //WORKER-SPECIFIC BEHAVIOUR VARS
     private bool isProvoked = false;
-    private bool isWorker = false;
+    [SerializeField] private bool isWorker = true;
     [SerializeField] private int attackDamage = 10;
     [SerializeField] private float attackRange = 1.5f; //Adjust to desired attack range
     [SerializeField] private Transform attackOrigin; //Attack starting point (TBD)
@@ -41,7 +40,6 @@ public class WorkerBehav : MonoBehaviour
         currentHealth = maxHealth;
         startPosition = transform.position; //Save initial position
         
-
         if (player == null)
         {
             player = GameObject.FindWithTag("Player").transform;
@@ -94,11 +92,11 @@ public class WorkerBehav : MonoBehaviour
         if (isProvoked)
         {
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-            if (distanceToPlayer > aggroRange)
-            {
-                HealAndReset();
-                return;
-            }
+            //if (distanceToPlayer > aggroRange)
+           // {
+                //HealAndReset();
+               // return;
+            //}
         }
 
         switch (currentState)
@@ -160,6 +158,19 @@ public class WorkerBehav : MonoBehaviour
     #endregion
 
     #region Enemy Behaviors
+
+    void Start()
+    {
+        if (healthBarInstance != null)
+        {
+            healthBarInstance.SetHealth(maxHealth);
+        }
+        else
+        {
+            Debug.LogError("HealthBar reference is missing on " + gameObject.name);
+        }
+    }
+
     private void Idle()
     {
         if (isWorker)
@@ -188,7 +199,8 @@ public class WorkerBehav : MonoBehaviour
     }
 
     private void Attack()
-    {
+    {  
+        
         if (player == null || !canAttack) return; //Early exit if no player or can't attack
 
         Vector3 directionToPlayer = player.position - attackOrigin.position;
