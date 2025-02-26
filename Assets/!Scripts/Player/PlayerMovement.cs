@@ -13,7 +13,7 @@ public class CharacterController : MonoBehaviour
     public float baseSpeed = 8f;
     private bool isGrounded;
     public float maxSpeed = 30;
-
+   
     [Header("Ground & Wall Checkers")]
     public CollisionDetectorRaycast bottomCollider;
     public CollisionDetectorRaycast rightCollider;
@@ -53,6 +53,10 @@ public class CharacterController : MonoBehaviour
     bool isWallRunning = false;
     bool onRightWall = false;
 
+    [Header("Pole Vault")]
+    public float upForce;
+    public float forwardForce;
+
     // Displacement Calculation
     Vector3 lastPosition;
     [HideInInspector] public Vector3 displacement;
@@ -82,6 +86,8 @@ public class CharacterController : MonoBehaviour
 
     void Update()
     {
+
+        Vector3 forwardDirection = transform.forward;
         // Update the cooldown timer
         if (slideCooldownTimer > 0f)
         {
@@ -107,6 +113,9 @@ public class CharacterController : MonoBehaviour
             playerCamera.SetActive(!cinemaMode);
             uiCanvas.SetActive(!cinemaMode);
         }
+
+
+       
     }
 
     void FixedUpdate()
@@ -115,7 +124,7 @@ public class CharacterController : MonoBehaviour
         Move();
         Jump();
         Slide();
-
+        poleVault();
         SetIsGrounded(bottomCollider.IsColliding);
 
         // Calculate displacement
@@ -474,6 +483,17 @@ public class CharacterController : MonoBehaviour
     }
 
 
-   
+    void poleVault()
+    {
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
+        {
+            rb.AddForce(transform.up * upForce, ForceMode.Impulse);
+            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+        }
+    }
+
+ 
+
+
 }
 
