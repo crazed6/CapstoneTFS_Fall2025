@@ -74,4 +74,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (GameManager.Instance.PlayerSave == null)
+        {
+            GameManager.Instance.PlayerSave = FindFirstObjectByType<PlayerSave>();
+            if (GameManager.Instance.PlayerSave != null)
+            {
+                Debug.LogError("PlayerSave is missing! Please ensure it is present!");
+            }
+        }
+    }
+
 }

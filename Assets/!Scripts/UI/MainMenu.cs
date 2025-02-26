@@ -25,6 +25,22 @@ public class MainMenu : MonoBehaviour
         //SoundManager.Instance.StopAudio();    ---causing errors with new SoundManager.cs
         SceneManager.LoadSceneAsync(SceneName);
     }
+
+    public void LoadGame() // Method to load saved game
+    {
+
+        // Call the load function to load player data
+        SaveLoadSystem.Load(); // This assumes you have a Load function to handle player data
+
+        if(GameManager.Instance.PlayerSave != null)
+        {
+            GameManager.Instance.PlayerSave.Load(SaveLoadSystem.GetSaveData().PlayerSaveData);
+        }
+        else
+        {
+            Debug.LogError("PlayerSave component is not found after loading!");
+        }
+    }
     public void QuitGame() //method to close the game 
     {
     #if UNITY_EDITOR

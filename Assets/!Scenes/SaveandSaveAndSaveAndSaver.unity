@@ -673,7 +673,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  lastCheckpoint: {x: 0, y: 0, z: 0}
+  hasCheckpoint: 0
+  controller: {fileID: 1351245460}
+  checkpointPanel: {fileID: 991837818}
 --- !u!65 &900181393
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -693,8 +696,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 2, z: 1.0000002}
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+  m_Size: {x: 1.0687366, y: 1.9999996, z: 1.0000002}
+  m_Center: {x: -0.002477066, y: 0, z: -0.00000007469254}
 --- !u!1 &991837818
 GameObject:
   m_ObjectHideFlags: 0
@@ -1623,7 +1626,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastCheckpoint: {x: 0, y: 0, z: 0}
+  hasCheckpoint: 0
   controller: {fileID: 1351245460}
+  checkpointPanel: {fileID: 0}
 --- !u!114 &1351245462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1813,9 +1819,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
-        m_MethodName: SaveCheckpoint
+      - m_Target: {fileID: 2013968586}
+        m_TargetAssemblyTypeName: CheckpointSystem, Assembly-CSharp
+        m_MethodName: SaveGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 900181392}
+        m_TargetAssemblyTypeName: CheckpointSystem, Assembly-CSharp
+        m_MethodName: SaveGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1827,11 +1845,11 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
-        m_MethodName: CloseUI
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -2638,8 +2656,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 1.9999999, z: 1.0000001}
-  m_Center: {x: 0.00000005960464, y: 0, z: -0.00000008940696}
+  m_Size: {x: 1.0965006, y: 1.9999999, z: 1.0000001}
+  m_Center: {x: -0.0049708616, y: 0, z: -0.00000009881708}
 --- !u!114 &2013968586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2652,7 +2670,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  controller: {fileID: 0}
+  lastCheckpoint: {x: 0, y: 0, z: 0}
+  hasCheckpoint: 0
+  controller: {fileID: 1351245460}
+  checkpointPanel: {fileID: 991837818}
 --- !u!1 &2059107685
 GameObject:
   m_ObjectHideFlags: 0

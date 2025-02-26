@@ -59,7 +59,38 @@ public class SaveLoadSystem
         string SaveContent = File.ReadAllText(SaveFileName()); //Reads all text content of the save file
         Debug.Log("Loaded Data:" + SaveContent); //Logging Loaded data to verify that Load is working and info is correct
         _saveData = JsonUtility.FromJson<SaveData>(SaveContent);
+
+
+        //Loading the scene saved in the data
+
+        string SavedSceneName = _saveData.PlayerSaveData.SceneName;
+        if (!string.IsNullOrEmpty(SavedSceneName))
+        {
+            // Subscribe to the sceneLoaded event to handle actions after the scene is loaded
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(SavedSceneName); // Load the saved scene
+        }
+
         HandleLoadData();
+
+        GameObject player = GameObject.FindWithTag("Player"); // Assuming the player has the "Player" tag
+        if (player != null)
+        {
+            // Get the PlayerSave component and apply the loaded data
+            PlayerSave playerSave = player.GetComponent<PlayerSave>();
+            if (playerSave != null)
+            {
+                playerSave.Load(_saveData.PlayerSaveData); // Apply saved player data
+            }
+            else
+            {
+                Debug.LogError("PlayerSave component not found on the Player object!");
+            }
+        }
+        else
+        {
+            Debug.LogError("Player object not found in the scene!");
+        }
 
     }
 
@@ -78,6 +109,39 @@ public class SaveLoadSystem
         if(playerhealth != null)
         {
             playerhealth.health = (int)_saveData.PlayerSaveData.Health;
+        }
+    }
+
+    public static SaveData GetSaveData()
+    {
+        return _saveData;
+    }
+
+    private static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // Unsubscribe from the event to prevent it from being called multiple times
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+
+        // Apply the loaded player data after the scene is fully loaded
+        HandleLoadData();
+
+        GameObject player = GameObject.FindWithTag("Player"); // Assuming the player has the "Player" tag
+        if (player != null)
+        {
+            // Get the PlayerSave component and apply the loaded data
+            PlayerSave playerSave = player.GetComponent<PlayerSave>();
+            if (playerSave != null)
+            {
+                playerSave.Load(_saveData.PlayerSaveData); // Apply saved player data
+            }
+            else
+            {
+                Debug.LogError("PlayerSave component not found on the Player object!");
+            }
+        }
+        else
+        {
+            Debug.LogError("Player object not found in the scene!");
         }
     }
 }

@@ -7,6 +7,7 @@ public class PlayerSave : MonoBehaviour
 {
     private static PlayerSave instance;
 
+
     public void Save(ref PlayerSaveData data)
     {
         data.Position = transform.position;
@@ -18,6 +19,21 @@ public class PlayerSave : MonoBehaviour
         {
             data.Health = health.health; //Saves the current health
         }
+
+        // Save Last Checkpoint
+        CheckpointSystem checkpointSystem = GetComponent<CheckpointSystem>();
+        if (checkpointSystem != null && checkpointSystem.hasCheckpoint)
+        {
+            data.lastCheckpoint = checkpointSystem.lastCheckpoint;
+            data.hasCheckpoint = true;
+        }
+        else
+        {
+            data.hasCheckpoint = false;
+        }
+
+        //Saves the Scene name
+        data.SceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
     }
 
     public void Load(PlayerSaveData data)
@@ -27,13 +43,21 @@ public class PlayerSave : MonoBehaviour
 
         transform.position = data.Position; //Used to convert the Data position into the current Transform
 
-        GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
-
         Health health = GetComponent<Health>();
         if (health != null)
         {
             health.health = (int)data.Health; //Loading the health value from the file
         }
+
+        // Load Checkpoint
+        CheckpointSystem checkpointSystem = GetComponent<CheckpointSystem>();
+        if (checkpointSystem != null && data.hasCheckpoint)
+        {
+            checkpointSystem.lastCheckpoint = data.lastCheckpoint;
+            checkpointSystem.hasCheckpoint = true;
+        }
+
+        GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
 
     }
 
@@ -57,5 +81,7 @@ public struct PlayerSaveData
     public Vector3 Position;
     public Vector3 lastCheckpoint;
     public int Health;
+    public bool hasCheckpoint;
+    public string SceneName;
 
 }

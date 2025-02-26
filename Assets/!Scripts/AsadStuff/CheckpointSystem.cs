@@ -1,14 +1,18 @@
 using UnityEngine;
 using System.IO;
 using System.Collections;
+using UnityEngine.UI;
 
 
 public class CheckpointSystem : MonoBehaviour
 {
-    private Vector3 lastCheckpoint;
-    private bool hasCheckpoint = false;
+    public Vector3 lastCheckpoint;
+    public bool hasCheckpoint = false;
     private string saveFilePath;
     public CharacterController controller;
+
+    [SerializeField] private GameObject checkpointPanel; // Assign in the Inspector
+    private bool panelTriggered = false; // Prevents re-triggering while inside the checkpoint
 
     void Start()
     {
@@ -43,10 +47,15 @@ public class CheckpointSystem : MonoBehaviour
         controller.enabled = true;
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Checkpoint"))
+        if (other.CompareTag("Checkpoint") && !panelTriggered)
         {
+            Debug.Log("Checkpoint Triggered!"); // Debugging
+            panelTriggered = true; // Prevents multiple triggers while inside
+            ShowCheckpointPanel();
+
+
             lastCheckpoint = other.transform.position;
             SaveCheckpoint();
             hasCheckpoint = true;
@@ -54,7 +63,16 @@ public class CheckpointSystem : MonoBehaviour
         }
     }
 
-    private void SaveCheckpoint() // Add coments on functionality
+    public void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Checkpoint"))
+        {
+            Debug.Log("Checkpoint Left!"); // Debugging
+            panelTriggered = false; // Reset when player exits checkpoint area
+        }
+    }
+
+    public void SaveCheckpoint() // Add coments on functionality
     {
         PlayerPrefs.SetFloat("CheckpointX", lastCheckpoint.x);
         PlayerPrefs.SetFloat("CheckpointY", lastCheckpoint.y);
@@ -68,7 +86,7 @@ public class CheckpointSystem : MonoBehaviour
         Debug.Log("Checkpoint saved to file: " + saveFilePath);
     }
 
-    private void LoadCheckpoint() //add more coment
+    public void LoadCheckpoint() //add more coment
     {
         if (File.Exists(saveFilePath))
         {
@@ -92,6 +110,35 @@ public class CheckpointSystem : MonoBehaviour
             lastCheckpoint = transform.position; // Default starting position
             Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
         }
+    }
+
+    private void ShowCheckpointPanel()
+    {
+        if (checkpointPanel != null)
+        {
+            Debug.Log("Checkpoint Menu activated!");
+            checkpointPanel.SetActive(true);
+            Time.timeScale = 0f; // Pause the game
+        }
+        else
+        {
+            Debug.LogWarning("Checkpoint Menu is null!");
+        }
+    }
+
+    public void HideCheckpointPanel()
+    {
+        if (checkpointPanel != null)
+        {
+            checkpointPanel.SetActive(false);
+            Time.timeScale = 1f; // Resume the game
+        }
+    }
+
+    public void SaveGame()
+    {
+        SaveLoadSystem.Save(); // Calls your existing save function
+        HideCheckpointPanel();
     }
 }
 
