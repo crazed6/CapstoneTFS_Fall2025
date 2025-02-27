@@ -6,38 +6,31 @@ using UnityEngine.UI;
 public class HealthBar : MonoBehaviour
 {
     public Slider healthSlider;
-    private float currentHealth = 1f;
+    public Image fillImage;
+    public Gradient healthColorGradient;
 
-    void Update()
+   //Directly sets health value without interpolation
+   public void SetHealth (float normalizedHealth)
     {
-        if (Input.GetKeyDown(KeyCode.Z)) // Decrease health
+        normalizedHealth = Mathf.Clamp01(normalizedHealth);
+
+        if (healthSlider != null)
         {
-            TakeDamage(0.25f);
+            healthSlider.value = normalizedHealth;
         }
 
-        if (Input.GetKeyDown(KeyCode.X)) // Increase health
+        if (fillImage != null && healthColorGradient != null)
         {
-            Heal(0.25f);
+            fillImage.color = healthColorGradient.Evaluate(normalizedHealth);
         }
     }
 
-    // Function for taking damage
-    public void TakeDamage(float damage)
+    private void Update()
     {
-        ModifyHealth(-damage);
+        if (Camera.main != null)
+        {
+            transform.LookAt(Camera.main.transform);
+        }
     }
 
-    // Function for healing
-    public void Heal(float healing)
-    {
-        ModifyHealth(healing);
-    }
-
-    // General function to modify health
-    private void ModifyHealth(float amount)
-    {
-        currentHealth += amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0f, 1f); // Ensure health stays between 0 and 1
-        healthSlider.value = currentHealth; // Update the slider value
-    }
 }
