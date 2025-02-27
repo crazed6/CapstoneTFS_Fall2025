@@ -12,7 +12,8 @@ public class CharacterController : MonoBehaviour
     [Header("Movement")]
     public float baseSpeed = 8f;
     private bool isGrounded;
-
+    public float maxSpeed = 30;
+   
     [Header("Ground & Wall Checkers")]
     public CollisionDetectorRaycast bottomCollider;
     public CollisionDetectorRaycast rightCollider;
@@ -36,6 +37,8 @@ public class CharacterController : MonoBehaviour
     public float slideSpeedDampening = 0.99f; // The speed will be multiplied by this every frame (to stop in ~3 seconds)
     public float keepSlidingSpeedThreshold = 15f; // As long as speed is above this, keep sliding
     public float slideSteeringPower = 0.5f; // How much you can steer around while sliding
+    public float slideCooldownTime = 1.5f; // Time in seconds to wait before sliding again
+    private float slideCooldownTimer = 0f; // Tracks the cooldown time
 
     bool isSliding = false;
     bool slideInitiated = false;
@@ -45,9 +48,14 @@ public class CharacterController : MonoBehaviour
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
     public Transform playerCameraZRotator; // To be able to rotate the camera on the Z axis without affecting other rotations
     float wallRunStartingSpeed; // The speed that you begin wall running with, will be maintained while you keep wall running
+    public float wallrunJumpSpeedBoost = 1.2f;
 
     bool isWallRunning = false;
     bool onRightWall = false;
+
+    [Header("Pole Vault")]
+    public float upForce;
+    public float forwardForce;
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -61,6 +69,8 @@ public class CharacterController : MonoBehaviour
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
+    
+
     void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -71,12 +81,28 @@ public class CharacterController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         lastPosition = transform.position;
+       
     }
 
     void Update()
     {
+
+        Vector3 forwardDirection = transform.forward;
+        // Update the cooldown timer
+        if (slideCooldownTimer > 0f)
+        {
+            slideCooldownTimer -= Time.deltaTime;
+        }
+
         if (Input.GetKeyDown(KeyCode.Space)) jumpInitiated = true;
-        if (Input.GetKeyDown(KeyCode.LeftShift)) slideInitiated = true;
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && slideCooldownTimer <= 0f) // Check if cooldown is over
+        {
+            slideInitiated = true;
+            slideCooldownTimer = slideCooldownTime; // Reset the cooldown timer
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift)) StopSliding();
 
         LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
@@ -87,6 +113,9 @@ public class CharacterController : MonoBehaviour
             playerCamera.SetActive(!cinemaMode);
             uiCanvas.SetActive(!cinemaMode);
         }
+
+
+       
     }
 
     void FixedUpdate()
@@ -95,12 +124,14 @@ public class CharacterController : MonoBehaviour
         Move();
         Jump();
         Slide();
-
+        poleVault();
         SetIsGrounded(bottomCollider.IsColliding);
 
         // Calculate displacement
         displacement = (transform.position - lastPosition) * 50; // x50 to get the value per second (50 frames per second)
         lastPosition = transform.position;
+
+        LimitVelocity(maxSpeed);
     }
 
     void Move()
@@ -118,7 +149,7 @@ public class CharacterController : MonoBehaviour
         if (movementDirection == Vector3.zero)
         {
             // Dampen speed fast
-            if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.6f;
+            if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.95f;
             return;
         }
 
@@ -163,12 +194,15 @@ public class CharacterController : MonoBehaviour
 
             if (!isGrounded) return;
 
-            //? Using displacement.magnitude as the last speed input, so if player runs into wall etc. momentum resets
+            // Using displacement.magnitude as the last speed input
             lastSpeedBeforeTakeoff = displacement.magnitude;
 
-            rb.linearVelocity += Vector3.up * jumpForce;
+            // Add an upward force to simulate the jump
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
+
     }
+
 
     void RotateBodyHorizontally()
     {
@@ -218,7 +252,7 @@ public class CharacterController : MonoBehaviour
             // -- INITIATE --
             slideInitiated = false;
 
-            // TODO If going backwards, or not moving, dont slide (not moving handled by speed threshold)
+            // TODO If going backwards, or not moving, don't slide (not moving handled by speed threshold)
 
             // If already sliding... return;
             if (isSliding) return;
@@ -241,7 +275,6 @@ public class CharacterController : MonoBehaviour
             else StopSliding();
         }
     }
-
     void StartSliding()
     {
         slideInitiated = false;
@@ -312,6 +345,7 @@ public class CharacterController : MonoBehaviour
                     jumpDirection += rightCollider.outHit.normal;
                     directionCount++;
                 }
+
                 else if (Input.GetAxisRaw("Horizontal") > 0 && !onRightWall)
                 {
                     jumpDirection += leftCollider.outHit.normal;
@@ -323,12 +357,15 @@ public class CharacterController : MonoBehaviour
                 jumpDirection = jumpDirection.normalized * magnitude;
 
                 rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
-
+                
+                rb.linearVelocity  = rb.linearVelocity *  wallrunJumpSpeedBoost;
                 StopWallRunning();
             }
-            else // Check to see if you can START wall running
+
+            // Check to see if you can START wall running and if a wall is in range 
+            else 
             {
-                // ... and have a wall in contact
+               
                 if (leftCollider.IsColliding) StartWallRunning(false);
                 else if (rightCollider.IsColliding) StartWallRunning(true);
             }
@@ -338,12 +375,15 @@ public class CharacterController : MonoBehaviour
 
         if (isWallRunning)
         {
-            //? Can't remove this (what happens when flat wall ends?)
+            
+            //stops wallrun if player is on the ground
             if (isGrounded)
             {
                 StopWallRunning();
                 return;
             }
+
+            //end wallrun if players left and  right raycast are no longer hitting 
             if (!leftCollider.IsColliding && !rightCollider.IsColliding)
             {
                 StopWallRunning();
@@ -352,16 +392,13 @@ public class CharacterController : MonoBehaviour
 
             //*  - THE DIRECITON -
 
-            // Which wall? where is the collider?
+            // determines if there is a wall in range and which side of the player it  is  on 
             onRightWall = rightCollider.IsColliding; // temp
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
-            // Direction to travel along
-            Vector3 wallForward = Vector3.Cross(
-                wallNormal,
-                transform.up
-            );
+            // find the wall normal to determine direction to appy force to player 
+            Vector3 wallForward = Vector3.Cross(wallNormal,transform.up);
 
             // Ensure the forward direction aligns with the player's orientation (aka changing direction while running along the wall)
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
@@ -387,37 +424,42 @@ public class CharacterController : MonoBehaviour
 
             // Add force TOWARDS the wall
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
+           
         }
     }
 
+    //initiate our wallrun movement 
     void StartWallRunning(bool rightWall)
     {
         SetIsWallRunning(true);
 
+        //disable players gravity (if set that way in inspector)
         if (!fallWhileWallRunning) rb.useGravity = false;
 
         // Rotate camera Z 20 degrees away from wall
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
-        wallRunStartingSpeed = rb.linearVelocity.magnitude;
+        wallRunStartingSpeed = rb.linearVelocity.magnitude + 5f;
 
         // Debug.Log($"WALL RUN [START] (spd: {wallRunStartingSpeed})");
     }
 
+    //stop our wallrun movement 
     void StopWallRunning()
     {
         SetIsWallRunning(false);
 
+        //reactivate players gravity 
         if (!fallWhileWallRunning) rb.useGravity = true;
 
-        // Rotate Z to 0
+        // Rotate camera and player Z to 0
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f); ;
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
 
-        // Debug.Log("WALL RUN [STOP]");
     }
 
+    //manages switching to and from wallrun state
     void SetIsWallRunning(bool state)
     {
         isWallRunning = state;
@@ -425,5 +467,33 @@ public class CharacterController : MonoBehaviour
     }
 
     #endregion
+
+    //limits the players speed to a max of 50  to prevent breaking levels
+    void LimitVelocity(float maxVelocity)
+    {
+        // Get the current velocity
+        Vector3 currentVelocity = rb.linearVelocity;
+
+        // If the magnitude of the velocity is greater than the max allowed velocity, clamp it
+        if (currentVelocity.magnitude > maxVelocity)
+        {
+            // Set the velocity to the maximum allowed value while keeping the direction
+            rb.linearVelocity = currentVelocity.normalized * maxVelocity;
+        }
+    }
+
+
+    void poleVault()
+    {
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
+        {
+            rb.AddForce(transform.up * upForce, ForceMode.Impulse);
+            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+        }
+    }
+
+ 
+
+
 }
 
