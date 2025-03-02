@@ -100,10 +100,10 @@ public class SplitterWayPointBehav : MonoBehaviour
             // Melee attack code here
             Collider[] hitPlayers = Physics.OverlapSphere(transform.position, meleeAttackRange, whatIsPlayer);
 
-            //foreach (Collider playerCollider in hitPlayers)
-            // {
-            //     playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  // Assuming the player has a PlayerHealth script to handle health.
-            // }
+            foreach (Collider playerCollider in hitPlayers)
+             {
+                 playerCollider.GetComponent<PlayerHealth>()?.TakeDamage(meleeDamage);  // Assuming the player has a PlayerHealth script to handle health.
+             }
 
             alreadyAttacked = true;
             Invoke(nameof(ResetAttack), timeBetweenAttacks);
