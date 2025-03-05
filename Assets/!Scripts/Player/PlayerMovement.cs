@@ -23,6 +23,10 @@ public class CharacterController : MonoBehaviour
     public float jumpForce = 10f;
     bool jumpInitiated = false;
     float lastSpeedBeforeTakeoff;
+    bool isFalling = false;
+    private float currentDownwardForce = 0f;
+    public float downwardGravityForce;
+    public float downwardForceLerpSpeed;
 
     [Header("Look Around")]
     public Transform cameraHolder;
@@ -61,10 +65,9 @@ public class CharacterController : MonoBehaviour
     Vector3 lastPosition;
     [HideInInspector] public Vector3 displacement;
 
-    [Header("Cinema Mode (For YT Video)")]
+    [Header("Player cam")]
     public GameObject playerCamera;
-    public GameObject uiCanvas;
-    bool cinemaMode; // Switch camera and hide UI
+
 
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
@@ -107,12 +110,7 @@ public class CharacterController : MonoBehaviour
         LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
 
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            cinemaMode = !cinemaMode;
-            playerCamera.SetActive(!cinemaMode);
-            uiCanvas.SetActive(!cinemaMode);
-        }
+       
 
 
        
@@ -201,7 +199,28 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
+        // Check if the player is moving upwards or has reached the apex
+        if (rb.linearVelocity.y <= 0)
+        {
+            // Apply downward force once the apex is reached (if we are not already falling)
+            if (!isFalling)
+            {
+                isFalling = true;
+            }
+
+            // Lerp the downward gravity force to a target value over time
+            currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
+
+            // Apply the lerped downward gravity force
+            rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
+        }
+        else
+        {
+            // Before apex, ensure the gravity is normal (zero or upward force)
+            isFalling = false;
+        }
     }
+
 
 
     void RotateBodyHorizontally()

@@ -4498,6 +4498,8 @@ MonoBehaviour:
   rightCollider: {fileID: 1611631297}
   leftCollider: {fileID: 200551410}
   jumpForce: 10
+  downwardGravityForce: 15
+  downwardForceLerpSpeed: 20
   cameraHolder: {fileID: 121110534}
   mouseSensitivity: 300
   verticalClampAngle: 90
@@ -4516,7 +4518,6 @@ MonoBehaviour:
   forwardForce: 15
   displacement: {x: 0, y: 0, z: 0}
   playerCamera: {fileID: 2082861411}
-  uiCanvas: {fileID: 0}
   playerVisual: {fileID: 124295117}
 --- !u!1 &1854581794
 GameObject:
