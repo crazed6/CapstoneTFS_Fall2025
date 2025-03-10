@@ -109,7 +109,7 @@ public class CharacterController : MonoBehaviour
 
         LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
-
+        poleVault();
        
 
 
@@ -122,7 +122,7 @@ public class CharacterController : MonoBehaviour
         Move();
         Jump();
         Slide();
-        poleVault();
+       
         SetIsGrounded(bottomCollider.IsColliding);
 
         // Calculate displacement
@@ -300,7 +300,7 @@ public class CharacterController : MonoBehaviour
         SetIsSliding(true);
 
         // Move camera down 1 unit
-        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+        //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
@@ -323,7 +323,7 @@ public class CharacterController : MonoBehaviour
         SetIsSliding(false);
 
         // Move camera back up
-        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
+        //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
@@ -506,12 +506,16 @@ public class CharacterController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
         {
+            // Apply initial vault forces
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Preserve some horizontal momentum
             rb.AddForce(transform.up * upForce, ForceMode.Impulse);
             rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+
+            // Allow air control after vaulting
+            isGrounded = false; // Mark the player as airborne
         }
     }
 
- 
 
 
 }
