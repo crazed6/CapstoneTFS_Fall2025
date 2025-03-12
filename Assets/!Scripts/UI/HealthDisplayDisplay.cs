@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HealthBar : MonoBehaviour
+public class HealthDisplayDisplay: MonoBehaviour
 {
     public Slider healthSlider;
     public Image fillImage; //Assign this to the Fill Area in the inspector
@@ -27,7 +27,7 @@ public class HealthBar : MonoBehaviour
         }
 
        //Current threshold 20% of total health
-        if (normalizedHealth < 0.3f)
+        if (normalizedHealth < 0.2f)
         {
             if (!isWarning)
             {
