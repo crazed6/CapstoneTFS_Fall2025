@@ -523,29 +523,30 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    void attack()
-    {
-        if(Input.GetMouseButtonDown(0))
-        {
-
-        }
-    }
+   
 
 
     void CheckEnemyInCrosshair()
     {
+        //saves rb curent speed
         Vector3 lastspeed = rb.linearVelocity;
+
+        //check for mouse down
         if (Input.GetMouseButtonDown(0)) // Left click
         {
+
+            //fire raycast from camera position
             Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
             RaycastHit hit;
 
+            //check if raycast hits object with enemy tag
             if (Physics.Raycast(ray, out hit, maxDistance))
             {
                 if (hit.collider.CompareTag("enemy"))
                 {
                     Debug.Log("Moving to enemy: " + hit.collider.name);
                     
+                    //find position for enemy 
                     targetPosition = hit.collider.transform.position;
                     isMoving = true;
                 }
@@ -554,11 +555,15 @@ public class CharacterController : MonoBehaviour
 
         if (isMoving)
         {
+            //move player to enemy position 
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+            
+            //stop movement when player is within 0.5 units of the enemy
             if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
             {
                 isMoving = false;
 
+                //reapply the rb velocity with a multiple of 1.2
                 rb.linearVelocity = lastspeed * 1.2f;
             }
         }
