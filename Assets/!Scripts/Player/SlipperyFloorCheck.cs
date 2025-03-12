@@ -10,6 +10,7 @@ public class OilSlickTrap : MonoBehaviour
     private float originalSpeed;
     private bool isSliding = false; // To track if the player is sliding
     private Vector3 initialSlidingDirection; // Store the direction the player is looking when they enter the trap
+    private CharacterController playerMovementScript; // Reference to player's movement script
 
     private void OnTriggerEnter(Collider other)
     {
@@ -17,6 +18,7 @@ public class OilSlickTrap : MonoBehaviour
         {
             characterController = other.GetComponent<CharacterController>();
             playerRb = other.GetComponent<Rigidbody>();
+            playerMovementScript = other.GetComponent<CharacterController>(); // Assuming PlayerMovement is the script that handles player input
 
             if (characterController != null)
             {
@@ -26,6 +28,13 @@ public class OilSlickTrap : MonoBehaviour
                 // Store the direction the player is facing when they enter the trap
                 initialSlidingDirection = characterController.transform.forward;
                 isSliding = true;
+
+                // Disable player movement input by disabling PlayerMovement script
+                if (playerMovementScript != null)
+                {
+                    playerMovementScript.enabled = false; // Disable movement input
+                }
+
                 Debug.Log("Player entered slick, sliding starts.");
             }
         }
@@ -37,6 +46,13 @@ public class OilSlickTrap : MonoBehaviour
         {
             playerOnSlick = false;
             StopSliding(); // Stop sliding when player exits
+
+            // Re-enable player movement input
+            if (playerMovementScript != null)
+            {
+                playerMovementScript.enabled = true; // Re-enable movement input when exiting the trap
+            }
+
             Debug.Log("Player exited slick, sliding stops.");
         }
     }
