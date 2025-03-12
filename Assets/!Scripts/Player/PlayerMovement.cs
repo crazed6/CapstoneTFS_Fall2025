@@ -68,6 +68,13 @@ public class CharacterController : MonoBehaviour
     [Header("Player cam")]
     public GameObject playerCamera;
 
+    [Header("attack settings")]
+    public Camera playercam;
+    public float maxDistance;
+    private Vector3 targetPosition;
+    public float dashSpeed;
+    private bool isMoving;
+    public float enemyExitForce;
 
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
@@ -111,7 +118,7 @@ public class CharacterController : MonoBehaviour
         RotateBodyHorizontally(); // On Update() so that its smoother
         poleVault();
        
-
+        CheckEnemyInCrosshair();
 
        
     }
@@ -507,7 +514,7 @@ public class CharacterController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
         {
             // Apply initial vault forces
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Preserve some horizontal momentum
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // Preserve some horizontal momentum
             rb.AddForce(transform.up * upForce, ForceMode.Impulse);
             rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
 
@@ -516,7 +523,46 @@ public class CharacterController : MonoBehaviour
         }
     }
 
+    void attack()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+
+        }
+    }
 
 
+    void CheckEnemyInCrosshair()
+    {
+        Vector3 lastspeed = rb.linearVelocity;
+        if (Input.GetMouseButtonDown(0)) // Left click
+        {
+            Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit, maxDistance))
+            {
+                if (hit.collider.CompareTag("enemy"))
+                {
+                    Debug.Log("Moving to enemy: " + hit.collider.name);
+                    
+                    targetPosition = hit.collider.transform.position;
+                    isMoving = true;
+                }
+            }
+        }
+
+        if (isMoving)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
+            {
+                isMoving = false;
+
+                rb.linearVelocity = lastspeed * 1.2f;
+            }
+        }
+    
+    }
 }
 
