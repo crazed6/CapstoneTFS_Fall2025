@@ -8,7 +8,10 @@ public class SplitterBehav : MonoBehaviour
     public Transform player;
 
     public LayerMask whatIsGround, whatIsPlayer;
-    public float health;
+    
+    public int maxHealth = 75; //Set maxhealth for Splitter
+    private int currentHealth;
+    public HealthBar healthBar; //Reference to  UI health prefab
 
     // Attacking
     public float timeBetweenAttacks;
@@ -19,6 +22,7 @@ public class SplitterBehav : MonoBehaviour
     // States
     public float sightRange, attackRange;
     public bool playerInSightRange, playerInAttackRange;
+   
 
     private EnemyWander patrolScript;  // Reference to the patrol script
    
@@ -36,7 +40,12 @@ public class SplitterBehav : MonoBehaviour
         player = GameObject.FindWithTag("Player").transform;
         agent = GetComponent<NavMeshAgent>();
         patrolScript = GetComponent<EnemyWander>(); // Initialize reference to patrol script
-        
+
+        currentHealth = maxHealth;
+        if (healthBar != null)
+        {
+            healthBar.SetHealth(1f); //Full health at start
+        }
     }
 
     private void Update()
@@ -117,9 +126,15 @@ public class SplitterBehav : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        health -= damage;
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); //Update health bar -JK
 
-        if (health <= 0 && !hasSplit)
+        if (healthBar != null)
+        {
+            healthBar.SetHealth((float)currentHealth / maxHealth);
+        }
+
+        if (currentHealth <= 0 && !hasSplit)
         {
             hasSplit = true;
             Invoke(nameof(DestroyEnemy), 0.5f);
