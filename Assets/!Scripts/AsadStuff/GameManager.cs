@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene SaveandSaveAndSaveAndSaver, UnityEngine.SceneManagement.LoadSceneMode mode)
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene BuildTesting, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
         PlayerSave = Object.FindFirstObjectByType<PlayerSave>();
 
