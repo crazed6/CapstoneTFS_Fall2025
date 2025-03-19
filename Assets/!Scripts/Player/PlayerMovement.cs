@@ -23,6 +23,10 @@ public class CharacterController : MonoBehaviour
     public float jumpForce = 10f;
     bool jumpInitiated = false;
     float lastSpeedBeforeTakeoff;
+    bool isFalling = false;
+    private float currentDownwardForce = 0f;
+    public float downwardGravityForce;
+    public float downwardForceLerpSpeed;
 
     [Header("Look Around")]
     public Transform cameraHolder;
@@ -61,10 +65,16 @@ public class CharacterController : MonoBehaviour
     Vector3 lastPosition;
     [HideInInspector] public Vector3 displacement;
 
-    [Header("Cinema Mode (For YT Video)")]
+    [Header("Player cam")]
     public GameObject playerCamera;
-    public GameObject uiCanvas;
-    bool cinemaMode; // Switch camera and hide UI
+
+    [Header("attack settings")]
+    public Camera playercam;
+    public float maxDistance;
+    private Vector3 targetPosition;
+    public float dashSpeed;
+    private bool isMoving;
+    public float enemyExitForce;
 
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
@@ -106,14 +116,9 @@ public class CharacterController : MonoBehaviour
 
         LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            cinemaMode = !cinemaMode;
-            playerCamera.SetActive(!cinemaMode);
-            uiCanvas.SetActive(!cinemaMode);
-        }
-
+        poleVault();
+       
+        CheckEnemyInCrosshair();
 
        
     }
@@ -124,7 +129,7 @@ public class CharacterController : MonoBehaviour
         Move();
         Jump();
         Slide();
-        poleVault();
+       
         SetIsGrounded(bottomCollider.IsColliding);
 
         // Calculate displacement
@@ -201,7 +206,28 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
+        // Check if the player is moving upwards or has reached the apex
+        if (rb.linearVelocity.y <= 0)
+        {
+            // Apply downward force once the apex is reached (if we are not already falling)
+            if (!isFalling)
+            {
+                isFalling = true;
+            }
+
+            // Lerp the downward gravity force to a target value over time
+            currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
+
+            // Apply the lerped downward gravity force
+            rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
+        }
+        else
+        {
+            // Before apex, ensure the gravity is normal (zero or upward force)
+            isFalling = false;
+        }
     }
+
 
 
     void RotateBodyHorizontally()
@@ -281,7 +307,7 @@ public class CharacterController : MonoBehaviour
         SetIsSliding(true);
 
         // Move camera down 1 unit
-        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+        //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
@@ -304,7 +330,7 @@ public class CharacterController : MonoBehaviour
         SetIsSliding(false);
 
         // Move camera back up
-        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
+        //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
@@ -487,13 +513,61 @@ public class CharacterController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
         {
+            // Apply initial vault forces
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // Preserve some horizontal momentum
             rb.AddForce(transform.up * upForce, ForceMode.Impulse);
             rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+
+            // Allow air control after vaulting
+            isGrounded = false; // Mark the player as airborne
         }
     }
 
- 
+   
 
 
+    void CheckEnemyInCrosshair()
+    {
+        //saves rb curent speed
+        Vector3 lastspeed = rb.linearVelocity;
+
+        //check for mouse down
+        if (Input.GetMouseButtonDown(0)) // Left click
+        {
+
+            //fire raycast from camera position
+            Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+            RaycastHit hit;
+
+            //check if raycast hits object with enemy tag
+            if (Physics.Raycast(ray, out hit, maxDistance))
+            {
+                if (hit.collider.CompareTag("enemy"))
+                {
+                    Debug.Log("Moving to enemy: " + hit.collider.name);
+                    
+                    //find position for enemy 
+                    targetPosition = hit.collider.transform.position;
+                    isMoving = true;
+                }
+            }
+        }
+
+        if (isMoving)
+        {
+            //move player to enemy position 
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+            
+            //stop movement when player is within 0.5 units of the enemy
+            if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
+            {
+                isMoving = false;
+
+                //reapply the rb velocity with a multiple of 1.2
+                rb.linearVelocity = lastspeed * 1.2f;
+            }
+        }
+    
+    }
 }
 
