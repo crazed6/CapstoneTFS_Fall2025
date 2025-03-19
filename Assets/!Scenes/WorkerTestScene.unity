@@ -423,17 +423,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &821887488 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: -5799595287837315342, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
-  m_PrefabInstance: {fileID: 266436263}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f66c556ecdd51b449b792144829cc1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &883806645
 GameObject:
   m_ObjectHideFlags: 0
@@ -2178,9 +2167,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de620b52bff4d9645820c62578309254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthBar: {fileID: 821887488}
   maxHealth: 100
   currentHealth: 0
+  healthSlider: {fileID: 0}
 --- !u!82 &1518519539
 AudioSource:
   m_ObjectHideFlags: 0
