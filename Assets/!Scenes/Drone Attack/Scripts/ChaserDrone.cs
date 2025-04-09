@@ -20,11 +20,6 @@ public class ChaserDrone : MonoBehaviour
     [SerializeField] private float hoverSpeed = 0.08f;      // Slower and wider ripple
     [SerializeField] private float hoverSmoothTime = 3.0f;  // Smoother transition
 
-
-
-
-
-
     [SerializeField] private float collisionAvoidanceForce = 10f;
     [SerializeField] private float bounceForce = 3f;
     private float ceilingHeight;
