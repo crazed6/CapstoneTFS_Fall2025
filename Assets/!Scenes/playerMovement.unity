@@ -4023,6 +4023,8 @@ MonoBehaviour:
   maxDistance: 50
   dashSpeed: 500
   enemyExitForce: 1.2
+  dashForce: 5
+  dashDuration: 0.2
   playerVisual: {fileID: 124295117}
 --- !u!1 &1854581794
 GameObject:
@@ -5193,7 +5195,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.1
   far clip plane: 1000
   field of view: 60
   orthographic: 0

@@ -76,6 +76,11 @@ public class CharacterController : MonoBehaviour
     private bool isMoving;
     public float enemyExitForce;
 
+    [SerializeField] private float dashForce = 25f;  // Speed of the dash
+    [SerializeField] private float dashDuration = 0.2f;  // Duration of the dash
+
+    private bool isDashing = false;  // Flag to check if we're already dashing
+
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
@@ -120,7 +125,12 @@ public class CharacterController : MonoBehaviour
        
         CheckEnemyInCrosshair();
 
-       
+        if (Input.GetKeyDown(KeyCode.E) && !isDashing && !isWallRunning && !isSliding)
+        {
+            DashForward();  // Start the dash
+        }
+
+
     }
 
     void FixedUpdate()
@@ -523,7 +533,42 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-   
+    void DashForward()
+    {
+        if (!isDashing)
+        {
+            StartCoroutine(DashRoutine());
+        }
+    }
+
+    private IEnumerator DashRoutine()
+    {
+        isDashing = true;
+
+        float elapsed = 0f;
+        Vector3 direction = playerCamera.transform.forward;  // Dash direction is based on the camera's forward vector
+
+        // Reset velocity to prevent any existing movement during dash
+        rb.linearVelocity = Vector3.zero;
+
+        // Calculate dash distance
+        float dashDistance = dashSpeed * dashDuration;
+
+        // Keep dashing while the dash duration hasn't passed
+        while (elapsed < dashDuration)
+        {
+            // Apply forward dash velocity, but respect any collisions (using rigidbody)
+            Vector3 dashVelocity = direction * dashSpeed;
+            rb.linearVelocity = new Vector3(dashVelocity.x, rb.linearVelocity.y, dashVelocity.z);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // After dash ends, stop dashing
+        isDashing = false;
+    }
+
 
 
     void CheckEnemyInCrosshair()
