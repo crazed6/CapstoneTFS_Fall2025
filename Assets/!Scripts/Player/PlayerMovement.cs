@@ -7,6 +7,8 @@ using Unity.VisualScripting;
 
 public class CharacterController : MonoBehaviour
 {
+    public static CharacterController instance; // it's me -_-
+
     [HideInInspector] public Rigidbody rb;
 
     [Header("Movement")]
@@ -79,10 +81,17 @@ public class CharacterController : MonoBehaviour
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
-    
+    public bool IsWallRunning => isWallRunning; // Public getter for isWallRunning -_-
+    public bool IsSliding => isSliding; // Public getter for isSliding -_-
+    public bool JumpInitiated => jumpInitiated; // Public getter for jumpInitiated -_-
+    public bool IsGrounded => isGrounded; // Public getter for isGrounded -_-
 
     void Awake()
     {
+        if (instance == null)
+        {
+            instance = this;
+        }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

@@ -62,6 +62,7 @@ GameObject:
   - component: {fileID: 6131428770735606227}
   - component: {fileID: 8228325913776399005}
   - component: {fileID: 6781543433545394963}
+  - component: {fileID: 6030717635783321390}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -176,7 +177,28 @@ MonoBehaviour:
   forwardForce: 15
   displacement: {x: 0, y: 0, z: 0}
   playerCamera: {fileID: 2654554577308890054}
+  playercam: {fileID: 0}
+  maxDistance: 0
+  dashSpeed: 0
+  enemyExitForce: 0
   playerVisual: {fileID: 7784591356456069070}
+--- !u!114 &6030717635783321390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98267206676346709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4254d0d32071ebb47a05143c71b06dd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  javelinPrefab: {fileID: 0}
+  javelinSpawnPoint: {fileID: 0}
+  throwForce: 20
+  cooldownTime: 2
+  crosshair: {fileID: 0}
 --- !u!1 &1728947119725483551
 GameObject:
   m_ObjectHideFlags: 0
