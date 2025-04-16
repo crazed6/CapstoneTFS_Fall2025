@@ -9,17 +9,14 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 {
     //Item Data
     public string itemName;
-    public int quantity;
     public Sprite itemSprite;
     public bool isFull;
     public string itemDescription;
     public Sprite emptySprite;
+    public GameObject itemDescrription;
 
 
     //Item Slot
-    [SerializeField]
-    private TMP_Text quantityText;
-
     [SerializeField]
     private Image itemImage;
 
@@ -41,18 +38,15 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
     }
 
     //Where everything of the item will be displayed
-    public void AddItem(string itemName, int quantity, Sprite itemSprite, string itemDescription)
+    public void AddItem(string itemName, Sprite itemSprite, string itemDescription)
     {
         // Assign item details to this slot
         this.itemName = itemName;
-        this.quantity = quantity;
         this.itemSprite = itemSprite;
         this.itemDescription = itemDescription;
         isFull = true; // Mark this slot as occupied
 
         // Update UI elements
-        quantityText.text = quantity.ToString(); // Show item quantity
-        quantityText.enabled = true; // Enable the quantity text
         itemImage.sprite = itemSprite; // Show the item's icon in the slot
     }
 
@@ -67,19 +61,23 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
 
     public void OnLeftClick()
     {
-        inventoryManager.DeselectAllSlots();//Deselects all slots first
-        selectedShader.SetActive(true);//Highlights this specific slot
-        thisItemSelected = true;//Marks this slot as selected
+        inventoryManager.DeselectAllSlots(); // Deselect all other slots
 
-        //Updates the item description panel
-        ItemDescriptionNameText.text = itemName;
-        ItemDescriptionText.text = itemDescription;
-        ItemDescriptionImage.sprite = itemSprite;
+        selectedShader.SetActive(true);      // Highlight this slot regardless
+        thisItemSelected = true;             // Mark this one as selected
 
-        //If there are no sprites, use default empty sprite
-        if (ItemDescriptionImage.sprite == null)
-            ItemDescriptionImage.sprite = emptySprite;
-        
+        if (isFull)
+        {
+            // Show and update the item description panel
+            itemDescrription.SetActive(true);
+            ItemDescriptionNameText.text = itemName;
+            ItemDescriptionText.text = itemDescription;
+            ItemDescriptionImage.sprite = itemSprite != null ? itemSprite : emptySprite;
+        }
+        else
+        {
+            // Hide the item description panel if there's no item
+            itemDescrription.SetActive(false);
+        }
     }
-
 }

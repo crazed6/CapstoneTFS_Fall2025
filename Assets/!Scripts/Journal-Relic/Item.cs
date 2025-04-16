@@ -8,9 +8,6 @@ public class Item : MonoBehaviour
     private string itemName;
 
     [SerializeField]
-    private int quantity;
-
-    [SerializeField]
     private Sprite sprite;
 
     [TextArea]
@@ -33,7 +30,7 @@ public class Item : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             // Add this item to the player's inventory
-            inventoryManager.AddItem(itemName, quantity, sprite, itemDescription);
+            inventoryManager.AddItem(itemName, sprite, itemDescription);
             Destroy(gameObject); // Destroy this item GameObject so it disappears after being collected
 
         }
