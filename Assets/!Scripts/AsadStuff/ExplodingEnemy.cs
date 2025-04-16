@@ -1,87 +1,133 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class ExplodingEnemy : MonoBehaviour
 {
-    public GameObject explosionPrefab; // Particle system explosion
-    public AudioClip explosionSound; // Explosion sound
-    public float damage = 100f; // Set damage value
-    public float explosionRadius = 5f; // Explosion area
-    private AudioSource audioSource;
+    public Transform[] patrolPoints;
+    public float patrolSpeed = 2f;
+    public float chaseSpeed = 3f;
+    public float detectionRadius = 5f;
+    public float explosionRadius = 3f;
+    public float explosionDamage = 25f;
+    public ParticleSystem explosionEffect;
 
-    public NotPlayerHealth playerHealth; // Reference to player health
+    private Transform player;
+    private int currentPointIndex = 0;
+    private bool isDetonating = false;
+    private bool hasExploded = false;
+    private bool isChasing = false;
+
+    private Rigidbody rb;
 
     void Start()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.volume = 1.0f;  // Set audio volume
+        rb = GetComponent<Rigidbody>();
 
-        // Auto-find the player if not assigned in the inspector
-        if (playerHealth == null)
-        {
-            playerHealth = FindObjectOfType<NotPlayerHealth>();
-        }
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
+            player = playerObj.transform;
     }
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0)) // Left mouse button
+        if (player == null || hasExploded) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer <= detectionRadius && !isDetonating)
         {
-            CheckForExplosion();
+            isChasing = true;
+            ChasePlayer();
+        }
+        else if (!isDetonating)
+        {
+            isChasing = false;
+            Patrol();
         }
     }
 
-    void CheckForExplosion()
+    void Patrol()
     {
-        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+        if (patrolPoints.Length == 0) return;
 
-        Debug.DrawRay(mousePosition, Vector2.zero, Color.red, 1f); // Debug raycast
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        Vector3 direction = (targetPoint.position - transform.position).normalized;
+        rb.linearVelocity = direction * patrolSpeed;
 
-        if (hit.collider != null && hit.collider.gameObject == gameObject)
+        if (Vector3.Distance(transform.position, targetPoint.position) < 0.3f)
         {
-            Explode();
+            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
         }
+    }
+
+    void ChasePlayer()
+    {
+        if (player == null) return;
+
+        Vector3 direction = (player.position - transform.position).normalized;
+        rb.linearVelocity = direction * chaseSpeed;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (hasExploded || isDetonating) return;
+
+        if (collision.collider.CompareTag("Player") || collision.collider.CompareTag("Javilin"))
+        {
+            StartCoroutine(DetonationCountdown());
+        }
+    }
+
+    IEnumerator DetonationCountdown()
+    {
+        isDetonating = true;
+        rb.linearVelocity = Vector3.zero;
+        yield return new WaitForSeconds(0.3f);
+        Explode();
     }
 
     void Explode()
     {
-        // Instantiate explosion particle effect
-        if (explosionPrefab != null)
-        {
-            GameObject explosionEffect = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
-            Destroy(explosionEffect, 2f); // Destroy the effect after 2 seconds
-        }
+        if (hasExploded) return;
 
-        // Play explosion sound
-        if (explosionSound != null && audioSource != null)
-        {
-            audioSource.PlayOneShot(explosionSound);
-        }
+        hasExploded = true;
 
-        // Apply damage to the player if within radius
-        if (playerHealth != null)
+        // Detect objects within explosion radius
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (Collider hit in hitColliders)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, playerHealth.transform.position);
-            if (distanceToPlayer <= explosionRadius)
+            if (hit.CompareTag("Player"))
             {
-                playerHealth.TakeDamage(damage);
-                Debug.Log("Damaging player for " + damage + " damage.");
-
-                if (playerHealth.GetCurrentHealth() <= 0)
+                // Try to find NotPlayerHealth on the object or its parent
+                NotPlayerHealth playerHealth = hit.GetComponent<NotPlayerHealth>();
+                if (playerHealth == null)
                 {
-                    playerHealth.gameObject.SetActive(false); // Deactivate only if dead
+                    playerHealth = hit.GetComponentInParent<NotPlayerHealth>();
+                }
+
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(explosionDamage);
+                }
+                else
+                {
+                    Debug.LogWarning("No NotPlayerHealth found on Player object or parent.");
                 }
             }
         }
 
-        // Destroy enemy after explosion effect
-        StartCoroutine(DestroyAfterDelay());
+        if (explosionEffect != null)
+            Instantiate(explosionEffect, transform.position, Quaternion.identity);
+
+        Destroy(gameObject);
     }
 
-    IEnumerator DestroyAfterDelay()
+    void OnDrawGizmosSelected()
     {
-        yield return new WaitForSeconds(0.5f);
-        Destroy(gameObject);
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, explosionRadius);
     }
 }
