@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ExplodingEnemy : MonoBehaviour
@@ -7,8 +8,16 @@ public class ExplodingEnemy : MonoBehaviour
     public float patrolSpeed = 2f;
     public float chaseSpeed = 3f;
     public float detectionRadius = 5f;
-    public float explosionRadius = 3f;
-    public float explosionDamage = 25f;
+
+    // Explosion radii and damage
+    public float innerRadius = 1f;
+    public float middleRadius = 2f;
+    public float outerRadius = 3f;
+
+    public float innerDamage = 50f;
+    public float middleDamage = 30f;
+    public float outerDamage = 15f;
+
     public ParticleSystem explosionEffect;
 
     private Transform player;
@@ -91,23 +100,35 @@ public class ExplodingEnemy : MonoBehaviour
         if (hasExploded) return;
 
         hasExploded = true;
+        Vector3 origin = transform.position;
+        HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
 
-        // Detect objects within explosion radius
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        // Apply damage based on proximity
+        ApplyExplosionDamage(origin, innerRadius, innerDamage, alreadyDamaged);
+        ApplyExplosionDamage(origin, middleRadius, middleDamage, alreadyDamaged);
+        ApplyExplosionDamage(origin, outerRadius, outerDamage, alreadyDamaged);
+
+        if (explosionEffect != null)
+            Instantiate(explosionEffect, origin, Quaternion.identity);
+
+        Destroy(gameObject);
+    }
+
+    void ApplyExplosionDamage(Vector3 position, float radius, float damage, HashSet<Collider> alreadyDamaged)
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(position, radius);
+
         foreach (Collider hit in hitColliders)
         {
+            if (alreadyDamaged.Contains(hit)) continue;
+
             if (hit.CompareTag("Player"))
             {
-                // Try to find NotPlayerHealth on the object or its parent
-                NotPlayerHealth playerHealth = hit.GetComponent<NotPlayerHealth>();
-                if (playerHealth == null)
+                NotPlayerHealth health = hit.GetComponent<NotPlayerHealth>() ?? hit.GetComponentInParent<NotPlayerHealth>();
+                if (health != null)
                 {
-                    playerHealth = hit.GetComponentInParent<NotPlayerHealth>();
-                }
-
-                if (playerHealth != null)
-                {
-                    playerHealth.TakeDamage(explosionDamage);
+                    health.TakeDamage(damage);
+                    alreadyDamaged.Add(hit);
                 }
                 else
                 {
@@ -115,11 +136,6 @@ public class ExplodingEnemy : MonoBehaviour
                 }
             }
         }
-
-        if (explosionEffect != null)
-            Instantiate(explosionEffect, transform.position, Quaternion.identity);
-
-        Destroy(gameObject);
     }
 
     void OnDrawGizmosSelected()
@@ -127,7 +143,13 @@ public class ExplodingEnemy : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
 
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, innerRadius);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, middleRadius);
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, explosionRadius);
+        Gizmos.DrawWireSphere(transform.position, outerRadius);
     }
 }
