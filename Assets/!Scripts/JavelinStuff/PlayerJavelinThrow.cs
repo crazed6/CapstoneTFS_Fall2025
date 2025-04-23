@@ -9,32 +9,47 @@ public class PlayerJavelinThrow : MonoBehaviour
     public float throwForce = 50f;
     public float cooldownTime = 2f;
 
+    [Header("Throw Direction")]
+    public bool useCameraDirection = false;
+
+    [Header("Throw Points")]
+    public Transform rightHandThrowPoint;
+    public Transform leftHandThrowPoint;
+    public Transform defaultThrowPoint;
+
     [Header("UI Settings")]
     public GameObject crosshair;
 
     [Header("Slow Motion Settings")]
     public float slowMotionTimeScale = 0.1f;
+    public float slowMotionDuration = 1f;
+    public float timeSlowInSpeed = 5f;
     public float timeResetSpeed = 5f;
-    public float slowMotionDuration = 1f;        // Time to stay in slow-mo
-    public float timeSlowInSpeed = 5f;           // How quickly to enter slow-mo
+
+    [Header("Camera Reference")]
+    public AimingCameraController aimingCameraController;
+
+    [Header("Camera Switching")]
+    public Camera mainCamera;
+    public Camera aimingCamera;
 
     private GameObject currentJavelin;
     private bool isAiming = false;
     private float cooldownTimer = 0f;
-    private float slowMotionTimer = 0f;
-    private bool isSlowMotionActive = false;
-    private bool canTriggerSlowMotion = false;
     private bool isEnteringSlowMotion = false;
+    private bool isSlowMotionActive = false;
+    private float slowMotionTimer = 0f;
+    private Transform currentThrowPoint;
 
     private Camera playerCamera;
-    private Rigidbody playerRigidbody;
-    private bool wasGrounded;
 
     void Start()
     {
-        playerCamera = CharacterController.instance.playercam;
-        playerRigidbody = CharacterController.instance.rb;
-        wasGrounded = CharacterController.instance.IsGrounded;
+        playerCamera = aimingCameraController.GetCamera();
+
+        // Initial camera setup
+        if (mainCamera != null) mainCamera.gameObject.SetActive(true);
+        if (aimingCamera != null) aimingCamera.gameObject.SetActive(false);
 
         if (crosshair) crosshair.SetActive(false);
     }
@@ -53,50 +68,7 @@ public class PlayerJavelinThrow : MonoBehaviour
             ThrowJavelin();
         }
 
-        // Smoothly enter slow motion
-        if (isEnteringSlowMotion && Time.timeScale > slowMotionTimeScale)
-        {
-            Time.timeScale = Mathf.Lerp(Time.timeScale, slowMotionTimeScale, timeSlowInSpeed * Time.unscaledDeltaTime);
-
-            if (Mathf.Abs(Time.timeScale - slowMotionTimeScale) < 0.01f)
-            {
-                Time.timeScale = slowMotionTimeScale;
-                isEnteringSlowMotion = false;
-                isSlowMotionActive = true;
-                slowMotionTimer = slowMotionDuration;
-            }
-        }
-
-        // Smoothly exit slow motion -_-
-        if (isSlowMotionActive && !isEnteringSlowMotion)
-        {
-            slowMotionTimer -= Time.unscaledDeltaTime;
-
-            if (slowMotionTimer <= 0f)
-            {
-                Time.timeScale = Mathf.Lerp(Time.timeScale, 1f, timeResetSpeed * Time.unscaledDeltaTime);
-                if (Mathf.Abs(Time.timeScale - 1f) < 0.01f)
-                {
-                    Time.timeScale = 1f;
-                    isSlowMotionActive = false;
-                }
-            }
-        }
-
-        // Track grounded state -_-
-        if (wasGrounded && !CharacterController.instance.IsGrounded)
-        {
-            OnJumpDetected();
-        }
-
-        // Reset slow motion ONLY when the player touches the ground -_-
-        if (!wasGrounded && CharacterController.instance.IsGrounded)
-        {
-            Debug.Log("Player landed — reset slow motion");
-            canTriggerSlowMotion = false;
-        }
-
-        wasGrounded = CharacterController.instance.IsGrounded;
+        HandleSlowMotion();
     }
 
     void StartAiming()
@@ -105,16 +77,20 @@ public class PlayerJavelinThrow : MonoBehaviour
 
         if (javelinPrefab && javelinSpawnPoint)
         {
-            currentJavelin = Instantiate(javelinPrefab, javelinSpawnPoint.position, javelinSpawnPoint.rotation);
-            currentJavelin.transform.SetParent(javelinSpawnPoint);
+            UpdateCurrentThrowPoint();
+
+            currentJavelin = Instantiate(javelinPrefab, currentThrowPoint.position, currentThrowPoint.rotation);
+            currentJavelin.transform.SetParent(currentThrowPoint);
+
             isAiming = true;
 
-            // Only trigger slow motion if a jump was detected -_-
-            if (canTriggerSlowMotion && !IsWallRunningOrSliding())
+            SwitchToAimingCamera();
+
+            if (IsEligibleForSlowMotion())
             {
-                Debug.Log("Starting slow motion transition...");
                 isEnteringSlowMotion = true;
-                Time.timeScale = 1f; // Start from full speed (just in case)
+                Time.timeScale = 1f; // Ensure normal start
+                Time.fixedDeltaTime = 0.02f * slowMotionTimeScale;
             }
         }
     }
@@ -125,19 +101,24 @@ public class PlayerJavelinThrow : MonoBehaviour
         {
             currentJavelin.transform.SetParent(null);
 
-            // Get throw direction from crosshair -_-
-            Vector3 throwDirection = GetThrowDirection();
+            Vector3 throwDirection = useCameraDirection
+                ? GetThrowDirection()
+                : CharacterController.instance.transform.forward;
+
             currentJavelin.GetComponent<JavelinController>().SetDirection(throwDirection);
 
             currentJavelin = null;
             isAiming = false;
+            SwitchToMainCamera();
 
             if (crosshair) crosshair.SetActive(false);
 
             cooldownTimer = cooldownTime;
 
-            if (isSlowMotionActive)
+            if (isSlowMotionActive || isEnteringSlowMotion)
             {
+                isEnteringSlowMotion = false;
+                slowMotionTimer = 0f;
                 isSlowMotionActive = true;
             }
         }
@@ -145,7 +126,14 @@ public class PlayerJavelinThrow : MonoBehaviour
 
     Vector3 GetThrowDirection()
     {
-        Ray ray = playerCamera.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
+        Camera cam = aimingCameraController.GetCamera();
+        if (cam == null)
+        {
+            Debug.LogWarning("Aiming Camera is not available — defaulting to forward.");
+            return transform.forward;
+        }
+
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             return (hit.point - javelinSpawnPoint.position).normalized;
@@ -156,22 +144,83 @@ public class PlayerJavelinThrow : MonoBehaviour
         }
     }
 
-    bool IsWallRunningOrSliding()
-    {
-        return CharacterController.instance.IsWallRunning || CharacterController.instance.IsSliding;
-    }
-
-    void OnJumpDetected()
-    {
-        Debug.Log("Jump detected!");
-        canTriggerSlowMotion = true; // Persist until player lands -_-
-    }
-
     void HandleCooldown()
     {
         if (cooldownTimer > 0)
-        {
             cooldownTimer -= Time.unscaledDeltaTime;
+    }
+
+    void HandleSlowMotion()
+    {
+        if (isEnteringSlowMotion)
+        {
+            Time.timeScale = Mathf.Lerp(Time.timeScale, slowMotionTimeScale, timeSlowInSpeed * Time.unscaledDeltaTime);
+
+            if (Mathf.Abs(Time.timeScale - slowMotionTimeScale) < 0.005f)
+            {
+                Time.timeScale = slowMotionTimeScale;
+                Time.fixedDeltaTime = 0.02f * slowMotionTimeScale;
+
+                isEnteringSlowMotion = false;
+                isSlowMotionActive = true;
+                slowMotionTimer = slowMotionDuration;
+            }
+        }
+
+        if (isSlowMotionActive && !isEnteringSlowMotion)
+        {
+            slowMotionTimer -= Time.unscaledDeltaTime;
+
+            if (slowMotionTimer <= 0f)
+            {
+                Time.timeScale = Mathf.Lerp(Time.timeScale, 1f, timeResetSpeed * Time.unscaledDeltaTime);
+
+                if (Mathf.Abs(Time.timeScale - 1f) < 0.005f)
+                {
+                    Time.timeScale = 1f;
+                    Time.fixedDeltaTime = 0.02f;
+                    isSlowMotionActive = false;
+                }
+            }
+        }
+    }
+
+    public bool IsAiming() => isAiming;
+
+    bool IsEligibleForSlowMotion()
+    {
+        var cc = CharacterController.instance;
+        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding;
+
+    }
+
+    void SwitchToAimingCamera()
+    {
+        if (mainCamera != null) mainCamera.gameObject.SetActive(false);
+        if (aimingCamera != null)
+        {
+            aimingCamera.gameObject.SetActive(true);
+            playerCamera = aimingCamera.GetComponent<Camera>();
+        }
+    }
+
+    void SwitchToMainCamera()
+    {
+        if (aimingCamera != null) aimingCamera.gameObject.SetActive(false);
+        if (mainCamera != null) mainCamera.gameObject.SetActive(true);
+    }
+
+    void UpdateCurrentThrowPoint()
+    {
+        var cc = CharacterController.instance;
+
+        if (cc.IsWallRunning)
+        {
+            currentThrowPoint = cc.IsWallOnRight ? leftHandThrowPoint : rightHandThrowPoint;
+        }
+        else
+        {
+            currentThrowPoint = defaultThrowPoint != null ? defaultThrowPoint : rightHandThrowPoint;
         }
     }
 }
