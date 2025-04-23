@@ -78,6 +78,10 @@ public class CharacterController : MonoBehaviour
     private bool isMoving;
     public float enemyExitForce;
 
+    // New field at the top of your script
+    [HideInInspector] public float wallForwardYaw;
+
+
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
@@ -85,6 +89,9 @@ public class CharacterController : MonoBehaviour
     public bool IsSliding => isSliding; // Public getter for isSliding -_-
     public bool JumpInitiated => jumpInitiated; // Public getter for jumpInitiated -_-
     public bool IsGrounded => isGrounded; // Public getter for isGrounded -_-
+    public bool IsDashing => isMoving; // Already tracked as isMoving -_-
+    public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
+
 
     void Awake()
     {
@@ -129,7 +136,7 @@ public class CharacterController : MonoBehaviour
        
         CheckEnemyInCrosshair();
 
-       
+
     }
 
     void FixedUpdate()
@@ -302,8 +309,9 @@ public class CharacterController : MonoBehaviour
         // While sliding, slowly lose momentum until it ends
         if (isSliding)
         {
-            // Dampen the speed
+            // Adjust dampening based on time scale to ensure consistent slide length -_-
             Vector3 newVelocity = rb.linearVelocity * slideSpeedDampening;
+
 
             // If the speed is still above the threshold, keep sliding
             if (newVelocity.magnitude > keepSlidingSpeedThreshold) rb.linearVelocity = newVelocity;
@@ -398,12 +406,20 @@ public class CharacterController : MonoBehaviour
             }
 
             // Check to see if you can START wall running and if a wall is in range 
-            else 
+            else
             {
-               
-                if (leftCollider.IsColliding) StartWallRunning(false);
-                else if (rightCollider.IsColliding) StartWallRunning(true);
+                if (leftCollider.IsColliding)
+                {
+                    onRightWall = false;
+                    StartWallRunning(false);
+                }
+                else if (rightCollider.IsColliding)
+                {
+                    onRightWall = true;
+                    StartWallRunning(true);
+                }
             }
+
 
             jumpInitiated = false;
         }
@@ -466,6 +482,9 @@ public class CharacterController : MonoBehaviour
     //initiate our wallrun movement 
     void StartWallRunning(bool rightWall)
     {
+        wallForwardYaw = transform.eulerAngles.y; // Lock current facing direction when wallrun starts -_-
+
+
         SetIsWallRunning(true);
 
         //disable players gravity (if set that way in inspector)
