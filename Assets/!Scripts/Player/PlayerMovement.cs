@@ -11,7 +11,7 @@ public class CharacterController : MonoBehaviour
     //player can reattach to same wall need to change that will check for prev wall normal 
     //change slide so that it cant activate in air 
 
-
+    public static CharacterController instance; // it's me -_-
 
     [HideInInspector] public Rigidbody rb;
 
@@ -94,11 +94,22 @@ public class CharacterController : MonoBehaviour
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
-    
+    public bool IsWallRunning => isWallRunning; // Public getter for isWallRunning -_-
+    public bool IsSliding => isSliding; // Public getter for isSliding -_-
+    public bool JumpInitiated => jumpInitiated; // Public getter for jumpInitiated -_-
+    public bool IsGrounded => isGrounded; // Public getter for isGrounded -_-
+    public bool IsDashing => isMoving; // Already tracked as isMoving -_-
+    public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
+
 
     void Awake()
     {
+        if (instance == null)
+        {
+            instance = this;
+        }
         Cursor.lockState = CursorLockMode.Locked;
+
         Cursor.visible = false;
     }
 
