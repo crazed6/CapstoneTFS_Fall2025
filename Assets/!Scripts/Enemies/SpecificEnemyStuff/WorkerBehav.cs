@@ -32,7 +32,6 @@ public class WorkerBehav : MonoBehaviour
     public float aggroRange = 10f;
 
 
-    //Check player Transform so player isn't pushed by enemy worker = troubleshoot!
     #region Enemy Initial Setup Functions
     private void Awake()
     {
@@ -92,11 +91,11 @@ public class WorkerBehav : MonoBehaviour
         if (isProvoked)
         {
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-            //if (distanceToPlayer > aggroRange)
-           // {
-                //HealAndReset();
-               // return;
-            //}
+            if (distanceToPlayer > aggroRange)
+            {
+               HealAndReset();
+               return;
+            }
         }
 
         switch (currentState)
@@ -107,19 +106,23 @@ public class WorkerBehav : MonoBehaviour
             case AIState.Chase:
                 Chase();
                 break;
-            case AIState.Attack: 
-                if (canAttack)
-                { 
+            case AIState.Attack:
+                //Continuously check distance even during cooldown
+                float distance = Vector3.Distance(attackOrigin.position, player.position);
+                if (distance > attackRange)
+                {
+                    currentState = AIState.Chase;
+                }
+                else if(canAttack)
+                {
                     Attack();
                 }
                 break;
 
-            default:
+                default:
                 break;
         }
     }
-
-    
 
     //Enemy collider interactions
     private void OnTriggerEnter(Collider other)
@@ -185,12 +188,13 @@ public class WorkerBehav : MonoBehaviour
     {
         if (player != null)
         {
+            agent.isStopped = false;
             agent.SetDestination(player.position);
-            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+            float distanceToPlayer = Vector3.Distance(attackOrigin.position, player.position);
 
             if(distanceToPlayer <= attackRange)
             {
-                currentState = AIState.Attack; //Switch to attack once in range
+                currentState = AIState.Attack; //Switch to attack once in range 
             }
             Debug.Log($"{gameObject.name} is chasing the player!");
             //Add animation trigger here once created
@@ -204,6 +208,7 @@ public class WorkerBehav : MonoBehaviour
         if (player == null || !canAttack) return; //Early exit if no player or can't attack
 
         Vector3 directionToPlayer = player.position - attackOrigin.position;
+        
         float distanceToPlayer = directionToPlayer.magnitude;
         
         if (distanceToPlayer <= attackRange)
@@ -222,9 +227,11 @@ public class WorkerBehav : MonoBehaviour
                 }
                 else
                 {
+                    //If raycast misses (ex. hits an obstacle), resume chasing
+                    currentState = AIState.Chase;
+                    agent.isStopped = false;
                     Debug.DrawRay(attackOrigin.position, directionToPlayer * attackRange, Color.red, 1f);
                 }
-            
             }
             else
             {
@@ -291,6 +298,7 @@ public class WorkerBehav : MonoBehaviour
             isProvoked = true;
             currentState = AIState.Chase;
             Debug.Log($"{gameObject.name} has been provoked!");
+            Chase(); //Manually call Chase() to ensure movement starts immediately
         }
     }
 
