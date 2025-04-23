@@ -7,12 +7,22 @@ using Unity.VisualScripting;
 
 public class CharacterController : MonoBehaviour
 {
+    //clips through the wall during dash movement assuming its because speed jumps to 500 during dash and colliders cant keep up 
+    //player can reattach to same wall need to change that will check for prev wall normal 
+    //change slide so that it cant activate in air 
+
+
+
     [HideInInspector] public Rigidbody rb;
 
     [Header("Movement")]
     public float baseSpeed = 8f;
     private bool isGrounded;
     public float maxSpeed = 30;
+
+    [Header("Player cam")]
+    public CinemachineCameraController cameraController;
+
    
     [Header("Ground & Wall Checkers")]
     public CollisionDetectorRaycast bottomCollider;
@@ -119,7 +129,7 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.LeftShift)) StopSliding();
 
-        LookUpAndDownWithCamera();
+        //LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
         poleVault();
        
@@ -257,18 +267,18 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    void LookUpAndDownWithCamera()
-    {
+   // void LookUpAndDownWithCamera()
+    //{
         // Get mouse input for vertical rotation
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+       // float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         // Update vertical rotation
-        verticalRotation -= mouseY;
-        verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
+       // verticalRotation -= mouseY;
+       // verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
 
         // Apply vertical rotation to the camera holder
-        playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
-    }
+       // playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
+    //}
 
     void SetIsGrounded(bool state)
     {
@@ -318,6 +328,7 @@ public class CharacterController : MonoBehaviour
 
         // Move camera down 1 unit
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
         playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
@@ -341,6 +352,7 @@ public class CharacterController : MonoBehaviour
 
         // Move camera back up
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
@@ -479,6 +491,11 @@ public class CharacterController : MonoBehaviour
         wallRunStartingSpeed = rb.linearVelocity.magnitude + 5f;
 
         // Debug.Log($"WALL RUN [START] (spd: {wallRunStartingSpeed})");
+        //cameraController.SetFollowTarget(rightWall ? cameraController.wallFollowRight : cameraController.wallFollowLeft); // AIDEN CAMERA ADJUSTMENT
+       
+                cameraController.UpdateCameraState(rightWall
+            ? CinemachineCameraController.PlayerState.WallRunningRight
+            : CinemachineCameraController.PlayerState.WallRunningLeft);
     }
 
     //stop our wallrun movement 
@@ -492,6 +509,9 @@ public class CharacterController : MonoBehaviour
         // Rotate camera and player Z to 0
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f); ;
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
+
+        //cameraController.SetFollowTarget(cameraController.defaultFollowTarget); // AIDEN CAMERA ADJUSTMENT  
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
 
     }
 
