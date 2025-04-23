@@ -7,6 +7,10 @@ using Unity.VisualScripting;
 
 public class CharacterController : MonoBehaviour
 {
+    //clips through the wall during dash movement assuming its because speed jumps to 500 during dash and colliders cant keep up 
+    //player can reattach to same wall need to change that will check for prev wall normal 
+    //change slide so that it cant activate in air 
+
     public static CharacterController instance; // it's me -_-
 
     [HideInInspector] public Rigidbody rb;
@@ -15,6 +19,10 @@ public class CharacterController : MonoBehaviour
     public float baseSpeed = 8f;
     private bool isGrounded;
     public float maxSpeed = 30;
+
+    [Header("Player cam")]
+    public CinemachineCameraController cameraController;
+
    
     [Header("Ground & Wall Checkers")]
     public CollisionDetectorRaycast bottomCollider;
@@ -78,6 +86,11 @@ public class CharacterController : MonoBehaviour
     private bool isMoving;
     public float enemyExitForce;
 
+    [SerializeField] private float dashForce = 25f;  // Speed of the dash
+    [SerializeField] private float dashDuration = 0.2f;  // Duration of the dash
+
+    private bool isDashing = false;  // Flag to check if we're already dashing
+
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
 
@@ -85,6 +98,9 @@ public class CharacterController : MonoBehaviour
     public bool IsSliding => isSliding; // Public getter for isSliding -_-
     public bool JumpInitiated => jumpInitiated; // Public getter for jumpInitiated -_-
     public bool IsGrounded => isGrounded; // Public getter for isGrounded -_-
+    public bool IsDashing => isMoving; // Already tracked as isMoving -_-
+    public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
+
 
     void Awake()
     {
@@ -93,6 +109,7 @@ public class CharacterController : MonoBehaviour
             instance = this;
         }
         Cursor.lockState = CursorLockMode.Locked;
+
         Cursor.visible = false;
     }
 
@@ -123,13 +140,18 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.LeftShift)) StopSliding();
 
-        LookUpAndDownWithCamera();
+        //LookUpAndDownWithCamera();
         RotateBodyHorizontally(); // On Update() so that its smoother
         poleVault();
        
         CheckEnemyInCrosshair();
 
-       
+        if (Input.GetKeyDown(KeyCode.E) && !isDashing && !isWallRunning && !isSliding)
+        {
+            DashForward();  // Start the dash
+        }
+
+
     }
 
     void FixedUpdate()
@@ -256,18 +278,18 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    void LookUpAndDownWithCamera()
-    {
+   // void LookUpAndDownWithCamera()
+    //{
         // Get mouse input for vertical rotation
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+       // float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         // Update vertical rotation
-        verticalRotation -= mouseY;
-        verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
+       // verticalRotation -= mouseY;
+       // verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
 
         // Apply vertical rotation to the camera holder
-        playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
-    }
+       // playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
+    //}
 
     void SetIsGrounded(bool state)
     {
@@ -317,6 +339,7 @@ public class CharacterController : MonoBehaviour
 
         // Move camera down 1 unit
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
         playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
@@ -340,6 +363,7 @@ public class CharacterController : MonoBehaviour
 
         // Move camera back up
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
@@ -478,6 +502,11 @@ public class CharacterController : MonoBehaviour
         wallRunStartingSpeed = rb.linearVelocity.magnitude + 5f;
 
         // Debug.Log($"WALL RUN [START] (spd: {wallRunStartingSpeed})");
+        //cameraController.SetFollowTarget(rightWall ? cameraController.wallFollowRight : cameraController.wallFollowLeft); // AIDEN CAMERA ADJUSTMENT
+       
+                cameraController.UpdateCameraState(rightWall
+            ? CinemachineCameraController.PlayerState.WallRunningRight
+            : CinemachineCameraController.PlayerState.WallRunningLeft);
     }
 
     //stop our wallrun movement 
@@ -491,6 +520,9 @@ public class CharacterController : MonoBehaviour
         // Rotate camera and player Z to 0
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f); ;
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
+
+        //cameraController.SetFollowTarget(cameraController.defaultFollowTarget); // AIDEN CAMERA ADJUSTMENT  
+        cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
 
     }
 
@@ -532,7 +564,42 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-   
+    void DashForward()
+    {
+        if (!isDashing)
+        {
+            StartCoroutine(DashRoutine());
+        }
+    }
+
+    private IEnumerator DashRoutine()
+    {
+        isDashing = true;
+
+        float elapsed = 0f;
+        Vector3 direction = playerCamera.transform.forward;  // Dash direction is based on the camera's forward vector
+
+        // Reset velocity to prevent any existing movement during dash
+        rb.linearVelocity = Vector3.zero;
+
+        // Calculate dash distance
+        float dashDistance = dashSpeed * dashDuration;
+
+        // Keep dashing while the dash duration hasn't passed
+        while (elapsed < dashDuration)
+        {
+            // Apply forward dash velocity, but respect any collisions (using rigidbody)
+            Vector3 dashVelocity = direction * dashSpeed;
+            rb.linearVelocity = new Vector3(dashVelocity.x, rb.linearVelocity.y, dashVelocity.z);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // After dash ends, stop dashing
+        isDashing = false;
+    }
+
 
 
     void CheckEnemyInCrosshair()
