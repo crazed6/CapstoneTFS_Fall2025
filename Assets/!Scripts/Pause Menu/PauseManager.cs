@@ -7,7 +7,7 @@ public class PauseManager : MonoBehaviour
 
     // The name of your main game scene. If you always use "SampleScene," you can keep it fixed.
     // The scene is never unloaded, so it won't restart from zero.
-    private string gameSceneName = "SampleScene";
+    private string gameSceneName = "BuildTesting";
 
     private bool isPaused = false;
 

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class PlayerHealth : MonoBehaviour
 {
 
-    public Slider healthSlider;
+    public HealthBar healthBar;
     public float maxHealth = 100;
     public float currentHealth;
 
@@ -82,9 +82,10 @@ public class PlayerHealth : MonoBehaviour
     //Update UI according to damage and heal
     private void UpdateHealthBar()
     {
-        if (healthSlider != null)
+        if (healthBar != null)
         {
-            healthSlider.value = currentHealth / maxHealth;
+            float normalizedHealth = currentHealth / maxHealth;
+            healthBar.SetHealth(normalizedHealth);
         }
     }
 }
