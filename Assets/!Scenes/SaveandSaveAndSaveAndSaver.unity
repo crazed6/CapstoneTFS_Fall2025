@@ -878,7 +878,6 @@ GameObject:
   - component: {fileID: 900181389}
   - component: {fileID: 900181388}
   - component: {fileID: 900181393}
-  - component: {fileID: 900181392}
   m_Layer: 0
   m_Name: Checkpoint_1 (1)
   m_TagString: Checkpoint
@@ -954,19 +953,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &900181392
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 900181385}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controller: {fileID: 1375689614}
 --- !u!65 &900181393
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1957,6 +1943,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8510130828652457532, guid: 2a033b09b1bc29a4cad654c367ab5c99, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1375689615}
+    - targetCorrespondingSourceObject: {fileID: 8510130828652457532, guid: 2a033b09b1bc29a4cad654c367ab5c99, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1375689619}
   m_SourcePrefab: {fileID: 100100000, guid: 2a033b09b1bc29a4cad654c367ab5c99, type: 3}
 --- !u!1 &1375689613 stripped
 GameObject:
@@ -1986,6 +1975,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c3ea610443e21d4d8b456ec8beb1309, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1375689619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375689613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 1375689614}
 --- !u!1 &1434493908
 GameObject:
   m_ObjectHideFlags: 3
@@ -2077,6 +2079,7 @@ GameObject:
   - component: {fileID: 1517154449}
   - component: {fileID: 1517154448}
   - component: {fileID: 1517154447}
+  - component: {fileID: 1517154450}
   m_Layer: 5
   m_Name: Save
   m_TagString: Untagged
@@ -2148,21 +2151,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
-        m_MethodName: SaveCheckpoint
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CheckpointUI, Assembly-CSharp
-        m_MethodName: CloseUI
+      - m_Target: {fileID: 1517154450}
+        m_TargetAssemblyTypeName: SaveButton, Assembly-CSharp
+        m_MethodName: SaveGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2210,6 +2201,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1517154445}
   m_CullTransparentMesh: 1
+--- !u!114 &1517154450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1517154445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1a5c65628d3e1c44afc6df86762b84b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1546833428
 GameObject:
   m_ObjectHideFlags: 0
@@ -2953,8 +2956,8 @@ GameObject:
   - component: {fileID: 2013968582}
   - component: {fileID: 2013968581}
   - component: {fileID: 2013968580}
-  - component: {fileID: 2013968586}
   - component: {fileID: 2013968585}
+  - component: {fileID: 2013968586}
   m_Layer: 0
   m_Name: Checkpoint_1
   m_TagString: Checkpoint
@@ -3049,8 +3052,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2, y: 1.9999999, z: 1.0000001}
-  m_Center: {x: 0.00000005960464, y: 0, z: -0.00000008940696}
+  m_Size: {x: 1.0586184, y: 1.9999999, z: 1.0000001}
+  m_Center: {x: -0.024304358, y: 0, z: -0.00000009881708}
 --- !u!114 &2013968586
 MonoBehaviour:
   m_ObjectHideFlags: 0

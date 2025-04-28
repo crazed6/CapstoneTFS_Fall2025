@@ -3,7 +3,8 @@ using System.IO;
 using System.Collections;
 
 
-public class CheckpointSystem : MonoBehaviour
+public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has to be attached to the Player object.
+    // The Checkpoint will still require the tag however.
 {
     private Vector3 lastCheckpoint;
     private bool hasCheckpoint = false;
@@ -13,17 +14,17 @@ public class CheckpointSystem : MonoBehaviour
     void Start()
     {
         saveFilePath = Application.persistentDataPath + "/checkpoint.json";
-        // StartCoroutine(WaitForCheckpoint());
+        //StartCoroutine(WaitForCheckpoint()); //This and below was commented out before
 
-        /*
-        IEnumerator WaitForCheckpoint()
-        {
-            yield return new WaitForSeconds(2f);  // Correct usage
-            Debug.Log("Checkpoint reached!");
-            yield return null;
-            LoadCheckpoint();
-        } 
-        */
+        
+        //IEnumerator WaitForCheckpoint()
+        //{
+        //    yield return new WaitForSeconds(2f);  // Correct usage
+        //    Debug.Log("Checkpoint reached!");
+        //    yield return null;
+        //    LoadCheckpoint();
+        //} 
+        
     }
 
     void FixedUpdate()
