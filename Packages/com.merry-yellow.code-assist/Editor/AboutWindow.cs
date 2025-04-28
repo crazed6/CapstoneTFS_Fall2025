@@ -54,6 +54,11 @@ namespace Meryel.UnityCodeAssist.Editor
             EditorGUILayout.LabelField($"License type: Full", styleLabel, GUILayout.ExpandWidth(true));
 #endif // MERYEL_UCA_LITE_VERSION
 
+            if (GUILayout.Button("Update"))
+            {
+                Updater.CheckUpdateForced();
+            }
+
             if (GUILayout.Button("View changelog"))
             {
                 Application.OpenURL("https://unitycodeassist.netlify.app/changelog");
