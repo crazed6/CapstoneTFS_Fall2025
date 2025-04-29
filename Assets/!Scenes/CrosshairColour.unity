@@ -1040,15 +1040,17 @@ MonoBehaviour:
   - {fileID: 1798360694}
   - {fileID: 421302693}
   patrolSpeed: 7
-  chaseSpeed: 14
-  detectionRadius: 17
+  chaseSpeed: 12
+  detectionRadius: 13
   innerRadius: 1.5
-  middleRadius: 2
-  outerRadius: 5
+  middleRadius: 5
+  outerRadius: 10
   innerDamage: 100
   middleDamage: 50
   outerDamage: 75
   explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
+  outerRadiusTimerStart: 1
+  middleRadiusTimeReduction: 0.5
 --- !u!54 &297603575
 Rigidbody:
   m_ObjectHideFlags: 0
