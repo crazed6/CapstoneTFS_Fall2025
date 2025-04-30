@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-
-[RequireComponent(typeof(BaseEnemy))]
-public class DamageableEnemy : MonoBehaviour, IDamageable
+public class EnemyDamageComponent : MonoBehaviour
 {
+    public event Action OnDeath; //Event to notify when the enemy dies
+
     [Header("Health Settings")]
     public float maxHealth = 100f;
     private float currentHealth;
@@ -20,7 +20,6 @@ public class DamageableEnemy : MonoBehaviour, IDamageable
     //private Animator anim;
     //public string hurtTrigger = "TakeDamage";
     //public string dieTrigger = "Die";
-
 
     void Awake()
     { 
@@ -78,6 +77,7 @@ public class DamageableEnemy : MonoBehaviour, IDamageable
         //Add cleanup logic here - disable AI movement, pool object, etc.
 
         Destroy(gameObject, 2.0f); //Delay if anims are ~2seconds
+        OnDeath?.Invoke();
     }
 
 
@@ -105,7 +105,6 @@ public class DamageableEnemy : MonoBehaviour, IDamageable
             }
         }
     }
-
 
     private IEnumerator HideHealthBarAfterDelay(float delay)
     {
