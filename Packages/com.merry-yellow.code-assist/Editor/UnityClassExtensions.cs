@@ -107,20 +107,36 @@ namespace Meryel.UnityCodeAssist.Editor
                 data.LayerNames[i] = animator.GetLayerName(i);
             }
 
-            var parameterCount = animator.parameterCount;
-            data.ParameterIndices = new string[parameterCount];
-            data.ParameterNames = new string[parameterCount];
-            data.ParameterHashes = new string[parameterCount];
-            data.ParameterTypes = new int[parameterCount];
-            for (var i = 0; i < parameterCount; i++)
+            int curParameterIndex = 0;
+            try
             {
-                //**-- recieving error here, like "IndexOutOfRangeException: Index must be between 0 and 3",
-                //**-- probably user edits it while retrieving data, fix? or just ignore?
-                var parameter = animator.GetParameter(i);
-                data.ParameterIndices[i] = i.ToString();
-                data.ParameterNames[i] = parameter.name;
-                data.ParameterHashes[i] = parameter.nameHash.ToString();
-                data.ParameterTypes[i] = (int)parameter.type;
+                var parameterCount = animator.parameterCount;
+                data.ParameterIndices = new string[parameterCount];
+                data.ParameterNames = new string[parameterCount];
+                data.ParameterHashes = new string[parameterCount];
+                data.ParameterTypes = new int[parameterCount];
+                for (var i = 0; i < parameterCount; i++)
+                {
+                    curParameterIndex = i;
+                    // receiving error here, like "IndexOutOfRangeException: Index must be between 0 and 3",
+                    // probably user edits it while retrieving data
+                    var parameter = animator.GetParameter(i);
+                    data.ParameterIndices[i] = i.ToString();
+                    data.ParameterNames[i] = parameter.name;
+                    data.ParameterHashes[i] = parameter.nameHash.ToString();
+                    data.ParameterTypes[i] = (int)parameter.type;
+                }
+            }
+            catch (IndexOutOfRangeException indexOutOfRangeException)
+            {
+                Serilog.Log.Debug(indexOutOfRangeException, "handling IndexOutOfRangeException of animator.GetParameter(i)");
+
+                var parameterCount = curParameterIndex;
+
+                data.ParameterIndices = ResizeArray(data.ParameterIndices, parameterCount);
+                data.ParameterNames = ResizeArray(data.ParameterNames, parameterCount);
+                data.ParameterHashes = ResizeArray(data.ParameterHashes, parameterCount);
+                data.ParameterTypes = ResizeArray(data.ParameterTypes, parameterCount);
             }
 
             // When you specify a state name, or the string used to generate a hash, it should include the name of the parent layer. For example, if you have a Bounce state in the Base Layer, the name is Base Layer.Bounce
@@ -136,6 +152,7 @@ namespace Meryel.UnityCodeAssist.Editor
             data.StateTagHashes = new string[stateCount];
             data.StateFullPaths = new string[stateCount];
             data.StateFullPathHashes = new string[stateCount];
+            data.StateMotionNames = new string[stateCount];
             for (int i = 0; i < stateCount; i++)
             {
                 var state = states[i].state;
@@ -146,6 +163,11 @@ namespace Meryel.UnityCodeAssist.Editor
                 data.StateTagHashes[i] = Animator.StringToHash(state.tag).ToString();
                 data.StateFullPaths[i] = fullPath;
                 data.StateFullPathHashes[i] = Animator.StringToHash(fullPath).ToString();
+                var motion = state.motion;
+                if (motion)
+                    data.StateMotionNames[i] = motion.name;
+                else
+                    data.StateMotionNames[i] = string.Empty;
             }
 
             var transitionCount = transitions.Count;
@@ -175,6 +197,12 @@ namespace Meryel.UnityCodeAssist.Editor
             return data;
 
             //var events = clips.SelectMany(c => c.events);
+
+            static T[] ResizeArray<T>(T[] array, int size)
+            {
+                Array.Resize(ref array, size);
+                return array;
+            }
         }
 
         

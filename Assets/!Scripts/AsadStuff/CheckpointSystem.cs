@@ -1,29 +1,41 @@
 using UnityEngine;
 using System.IO;
 using System.Collections;
+using UnityEngine.UI;
 
 
-public class CheckpointSystem : MonoBehaviour
+public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has to be attached to the Player object.
+    // The Checkpoint will still require the tag however.
 {
     private Vector3 lastCheckpoint;
     private bool hasCheckpoint = false;
     private string saveFilePath;
     public CharacterController controller;
 
+    private bool panelTriggered = false; //This is to check if the panel is active or has been triggered.
+    public GameObject checkpointPanel; //This is the panel that will be shown when the player reaches a checkpoint.
+
     void Start()
     {
         saveFilePath = Application.persistentDataPath + "/checkpoint.json";
-        // StartCoroutine(WaitForCheckpoint());
+        //StartCoroutine(WaitForCheckpoint()); //This and below was commented out before
 
-        /*
-        IEnumerator WaitForCheckpoint()
+
+        //IEnumerator WaitForCheckpoint()
+        //{
+        //    yield return new WaitForSeconds(2f);  // Correct usage
+        //    Debug.Log("Checkpoint reached!");
+        //    yield return null;
+        //    LoadCheckpoint();
+        //} 
+
+        if (checkpointPanel == null)
         {
-            yield return new WaitForSeconds(2f);  // Correct usage
-            Debug.Log("Checkpoint reached!");
-            yield return null;
-            LoadCheckpoint();
-        } 
-        */
+            Debug.LogError("Checkpoint Panel is not assigned in Inspector!");
+        }
+
+        HideCheckpointPanel(); // Hide the checkpoint panel at the start
+
     }
 
     void FixedUpdate()
@@ -43,13 +55,14 @@ public class CheckpointSystem : MonoBehaviour
         controller.enabled = true;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other) //this works when attached to the player object the rigiddbody, and not when attached to the parent.
     {
-        if (other.CompareTag("Checkpoint"))
+        if (other.CompareTag("Checkpoint") && !panelTriggered)
         {
             lastCheckpoint = other.transform.position;
             SaveCheckpoint();
             hasCheckpoint = true;
+            ShowCheckpointPanel();
             Debug.Log("Checkpoint activated at: " + lastCheckpoint);
         }
     }
@@ -92,6 +105,35 @@ public class CheckpointSystem : MonoBehaviour
             lastCheckpoint = transform.position; // Default starting position
             Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
         }
+    }
+
+    void ShowCheckpointPanel()
+    {
+        if (checkpointPanel == null)
+        {
+            Debug.LogError("Checkpoint Panel is not assigned in Inspector!");
+            return;
+        }
+        checkpointPanel.SetActive(true); // Show the checkpoint panel
+        Time.timeScale = 0; // Pause the game
+        panelTriggered = true; // Set the trigger to true to prevent multiple activations
+
+        Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+        Cursor.visible = true;                  // Make it visible
+
+        Debug.Log("Checkpoint panel shown.");
+    }
+
+    public void HideCheckpointPanel()
+    {
+        checkpointPanel.SetActive(false); // Hide the checkpoint panel
+        Time.timeScale = 1; // Resume the game
+        panelTriggered = false; // Reset the trigger for next checkpoint
+
+        Cursor.lockState = CursorLockMode.Locked; // Lock the cursor
+        Cursor.visible = false;                  // Make it invisible
+
+        Debug.Log("Checkpoint panel hidden.");
     }
 }
 
