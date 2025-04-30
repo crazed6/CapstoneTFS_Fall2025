@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LoadButton : MonoBehaviour
 {
@@ -12,5 +13,21 @@ public class LoadButton : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void LoadGameButton() //Josh's method to load the game
+    {
+        SaveLoadSystem.Load();
+        string sceneName = SaveLoadSystem.GetSaveData().PlayerSaveData.SceneName;
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("Scene name is empty or null. Loading last scene.");
+            SceneManager.LoadScene(sceneName);
+        }
+        else
+        {
+            Debug.Log("No scene name found in save data. Loading default scene.");
+            SceneManager.LoadScene("BuildTesting");
+        }
     }
 }

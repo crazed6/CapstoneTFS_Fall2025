@@ -46,6 +46,7 @@ public class SaveLoadSystem
         GameManager.Instance.PlayerSave.Save(ref _saveData.PlayerSaveData);
         //After implementing and defining Player, then we'll be able to write various things to the file about the player.
 
+
     }
 
     public static void Load()
@@ -79,5 +80,22 @@ public class SaveLoadSystem
         {
             playerhealth.health = (int)_saveData.PlayerSaveData.Health;
         }
+    }
+
+    public static SaveData GetSaveData()
+    {
+        return _saveData;
+    }
+
+    public static string GetSavedSceneName()
+    {
+        if (!File.Exists(SaveFileName()))
+        {
+            Debug.LogWarning("Save file does not exist! Cannot retrieve scene name.");
+            return null;
+        }
+        string json = File.ReadAllText(SaveFileName());
+        SaveData data = JsonUtility.FromJson<SaveData>(json);
+        return _saveData.PlayerSaveData.SceneName;
     }
 }

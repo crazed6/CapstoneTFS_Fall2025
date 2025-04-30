@@ -21,7 +21,16 @@ public class Health : MonoBehaviour
     private int _health = 1;
     public bool IsDead => _health <= 0;
     private bool isDead = false;
-    public CheckpointSystem CheckpointSystem; 
+    public CheckpointSystem CheckpointSystem;
+
+    //for health regen
+    public float regenerationDelay = 5f;
+    public int regenerationAmount = 1;
+    public float regenerationInterval = 1f;
+
+    private float timeSinceLastDamage = 0f;
+    private float regenTimer = 0f;
+    private bool canRegenerate = false;
 
 
     public int health
@@ -41,6 +50,11 @@ public class Health : MonoBehaviour
     public void TakeDamage(int damage)
     {
         _health -= damage;
+        Debug.Log($"Player took {damage} damage. Current health: {_health}"); //just used to show health in the console
+
+        timeSinceLastDamage = 0f; // Reset the timer when taking damage
+        canRegenerate = false; // Disable regeneration when taking damage
+
         if (_health <= 0)
         {
             isDead = true;
@@ -55,6 +69,7 @@ public class Health : MonoBehaviour
         {
             _health = 100;
         }
+        Debug.Log($"Player healed {heal} health. Current health: {_health}"); //just used to show health in the console
     }
 
     void Die()
@@ -83,7 +98,7 @@ public class Health : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.V))
+        if (Input.GetKeyDown(KeyCode.Alpha0))
         {
             // Call the TakeDamage function on the player
             Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
@@ -95,7 +110,7 @@ public class Health : MonoBehaviour
 
         }
 
-        if (Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             // Call the TakeDamage function on the player
             Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
@@ -105,6 +120,26 @@ public class Health : MonoBehaviour
 
             }
 
+        }
+
+        //Regeneration
+        if (!IsDead && health < maxHealth)
+        {
+            timeSinceLastDamage += Time.deltaTime;
+            if (timeSinceLastDamage >= regenerationDelay)
+            {
+                canRegenerate = true;
+            }
+            if (canRegenerate)
+            {
+                regenTimer += Time.deltaTime;
+                if (regenTimer >= regenerationInterval)
+                {
+                    HealDamage(regenerationAmount);
+                    Debug.Log("Regenerating health: " + regenerationAmount);
+                    regenTimer = 0f;
+                }
+            }
         }
     }
 
