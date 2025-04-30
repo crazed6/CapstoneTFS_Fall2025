@@ -50,7 +50,7 @@ public class Health : MonoBehaviour
     public void TakeDamage(int damage)
     {
         _health -= damage;
-        Debug.Log($"Player took {damage} damage. Current health: {_health}"); //just used to show health in the console
+        //Debug.Log($"Player took {DamageInfo.amount} damage from {DamageInfo.source}. Current health: {_health}"); //just used to show health in the console
 
         timeSinceLastDamage = 0f; // Reset the timer when taking damage
         canRegenerate = false; // Disable regeneration when taking damage
@@ -142,6 +142,53 @@ public class Health : MonoBehaviour
             }
         }
     }
+
+
+
+    // DamageInfo struct to hold damage information
+
+    public struct DamageInfo
+    {
+        public int amount;
+        public string source; // Could be "Goblin", "Fireball", "Trap", etc.
+        public GameObject attacker; // Optional: reference to enemy GameObject
+
+        public DamageInfo(int amount, string source, GameObject attacker = null)
+        {
+            this.amount = amount;
+            this.source = source;
+            this.attacker = attacker;
+        }
+    }
+
+    //Example script to call damage, script would have to be placed on enemies.
+    private void DealDamageToPlayer(GameObject player)
+    {
+        DamageInfo damage = new DamageInfo(10, "Worker", gameObject);
+        player.GetComponent<Health>().TakeDamage(damage.amount);
+    }
+
+    //Example script for projectile
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            DamageInfo damage = new DamageInfo(10, "Missile", gameObject);
+            other.GetComponent<Health>().TakeDamage(damage.amount);
+            Destroy(gameObject); // Destroy the projectile after dealing damage 
+        }
+    }
+
+    //Worker Projectile - 
+    //Exploder - Dash Into (player dashing into enemy)
+    //Exploder - Inside Radius (More damage than outer radius, instakill)
+    //Exploder - Medium Radius (Deal maybe 50% damage)
+    //Exploder - Outside Radius (Less damage than middle radius, maybe 20%)
+    //Heavy Enemy Lob Attack - (Maybe 50% damage)
+    //Heavy Enemy Slam Attack - (Maybe 80%)
+
+    //Traps Damage
+
 
     //previous way to save Health to File and load features
 

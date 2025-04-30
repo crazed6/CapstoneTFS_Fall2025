@@ -95,7 +95,9 @@ public class SaveLoadSystem
             return null;
         }
         string json = File.ReadAllText(SaveFileName());
-        SaveData data = JsonUtility.FromJson<SaveData>(json);
+       _saveData = JsonUtility.FromJson<SaveData>(json);
         return _saveData.PlayerSaveData.SceneName;
     }
+
+    //Button Prompt on SaveLoad System instead of OnTrigger
 }
