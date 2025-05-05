@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 
 public class PlayerSave : MonoBehaviour
@@ -10,7 +11,6 @@ public class PlayerSave : MonoBehaviour
     public void Save(ref PlayerSaveData data)
     {
         data.Position = transform.position;
-
         //Saving Health as well, saved to same object
 
         Health health = GetComponent<Health>();
@@ -18,6 +18,10 @@ public class PlayerSave : MonoBehaviour
         {
             data.Health = health.health; //Saves the current health
         }
+
+        data.SceneName = SceneManager.GetActiveScene().name; //Saves the current scene name
+
+
     }
 
     public void Load(PlayerSaveData data)
@@ -57,5 +61,6 @@ public struct PlayerSaveData
     public Vector3 Position;
     public Vector3 lastCheckpoint;
     public int Health;
+    public string SceneName; // This stores the last scene
 
 }
