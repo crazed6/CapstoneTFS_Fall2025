@@ -1690,7 +1690,7 @@ GameObject:
   - component: {fileID: 886816013}
   - component: {fileID: 886816012}
   - component: {fileID: 886816011}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2042,7 +2042,7 @@ GameObject:
   - component: {fileID: 950188082}
   - component: {fileID: 950188081}
   - component: {fileID: 950188080}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2504,7 +2504,7 @@ GameObject:
   - component: {fileID: 1174551147}
   - component: {fileID: 1174551146}
   - component: {fileID: 1174551145}
-  m_Layer: 3
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3995,6 +3995,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   baseSpeed: 20
   maxSpeed: 50
+  cameraController: {fileID: 0}
   bottomCollider: {fileID: 1246779828}
   rightCollider: {fileID: 1611631297}
   leftCollider: {fileID: 200551410}
@@ -4023,8 +4024,10 @@ MonoBehaviour:
   maxDistance: 50
   dashSpeed: 500
   enemyExitForce: 1.2
-  dashForce: 5
-  dashDuration: 0.2
+  dashDistance: 5
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 128
   playerVisual: {fileID: 124295117}
 --- !u!1 &1854581794
 GameObject:
@@ -4663,7 +4666,7 @@ GameObject:
   - component: {fileID: 2011679170}
   - component: {fileID: 2011679169}
   - component: {fileID: 2011679168}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5941,7 +5944,7 @@ GameObject:
   - component: {fileID: 2147061449}
   - component: {fileID: 2147061448}
   - component: {fileID: 2147061447}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
