@@ -27,11 +27,37 @@ public class MainMenu : MonoBehaviour
     }
     public void QuitGame() //method to close the game 
     {
-    #if UNITY_EDITOR
-    UnityEditor.EditorApplication.isPlaying = false;
-    #else
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
     Application.Quit();
-    #endif
+#endif
 
     }
+
+
+    //Load Code Below
+    public void LoadGameButton()
+    {
+        string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
+
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
+            return;
+        }
+
+        // Subscribe to sceneLoaded event before loading
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.LoadScene(sceneName);
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
+
+        SaveLoadSystem.Load(); // 
+    }
+
+
 }
