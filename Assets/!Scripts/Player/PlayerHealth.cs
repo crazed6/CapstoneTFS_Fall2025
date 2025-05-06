@@ -29,7 +29,7 @@ public class PlayerHealth : MonoBehaviour
         //}
 
         //Listen for C, V, B keypress
-        if(Input.GetKeyDown(KeyCode.C))
+        if (Input.GetKeyDown(KeyCode.C))
         {
             TakeDamage(10f);
             Debug.Log("C press deals 10 damage");
@@ -73,9 +73,9 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth += amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-        
+
         UpdateHealthBar();
-        
+
         Debug.Log($"Player healed {amount} health. Current health: {currentHealth}");
     }
 

@@ -11,8 +11,19 @@ public class HealthBar : MonoBehaviour
     private Coroutine warningCoroutine;
     private bool isWarning = false; //flag to prevent redundant coroutine calls
 
-   //Directly sets health value without interpolation
-   public void SetHealth (float normalizedHealth)
+
+
+    private void Start()
+    {
+        SetHealth(100f);
+    }
+    private void Update()
+    {
+        
+    }
+
+    //Directly sets health value without interpolation
+    public void SetHealth (float normalizedHealth)
     {
         normalizedHealth = Mathf.Clamp01(normalizedHealth);
 
@@ -27,7 +38,7 @@ public class HealthBar : MonoBehaviour
         }
 
        //Current threshold 20% of total health
-        if (normalizedHealth < 0.3f)
+        if (normalizedHealth < 0.35f)
         {
             if (!isWarning)
             {
