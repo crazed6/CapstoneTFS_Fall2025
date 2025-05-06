@@ -16,6 +16,8 @@ public class EnemyDamageComponent : MonoBehaviour
 
     private Coroutine hideHealthBar;
 
+    private bool isDead = false; //Flag to check if the enemy is already dead
+
     //[Header("Animator")]
     //private Animator anim;
     //public string hurtTrigger = "TakeDamage";
@@ -28,10 +30,11 @@ public class EnemyDamageComponent : MonoBehaviour
         if (healthBar == null) healthBar = GetComponentInChildren<HealthBar>();
 
         //initially invisible
-        if (healthBar != null) 
+        if (healthBar != null)
+        { 
             healthBar.SetHealth(1f); //Set to full health
             healthBar.gameObject.SetActive(false);
-
+        }
 
         //animator = GetComponent<Animator>(); Set up once we have visuals
 
@@ -39,6 +42,8 @@ public class EnemyDamageComponent : MonoBehaviour
 
     public void TakeDamage(float damage, GameObject source = null)
     {
+        if (isDead) return; //Prevent further damage if already dead
+
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
@@ -66,13 +71,14 @@ public class EnemyDamageComponent : MonoBehaviour
 
     private void Die()
     {
+        isDead = true; //Set dead flag to prevent further actions
+
         Debug.Log($"{gameObject.name} is dead.");
 
         //trigger death animation
         //if (anim != null) anim.SetTrigger("Die");
         
         if (healthBar != null) healthBar.gameObject.SetActive(false);
-
 
         //Add cleanup logic here - disable AI movement, pool object, etc.
 
