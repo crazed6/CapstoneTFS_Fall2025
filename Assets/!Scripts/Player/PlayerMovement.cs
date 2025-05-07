@@ -19,6 +19,8 @@ public class CharacterController : MonoBehaviour
     public float baseSpeed = 8f;
     private bool isGrounded;
     public float maxSpeed = 30;
+    private bool isDashOnCooldown = false;
+    public float dashCooldown = 1.5f; // Cooldown duration in seconds
 
     [Header("Player cam")]
     public CinemachineCameraController cameraController;
@@ -566,7 +568,7 @@ public class CharacterController : MonoBehaviour
 
     void DashForward()
     {
-        if (!isDashing)
+        if (!isDashing && !isDashOnCooldown)
         {
             StartCoroutine(DashRoutine());
         }
@@ -575,20 +577,16 @@ public class CharacterController : MonoBehaviour
     private IEnumerator DashRoutine()
     {
         isDashing = true;
+        isDashOnCooldown = true;
 
         float elapsed = 0f;
-        Vector3 direction = playerCamera.transform.forward;  // Dash direction is based on the camera's forward vector
+        Vector3 direction = playerCamera.transform.forward;
 
         // Reset velocity to prevent any existing movement during dash
         rb.linearVelocity = Vector3.zero;
 
-        // Calculate dash distance
-        float dashDistance = dashSpeed * dashDuration;
-
-        // Keep dashing while the dash duration hasn't passed
         while (elapsed < dashDuration)
         {
-            // Apply forward dash velocity, but respect any collisions (using rigidbody)
             Vector3 dashVelocity = direction * dashSpeed;
             rb.linearVelocity = new Vector3(dashVelocity.x, rb.linearVelocity.y, dashVelocity.z);
 
@@ -596,10 +594,12 @@ public class CharacterController : MonoBehaviour
             yield return null;
         }
 
-        // After dash ends, stop dashing
         isDashing = false;
-    }
 
+        // Start cooldown timer
+        yield return new WaitForSeconds(dashCooldown);
+        isDashOnCooldown = false;
+    }
 
 
     void CheckEnemyInCrosshair()
