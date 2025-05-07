@@ -9,6 +9,10 @@ public class PauseMenuSettingsButton : MonoBehaviour
         if (!SceneManager.GetSceneByName("SettingsMenu").isLoaded)
         {
             SceneManager.LoadScene("SettingsMenu", LoadSceneMode.Additive);
+
+            //Josh added code for cursor functionality
+            Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+            Cursor.visible = true;                  // Make it visible
         }
     }
 
@@ -18,6 +22,10 @@ public class PauseMenuSettingsButton : MonoBehaviour
         if (PauseManager.Instance != null)
         {
             PauseManager.Instance.ResumeGame();
+
+            //Josh added code for cursor functionality
+            Cursor.lockState = CursorLockMode.Locked; // Lock the cursor
+            Cursor.visible = false;                  // Make it invisible
         }
         else
         {

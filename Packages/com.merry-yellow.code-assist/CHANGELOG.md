@@ -1,5 +1,60 @@
 List of new features, bug fixes and improvements
 
+# Version 1.4.12
+* Additional properties options added for gpt requests
+* Version number mistype fix for Unity asset package
+
+# Version 1.4.11
+* Hotfix for gpt options page
+* Fix for applying transformers for newer versions of Visual Studio
+* Arm64 architecture support
+
+# Version 1.4.10
+* Animations added to context aware instructions
+* Hotfix for context aware integrations (for GitHub Copilot)
+
+# Version 1.4.9
+* Hotfix for gpt options page
+
+# Version 1.4.8
+* Version bump for sister Visual Studio extensions
+
+# Version 1.4.7
+* New gpt feature: Integration into GitHub Copilot. Can now feed GitHub Copilot with project/scene/game-object details.
+* Auto updater for itch.io builds
+
+# Version 1.4.6
+* Updated binaries with new build parameters
+
+# Version 1.4.5
+* Version skipped by mistake ^-^
+
+# Version 1.4.4
+* Hotfix for Unity package compile error
+
+# Version 1.4.3
+* New gpt provider: OpenAI API Compatible, for web/cloud services that supports OpenAI SDK standards
+
+# Version 1.4.2
+* Bugfix for formatting and title of logging
+* Bugfix for CodeLens2Gpt when closing document
+
+# Version 1.4.1
+* New gpt provider: Ollama, can use LLMs from local machine or private network
+
+# Version 1.4.0
+* Gpt backend has been reimplemented for latest models and LLM trends
+* New gpt provider: Anthropic (Claude), can be used as an alternative to OpenAI ChatGPT and Google Gemini
+* New gpt provider: DeepSeek, can be used as an alternative to OpenAI ChatGPT and Google Gemini
+* New code completions: Scene management classes can be auto completed
+* New inline visuals: Scene management classes can display inline information
+
+# Version 1.3.12
+* Hotfix for Microsoft Marketplace manifest file
+
+# Version 1.3.11
+* Hotfix for Microsoft Marketplace manifest file
+
 # Version 1.3.10
 * Hotfix for type resolving
 * Usability improvements for VSCode exporter
@@ -71,7 +126,7 @@ List of new features, bug fixes and improvements
 * New gpt provider: Google Gemini, can be used as an alternative to OpenAI ChatGPT
 * New feature: CodeLens2Gpt. Can request gpt queries from the CodeLens of methods and classes
 * New feature: Context aware gpt, gpt prompts are embedded with Unity, scene and object information
-* New feature: Package, asset has relocated under Packages (from Assets), along with Unity setup menu items
+* New feature: Package, asset has relocated under Packages directory (from Assets directýry), along with Unity setup menu items
 * New code completions: Animation and Animator classes and Invoke/Coroutine/Broadcast methods can be auto completed
 * New inline visuals: Animation and Animator classes can display inline information
 
