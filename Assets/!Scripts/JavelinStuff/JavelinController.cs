@@ -2,50 +2,45 @@ using UnityEngine;
 
 public class JavelinController : MonoBehaviour
 {
-    [Header("Flight Settings")]
-    public float speed = 50f;
-    public float lifetime = 5f;
-
     [Header("Arc Settings")]
-    public float gravity = -9.81f; // affects arc -_-
-    private float verticalVelocity = 0f;
+    public float speed = 50f;                // Initial launch speed of the javelin -_-
+    public float gravityStrength = 30f;      // Custom gravity strength for creating arc -_-
+    public float lifetime = 5f;              // Time after which the javelin auto-destroys -_-
 
-    [Header("Rotation Settings")]
-    public float rotationSpeed = 720f; // spin around Z -_-
+    [Header("Rotation")]
+    public float rotationSpeed = 720f;       // Z-axis spin speed for visual flair -_-
 
-    private Vector3 direction;
-    private bool isThrown = false;
+    private Vector3 velocity;                // Current velocity of the javelin in world space -_-
+    private bool isFlying = false;           // Whether the javelin is currently in flight -_-
 
-    public void SetDirection(Vector3 newDirection)
+    // Called when the javelin is thrown to initialize its direction and start movement -_-
+    public void SetDirection(Vector3 direction)
     {
-        direction = newDirection.normalized;
-        transform.rotation = Quaternion.LookRotation(direction);
-        isThrown = true;
-        Destroy(gameObject, lifetime);
+        velocity = direction.normalized * speed;                    // Set the initial velocity in the throw direction -_-
+        transform.rotation = Quaternion.LookRotation(velocity);     // Rotate javelin to face the initial velocity direction -_-
+        isFlying = true;                                            // Enable movement logic -_-
+        Destroy(gameObject, lifetime);                              // Auto-destroy after a certain time -_-
     }
 
+    // Update is called once per frame -_-
     void Update()
     {
-        if (!isThrown) return;
+        if (!isFlying) return;                                      // If not flying, skip movement logic -_-
 
-        // Simulate vertical arc -_-
-        verticalVelocity += gravity * Time.deltaTime;
+        velocity += Vector3.down * gravityStrength * Time.deltaTime; // Apply custom gravity to simulate arc -_-
 
-        Vector3 move = direction * speed * Time.deltaTime;
-        move += Vector3.up * verticalVelocity * Time.deltaTime;
+        transform.position += velocity * Time.deltaTime;            // Move javelin according to current velocity -_-
 
-        transform.position += move;
+        if (velocity != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(velocity.normalized); // Align javelin rotation with new trajectory -_-
 
-        // Rotate javelin to match new velocity direction (forward + arc) -_-
-        Vector3 newForward = direction * speed + Vector3.up * verticalVelocity;
-        transform.rotation = Quaternion.LookRotation(newForward.normalized);
-
-        // corkscrew spin for flair -_-
-        transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime, Space.Self);
+        transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime, Space.Self); // Optional Z-axis spin effect -_-
     }
 
-    private void OnTriggerEnter(Collider other)
+    // Handle collision with any object -_-
+    void OnTriggerEnter(Collider other)
     {
-        Destroy(gameObject);
+        Destroy(gameObject); // Destroy javelin on collision -_-
     }
 }
+

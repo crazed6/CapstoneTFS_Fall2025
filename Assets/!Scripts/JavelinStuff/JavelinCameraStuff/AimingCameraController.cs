@@ -1,55 +1,68 @@
 using UnityEngine;
+using Cinemachine;
 
 public class AimingCameraController : MonoBehaviour
 {
     [Header("Follow Targets")]
-    public Transform leftShoulderAnchor;
-    public Transform rightShoulderAnchor;
-    public Transform defaultShoulderAnchor;
+    public Transform leftShoulderAnchor;              // Camera anchor for wallrunning on right wall -_-
+    public Transform rightShoulderAnchor;             // Camera anchor for wallrunning on left wall -_-
+    public Transform defaultShoulderAnchor;           // Default third-person shoulder anchor -_-
 
     [Header("References")]
-    public Transform playerBody;
-    public PlayerJavelinThrow javelinThrow;
+    public Transform playerBody;                      // The player's body used for yaw rotation -_-
+    public PlayerJavelinThrow javelinThrow;           // Reference to javelin throw script -_-
+
+    [Header("Main Camera (Cinemachine Brain Host)")]
+    [SerializeField] private Camera debugRayCamera;   // Used for raycasting (main camera with CinemachineBrain) -_-
 
     [Header("Rotation Settings")]
-    public float mouseSensitivity = 300f;
+    public float mouseSensitivity = 300f;             // Sensitivity for camera rotation -_-
 
     [Header("Clamp Settings")]
-    [Tooltip("Max horizontal camera swing (left/right) from player's forward direction.")]
-    public float horizontalClamp = 45f;
-
-    [Tooltip("Max vertical camera tilt (up/down).")]
-    public float verticalClamp = 80f;
+    public float horizontalClamp = 45f;               // Max left/right clamp for wallrun yaw -_-
+    public float verticalClamp = 80f;                 // Max up/down clamp for pitch -_-
 
     [Header("FOV Settings")]
-    public float normalFOV = 60f;
-    public float aimingFOV = 40f;
-    public float fovLerpSpeed = 10f;
+    public float normalFOV = 60f;                     // Default camera field of view -_-
+    public float aimingFOV = 40f;                     // Field of view while aiming -_-
+    public float fovLerpSpeed = 10f;                  // Speed of FOV transition -_-
 
-    private Camera cam;
-    private Transform currentAnchor;
+    private Transform currentAnchor;                  // Active shoulder anchor -_-
+    private float verticalRotation = 0f;              // Current camera pitch -_-
+    private float baseYaw = 0f;                       // Locked yaw at start of wallrun -_-
+    private bool wallrunLocked = false;               // Whether yaw is clamped due to wallrun -_-
+    private bool wallOnRight = false;                 // Is wallrun happening on the right wall -_-
 
-    private float verticalRotation = 0f;
-    private float baseYaw = 0f;
-    private bool wallrunLocked = false;
-    private bool wallOnRight = false;
+    private CinemachineVirtualCamera vCam;            // This virtual camera component -_-
+    private CinemachineComponentBase vCamBody;        // Not used but kept for expansion -_-
+
+    void Awake()
+    {
+        vCam = GetComponent<CinemachineVirtualCamera>(); // Cache the vCam component -_-
+        if (!vCam)
+        {
+            Debug.LogError("AimingCameraController: No CinemachineVirtualCamera found!"); // Warn if missing -_-
+        }
+    }
 
     void Start()
     {
-        cam = GetComponent<Camera>();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        currentAnchor = defaultShoulderAnchor;
+        Cursor.lockState = CursorLockMode.Locked;     // Lock the cursor for gameplay -_-
+        Cursor.visible = false;                       // Hide the cursor -_-
+        currentAnchor = defaultShoulderAnchor;        // Set initial camera anchor -_-
+
+        vCam.Follow = null;                           // We control position manually -_-
+        vCam.LookAt = null;                           // Rotation also handled via script -_-
     }
 
     void LateUpdate()
     {
-        if (playerBody == null || javelinThrow == null) return;
+        if (playerBody == null || javelinThrow == null) return; // Skip if references are missing -_-
 
-        HandleWallrunState();
-        HandleRotation();
-        SnapToAnchor();
-        HandleFOV();
+        HandleWallrunState();                         // Decide which shoulder to use -_-
+        HandleRotation();                             // Handle pitch/yaw input -_-
+        SnapToAnchor();                               // Move camera to selected anchor -_-
+        HandleFOV();                                  // Smooth FOV zoom based on aiming -_-
     }
 
     void HandleWallrunState()
@@ -63,28 +76,26 @@ public class AimingCameraController : MonoBehaviour
             if (wallOnRight && leftShoulderAnchor != null)
             {
                 currentAnchor = leftShoulderAnchor;
-                wallrunLocked = true;
+                wallrunLocked = true;                 // Use left shoulder when on right wall -_-
             }
             else if (!wallOnRight && rightShoulderAnchor != null)
             {
                 currentAnchor = rightShoulderAnchor;
-                wallrunLocked = true;
+                wallrunLocked = true;                 // Use right shoulder when on left wall -_-
             }
             else
             {
                 currentAnchor = defaultShoulderAnchor;
-                wallrunLocked = false;
-                Debug.LogWarning("Missing correct shoulder anchor! Using default.");
+                wallrunLocked = false;                // Fallback to default if needed -_-
             }
 
-            // Save base yaw only once when locking begins
             if (!wallrunLocked) return;
-            baseYaw = playerBody.eulerAngles.y;
+            baseYaw = playerBody.eulerAngles.y;       // Lock yaw reference for clamp -_-
         }
         else
         {
             wallrunLocked = false;
-            currentAnchor = defaultShoulderAnchor;
+            currentAnchor = defaultShoulderAnchor;    // Reset to normal shoulder when not wallrunning -_-
         }
     }
 
@@ -93,52 +104,54 @@ public class AimingCameraController : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
 
-        // Pitch clamp
         verticalRotation -= mouseY;
-        verticalRotation = Mathf.Clamp(verticalRotation, -verticalClamp, verticalClamp);
+        verticalRotation = Mathf.Clamp(verticalRotation, -verticalClamp, verticalClamp); // Clamp pitch -_-
 
-        // Clamp player yaw if wallrunning
         if (javelinThrow.IsAiming())
         {
             float nextYaw = playerBody.eulerAngles.y + mouseX;
 
             if (wallrunLocked)
             {
-                float deltaYaw = Mathf.DeltaAngle(baseYaw, nextYaw);
-
-                if (wallOnRight)
-                {
-                    deltaYaw = Mathf.Clamp(deltaYaw, -horizontalClamp, 0); // Clamp left only
-                }
-                else
-                {
-                    deltaYaw = Mathf.Clamp(deltaYaw, 0, horizontalClamp); // Clamp right only
-                }
+                float deltaYaw = Mathf.DeltaAngle(baseYaw, nextYaw); // Difference from locked yaw -_-
+                deltaYaw = wallOnRight
+                    ? Mathf.Clamp(deltaYaw, -horizontalClamp, 0)     // Clamp left only
+                    : Mathf.Clamp(deltaYaw, 0, horizontalClamp);     // Clamp right only
 
                 nextYaw = baseYaw + deltaYaw;
             }
 
-            playerBody.rotation = Quaternion.Euler(0f, nextYaw, 0f);
+            playerBody.rotation = Quaternion.Euler(0f, nextYaw, 0f); // Apply clamped yaw to player body -_-
         }
 
-        // Camera follows player yaw + vertical aim
-        transform.rotation = Quaternion.Euler(verticalRotation, playerBody.eulerAngles.y, 0f);
+        transform.rotation = Quaternion.Euler(verticalRotation, playerBody.eulerAngles.y, 0f); // Pitch + yaw to camera -_-
     }
 
     void SnapToAnchor()
     {
         if (currentAnchor == null) return;
-        transform.position = currentAnchor.position; // No lerp, snappy & clean
+        transform.position = currentAnchor.position;   // Snap camera to current shoulder position -_-
     }
 
     void HandleFOV()
     {
+        if (vCam == null) return;
+
         float targetFOV = javelinThrow.IsAiming() ? aimingFOV : normalFOV;
-        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, targetFOV, Time.unscaledDeltaTime * fovLerpSpeed);
+
+        if (vCam.m_Lens.FieldOfView != targetFOV)
+        {
+            vCam.m_Lens.FieldOfView = Mathf.Lerp(
+                vCam.m_Lens.FieldOfView,
+                targetFOV,
+                Time.unscaledDeltaTime * fovLerpSpeed
+            ); // Smoothly change FOV -_-
+        }
     }
 
     public Camera GetCamera()
     {
-        return cam;
+        return debugRayCamera; // Return the active camera with CinemachineBrain for raycasting -_-
     }
 }
+
