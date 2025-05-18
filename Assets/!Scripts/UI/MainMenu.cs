@@ -1,5 +1,7 @@
+using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,27 +39,30 @@ public class MainMenu : MonoBehaviour
 
 
     //Load Code Below
-    public void LoadGameButton()
-    {
-        string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
 
-        if (string.IsNullOrEmpty(sceneName))
-        {
-            Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
-            return;
-        }
+    //!!!!!!!    SAVE AND LOAD SYSTEM BEING REDONE DELETE THIS CODE OR CHANGE LATER   !!!!!!!
 
-        // Subscribe to sceneLoaded event before loading
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.LoadScene(sceneName);
-    }
+    //public void LoadGameButton()       
+    //{
+    //    string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
+    //    if (string.IsNullOrEmpty(sceneName))
+    //    {
+    //        Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
+    //        return;
+    //    }
 
-        SaveLoadSystem.Load(); // 
-    }
+    //    // Subscribe to sceneLoaded event before loading
+    //    SceneManager.sceneLoaded += OnSceneLoaded;
+    //    SceneManager.LoadScene(sceneName);
+    //}
+
+    //private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    //{
+    //    SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
+
+    //    SaveLoadSystem.Load(); // 
+    //}
 
 
 }
