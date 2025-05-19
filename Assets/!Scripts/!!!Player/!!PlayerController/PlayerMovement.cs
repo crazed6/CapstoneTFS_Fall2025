@@ -40,6 +40,14 @@ public class CharacterController : MonoBehaviour
     public float downwardGravityForce;
     public float downwardForceLerpSpeed;
 
+    [Header("Jump Buffer")]
+    public float jumpBufferTime = 0.15f; // Duration for buffering input
+    private float jumpBufferTimer = -1f; // Timer for jump buffer
+
+    [Header("Coyote Time")]
+    public float coyoteTime = 0.1f; // Optional: Allow jump shortly after leaving ground
+    private float coyoteTimer = 0f; // Timer for coyote time
+
     [Header("Look Around")]
     public Transform cameraHolder;
     public float mouseSensitivity = 300f;
@@ -65,6 +73,8 @@ public class CharacterController : MonoBehaviour
     public Transform playerCameraZRotator; // To be able to rotate the camera on the Z axis without affecting other rotations
     float wallRunStartingSpeed; // The speed that you begin wall running with, will be maintained while you keep wall running
     public float wallrunJumpSpeedBoost = 1.2f;
+    public float wallrunJumpforce;
+    bool jumpPressedThisFrame = false;
 
     bool isWallRunning = false;
     bool onRightWall = false;
@@ -119,56 +129,81 @@ public class CharacterController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         lastPosition = transform.position;
-       
+        wallrunJumpforce = jumpForce * 1.25f;
     }
 
     void Update()
     {
-
         Vector3 forwardDirection = transform.forward;
-        // Update the cooldown timer
+
+        // Update the cooldown timer for sliding
         if (slideCooldownTimer > 0f)
         {
             slideCooldownTimer -= Time.deltaTime;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space)) jumpInitiated = true;
+        // When Space is pressed, set jump buffer timer and flag jumpInitiated
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            jumpBufferTimer = jumpBufferTime;  // Start jump buffer timer
+            jumpInitiated = true;               // Indicate a jump was initiated
+        }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && slideCooldownTimer <= 0f) // Check if cooldown is over
+        // Handle slide input with cooldown
+        if (Input.GetKeyDown(KeyCode.LeftShift) && slideCooldownTimer <= 0f)
         {
             slideInitiated = true;
-            slideCooldownTimer = slideCooldownTime; // Reset the cooldown timer
+            slideCooldownTimer = slideCooldownTime;
         }
 
-        if (Input.GetKeyUp(KeyCode.LeftShift)) StopSliding();
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            StopSliding();
+        }
 
-        //LookUpAndDownWithCamera();
-        RotateBodyHorizontally(); // On Update() so that its smoother
+        // LookUpAndDownWithCamera(); // Uncomment if needed
+        RotateBodyHorizontally();  // Smooth horizontal rotation
         poleVault();
-       
+
         CheckEnemyInCrosshair();
 
+        // Dash if E pressed, and not dashing, wall running or sliding
         if (Input.GetKeyDown(KeyCode.E) && !isDashing && !isWallRunning && !isSliding)
         {
-            DashForward();  // Start the dash
+            DashForward();
         }
-
-
     }
 
     void FixedUpdate()
     {
-        WallRun();
-        Move();
-        Jump();
-        Slide();
-       
+        // Update grounded state first for accurate jump/coyote checks
         SetIsGrounded(bottomCollider.IsColliding);
 
-        // Calculate displacement
-        displacement = (transform.position - lastPosition) * 50; // x50 to get the value per second (50 frames per second)
+        // Decrease jump buffer timer
+        if (jumpBufferTimer > 0)
+            jumpBufferTimer -= Time.fixedDeltaTime;
+
+        // Reset coyote timer if grounded, else decrease it
+        if (isGrounded)
+            coyoteTimer = coyoteTime;
+        else
+            coyoteTimer -= Time.fixedDeltaTime;
+
+        // Call jump logic (consumes jumpBuffer and coyote timers)
+        Jump();
+
+        // Call wall run logic (checks jumpInitiated)
+        WallRun();
+
+        // Movement and sliding
+        Move();
+        Slide();
+
+        // Update displacement and last position for speed tracking
+        displacement = (transform.position - lastPosition) * 50;
         lastPosition = transform.position;
 
+        // Clamp velocity to max speed
         LimitVelocity(maxSpeed);
     }
 
@@ -226,37 +261,33 @@ public class CharacterController : MonoBehaviour
 
     void Jump()
     {
-        if (jumpInitiated)
+        // Only jump if jump buffer active AND coyote time active AND NOT wallrunning
+        if (jumpBufferTimer > 0 && coyoteTimer > 0 && !isWallRunning)
         {
-            jumpInitiated = false;
+            jumpBufferTimer = -1f; // consume jump buffer
+            coyoteTimer = 0f;
 
-            if (!isGrounded) return;
+            // rest of your jump code...
+            isFalling = false;
+            currentDownwardForce = 0f;
 
-            // Using displacement.magnitude as the last speed input
             lastSpeedBeforeTakeoff = displacement.magnitude;
 
-            // Add an upward force to simulate the jump
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
-        // Check if the player is moving upwards or has reached the apex
+        // custom gravity code unchanged
         if (rb.linearVelocity.y <= 0)
         {
-            // Apply downward force once the apex is reached (if we are not already falling)
             if (!isFalling)
-            {
                 isFalling = true;
-            }
 
-            // Lerp the downward gravity force to a target value over time
             currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
-
-            // Apply the lerped downward gravity force
             rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
         }
         else
         {
-            // Before apex, ensure the gravity is normal (zero or upward force)
             isFalling = false;
         }
     }
@@ -279,20 +310,6 @@ public class CharacterController : MonoBehaviour
             rb.linearVelocity = newVelocity;
         }
     }
-
-   // void LookUpAndDownWithCamera()
-    //{
-        // Get mouse input for vertical rotation
-       // float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
-
-        // Update vertical rotation
-       // verticalRotation -= mouseY;
-       // verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
-
-        // Apply vertical rotation to the camera holder
-       // playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
-    //}
-
     void SetIsGrounded(bool state)
     {
         isGrounded = state;
@@ -341,8 +358,10 @@ public class CharacterController : MonoBehaviour
 
         // Move camera down 1 unit
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+
+        //change this so that it squish the collider and pushes into the ground 
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
-        playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
+        playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
         // Add bonus speed
@@ -384,9 +403,9 @@ public class CharacterController : MonoBehaviour
 
     void WallRun()
     {
-        if (jumpInitiated && !isGrounded) // Must initiate jump, be off the ground, ...
+        if (jumpInitiated && !isGrounded)
         {
-            if (isWallRunning) // If already wall running, jump off
+            if (isWallRunning)
             {
                 int directionCount = 1; // Can be up to 3 directions, magnitude can be 1, 1.25, 1.5 depending
 
@@ -406,88 +425,85 @@ public class CharacterController : MonoBehaviour
                     jumpDirection += rightCollider.outHit.normal;
                     directionCount++;
                 }
-
                 else if (Input.GetAxisRaw("Horizontal") > 0 && !onRightWall)
                 {
                     jumpDirection += leftCollider.outHit.normal;
                     directionCount++;
                 }
 
-                // Normalize (otherwise you can artifically buff up speed)
+                // Normalize to prevent artificial speed boost
                 float magnitude = 1 + (directionCount - 1) * 0.25f;
                 jumpDirection = jumpDirection.normalized * magnitude;
 
-                rb.AddForce(jumpDirection * jumpForce, ForceMode.Impulse);
-                
-                rb.linearVelocity  = rb.linearVelocity *  wallrunJumpSpeedBoost;
-                StopWallRunning();
-            }
+                rb.AddForce(jumpDirection * wallrunJumpforce, ForceMode.Impulse);
+                rb.linearVelocity = rb.linearVelocity * wallrunJumpSpeedBoost;
 
-            // Check to see if you can START wall running and if a wall is in range 
-            else 
+                StopWallRunning();
+
+                jumpInitiated = false; // Consume the jump input here
+            }
+            else
             {
-               
+                // Try to start wallrunning if near a wall
                 if (leftCollider.IsColliding) StartWallRunning(false);
                 else if (rightCollider.IsColliding) StartWallRunning(true);
-            }
 
-            jumpInitiated = false;
+                jumpInitiated = false; // Consume the jump input here as well
+            }
         }
 
         if (isWallRunning)
         {
-            
-            //stops wallrun if player is on the ground
+            // Stop wallrun if grounded
             if (isGrounded)
             {
                 StopWallRunning();
                 return;
             }
 
-            //end wallrun if players left and  right raycast are no longer hitting 
+            // Stop wallrun if no walls are detected
             if (!leftCollider.IsColliding && !rightCollider.IsColliding)
             {
                 StopWallRunning();
                 return;
             }
 
-            //*  - THE DIRECITON -
-
-            // determines if there is a wall in range and which side of the player it  is  on 
-            onRightWall = rightCollider.IsColliding; // temp
+            // Determine which wall we are running on
+            onRightWall = rightCollider.IsColliding;
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
-            // find the wall normal to determine direction to appy force to player 
-            Vector3 wallForward = Vector3.Cross(wallNormal,transform.up);
+            // Calculate wall forward direction
+            Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
 
-            // Ensure the forward direction aligns with the player's orientation (aka changing direction while running along the wall)
+            // Align wallForward with player forward direction
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
             {
                 wallForward = -wallForward;
             }
 
-            // Current negative Y velocity
+            // Keep vertical speed component for smooth movement
             float ySpeed = rb.linearVelocity.y;
 
-            // Apply the velocity
+            // Set velocity along the wall
             rb.linearVelocity = wallForward * wallRunStartingSpeed;
 
-            // Threshold?
+            // Stop wallrun if speed too low
             if (rb.linearVelocity.magnitude < keepWallRunningSpeedThreshold)
             {
                 StopWallRunning();
                 return;
             }
 
-            // However negative is the Y speed, half it and add it to the Y speed
-            if (fallWhileWallRunning && ySpeed < 0) rb.linearVelocity += new Vector3(0, ySpeed * 0.75f, 0);
+            // Apply some vertical velocity while wallrunning (simulate slight falling)
+            if (fallWhileWallRunning && ySpeed < 0)
+                rb.linearVelocity += new Vector3(0, ySpeed * 0.75f, 0);
 
-            // Add force TOWARDS the wall
+            // Push player towards the wall
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
-           
         }
     }
+
 
     //initiate our wallrun movement 
     void StartWallRunning(bool rightWall)
