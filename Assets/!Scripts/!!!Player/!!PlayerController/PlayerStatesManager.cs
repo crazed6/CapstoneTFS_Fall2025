@@ -6,6 +6,8 @@ using TMPro;
 
 public class PlayerStatesManager : MonoBehaviour
 {
+    //Jaxson Vignal
+
     public static PlayerStatesManager instance;
 
     // Attach the player script & all the UI elements below in the editor

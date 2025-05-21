@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class CollisionDetectorRaycast : MonoBehaviour
 {
+    //Jaxson Vignal 
+
     public LayerMask detectionLayers; // Select layers from the inspector
     public bool IsColliding { get; private set; }
     public Vector3 rayDirection = Vector3.forward; // Default direction

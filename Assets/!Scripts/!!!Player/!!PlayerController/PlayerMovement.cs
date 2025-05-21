@@ -7,6 +7,9 @@ using Unity.VisualScripting;
 
 public class CharacterController : MonoBehaviour
 {
+
+    //Jaxson Vignal 
+
     //clips through the wall during dash movement assuming its because speed jumps to 500 during dash and colliders cant keep up 
     //player can reattach to same wall need to change that will check for prev wall normal 
     //change slide so that it cant activate in air 
@@ -508,6 +511,7 @@ public class CharacterController : MonoBehaviour
     //initiate our wallrun movement 
     void StartWallRunning(bool rightWall)
     {
+        
         SetIsWallRunning(true);
 
         //disable players gravity (if set that way in inspector)
