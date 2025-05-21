@@ -1,50 +1,49 @@
+//Asad 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ExplodingEnemy : MonoBehaviour
 {
-    // Patrol waypoints
+    // Patrol points
     public Transform[] patrolPoints;
 
-    // Movement speeds
+    // Speeds
     public float patrolSpeed = 2f;
     public float chaseSpeed = 3f;
 
-    // Detection range for chasing the player
+    // Detection
     public float detectionRadius = 5f;
 
-    // Explosion radii
+    // Explosion
     public float innerRadius = 1f;
     public float middleRadius = 2f;
     public float outerRadius = 3f;
-
-    // Damage values
     public float innerDamage = 50f;
     public float middleDamage = 30f;
     public float outerDamage = 15f;
-
-    // Particle effect for explosion
     public ParticleSystem explosionEffect;
 
     [Header("Explosion Timer Settings")]
-    public float outerRadiusTimerStart = 3f;        // Time before explosion when player enters outer radius
-    public float middleRadiusTimeReduction = 0.5f;  // Amount of time reduced if player enters middle radius
+    public float outerRadiusTimerStart = 3f;
+    public float middleRadiusTimeReduction = 0.5f;
 
-    
+    [Header("Knockback Settings")]
+    public float knockbackForce = 10f;
+
+    // Internals
     private Transform player;
     private Rigidbody rb;
     private int currentPointIndex = 0;
     private bool hasExploded = false;
+
     private bool timerStarted = false;
     private float explosionTimer = 0f;
-    private bool middleRadiusReduced = false; // Ensure reduction only happens once
+    private bool middleRadiusReduced = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-
-        // Find player in scene
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
@@ -55,21 +54,18 @@ public class ExplodingEnemy : MonoBehaviour
         if (player == null || hasExploded) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-
-        // Check for explosion triggers based on player distance
         HandleRadiusExplosion(distanceToPlayer);
 
-        // Chase or patrol
         if (distanceToPlayer <= detectionRadius)
         {
             ChasePlayer();
+            FaceDirection((player.position - transform.position).normalized);
         }
         else
         {
             Patrol();
         }
 
-        // Countdown explosion timer
         if (timerStarted && explosionTimer > 0f)
         {
             explosionTimer -= Time.deltaTime;
@@ -80,16 +76,47 @@ public class ExplodingEnemy : MonoBehaviour
         }
     }
 
+    void Patrol()
+    {
+        if (patrolPoints.Length == 0) return;
+
+        Transform targetPoint = patrolPoints[currentPointIndex];
+        Vector3 direction = (targetPoint.position - transform.position).normalized;
+
+        rb.linearVelocity = direction * patrolSpeed;
+        FaceDirection(direction);
+
+        if (Vector3.Distance(transform.position, targetPoint.position) < 0.3f)
+        {
+            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
+        }
+    }
+
+    void ChasePlayer()
+    {
+        if (player == null) return;
+
+        Vector3 direction = (player.position - transform.position).normalized;
+        rb.linearVelocity = direction * chaseSpeed;
+    }
+
+    void FaceDirection(Vector3 direction)
+    {
+        if (direction != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        }
+    }
+
     void HandleRadiusExplosion(float distance)
     {
-        // Player in inner radius? Explode immediately
         if (distance <= innerRadius)
         {
             Explode();
             return;
         }
 
-        // Player in middle radius? Start timer (if not already) and reduce once
         if (distance <= middleRadius)
         {
             if (!timerStarted)
@@ -104,7 +131,6 @@ public class ExplodingEnemy : MonoBehaviour
                 middleRadiusReduced = true;
             }
         }
-        // Player only in outer radius
         else if (distance <= outerRadius)
         {
             if (!timerStarted)
@@ -115,29 +141,6 @@ public class ExplodingEnemy : MonoBehaviour
         }
     }
 
-    void Patrol()
-    {
-        if (patrolPoints.Length == 0) return;
-
-        Transform targetPoint = patrolPoints[currentPointIndex];
-        Vector3 direction = (targetPoint.position - transform.position).normalized;
-
-        rb.linearVelocity = direction * patrolSpeed; // ? FIXED
-
-        if (Vector3.Distance(transform.position, targetPoint.position) < 0.3f)
-        {
-            currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-        }
-    }
-
-    void ChasePlayer()
-    {
-        if (player == null) return;
-
-        Vector3 direction = (player.position - transform.position).normalized;
-        rb.linearVelocity = direction * chaseSpeed; // ? FIXED
-    }
-
     void Explode()
     {
         if (hasExploded) return;
@@ -146,7 +149,6 @@ public class ExplodingEnemy : MonoBehaviour
         Vector3 origin = transform.position;
         HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
 
-        // Apply damage in each radius
         ApplyExplosionDamage(origin, innerRadius, innerDamage, alreadyDamaged);
         ApplyExplosionDamage(origin, middleRadius, middleDamage, alreadyDamaged);
         ApplyExplosionDamage(origin, outerRadius, outerDamage, alreadyDamaged);
@@ -164,15 +166,27 @@ public class ExplodingEnemy : MonoBehaviour
         {
             if (alreadyDamaged.Contains(hit)) continue;
 
+            // Knockback direction = away from explosion center
+            Vector3 knockbackDir = (hit.transform.position - position).normalized;
+            float distance = Vector3.Distance(position, hit.transform.position);
+            float distanceFactor = 1f - Mathf.Clamp01(distance / radius); // 1 when close, 0 when at edge
+
+            Rigidbody targetRb = hit.attachedRigidbody;
+            if (targetRb != null)
+            {
+                float finalForce = knockbackForce * distanceFactor;
+                targetRb.AddForce(knockbackDir * finalForce, ForceMode.Impulse);
+            }
+
             if (hit.CompareTag("Player"))
             {
                 // NEEDS TO BE LOOKED AT MIGHT BE BROKEN NEED TO BE UPDATED TO NEW PLAYER HEALTH SYSTEM
-                PlayerHealth health = hit.GetComponent<PlayerHealth>() ?? hit.GetComponentInParent<PlayerHealth>();
+                /*PlayerHealth health = hit.GetComponent<PlayerHealth>() ?? hit.GetComponentInParent<PlayerHealth>();
                 if (health != null)
                 {
                     health.TakeDamage(damage);
                     alreadyDamaged.Add(hit);
-                }
+                }*/
             }
         }
     }
