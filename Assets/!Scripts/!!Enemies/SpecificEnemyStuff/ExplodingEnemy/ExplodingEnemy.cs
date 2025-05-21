@@ -180,12 +180,12 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 // NEEDS TO BE LOOKED AT MIGHT BE BROKEN NEED TO BE UPDATED TO NEW PLAYER HEALTH SYSTEM
-                PlayerHealth health = hit.GetComponent<PlayerHealth>() ?? hit.GetComponentInParent<PlayerHealth>();
+                /*PlayerHealth health = hit.GetComponent<PlayerHealth>() ?? hit.GetComponentInParent<PlayerHealth>();
                 if (health != null)
                 {
                     health.TakeDamage(damage);
                     alreadyDamaged.Add(hit);
-                }
+                }*/
             }
         }
     }
