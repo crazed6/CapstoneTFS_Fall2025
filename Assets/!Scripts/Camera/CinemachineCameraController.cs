@@ -8,6 +8,7 @@ public class CinemachineCameraController : MonoBehaviour
     public Transform cameraFollowTarget;     // Pivot used for horizontal movement (usually player root or pivot)
     public Transform lookAtTarget;           // This is the target the camera aims at
     public Transform playerTransform;
+    public Transform cameraPivot;
 
     [Header("Camera Offsets")]
     public Vector3 defaultOffset = new Vector3(0, 4f, -8f);
@@ -26,8 +27,9 @@ public class CinemachineCameraController : MonoBehaviour
     public float verticalLookSpeed = 100f;
 
     [Header("Vertical Look Clamp")]
-    public float verticalMinOffset = -2f;
-    public float verticalMaxOffset = 2f;
+    public float verticalMinAngle = -25f;
+    public float verticalMaxAngle = 45f;
+    private float verticalAngle = 0f;
 
     private CinemachineTransposer transposer;
     private Vector3 targetOffset;
@@ -72,14 +74,14 @@ public class CinemachineCameraController : MonoBehaviour
     private void HandleVerticalLook()
     {
         float mouseY = Input.GetAxis("Mouse Y") * verticalLookSpeed * Time.deltaTime;
-        verticalOffset -= mouseY;
-        verticalOffset = Mathf.Clamp(verticalOffset, verticalMinOffset, verticalMaxOffset);
 
-        if (lookAtTarget != null)
+        verticalAngle -= mouseY;
+        verticalAngle = Mathf.Clamp(verticalAngle, verticalMinAngle, verticalMaxAngle);
+
+        if (cameraPivot != null)
         {
-            Vector3 newLocalPos = lookAtTarget.localPosition;
-            newLocalPos.y = verticalOffset;
-            lookAtTarget.localPosition = newLocalPos;
+            cameraPivot.localEulerAngles = new Vector3(verticalAngle, 0f, 0f);
+            Debug.Log($"Vertical Look Angle: {verticalAngle}");
         }
     }
 
