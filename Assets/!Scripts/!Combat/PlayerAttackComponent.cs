@@ -53,7 +53,7 @@ public class PlayerAttackComponent : MonoBehaviour
             float speed = playerRB != null ? playerRB.linearVelocity.magnitude : 0f;
             float dashDamage = DamageCalculator.CalculateDamage(speed);
             enemy.TakeDamage(dashDamage, gameObject);
-            Debug.Log($"[ATTACK] Applied dash damage: {dashDamage}");
+            Debug.LogError($"[ATTACK] Applied dash damage: {dashDamage}");
 
             //if (anim != null)
             //    anim.SetTrigger("DashAttack"); //Trigger dash attack animation
@@ -71,7 +71,7 @@ public class PlayerAttackComponent : MonoBehaviour
             { 
             float javelinDamage = DamageCalculator.GetJavelinDamage();
             enemy.TakeDamage(javelinDamage, gameObject);
-            Debug.Log($"[ATTACK] Applied javelin damage: {javelinDamage}");
+            Debug.LogError($"[ATTACK] Applied javelin damage: {javelinDamage}");
 
             //if (anim != null)
             //    anim.SetTrigger("JavelinThrow"); //Trigger javelin throw animation
@@ -90,7 +90,7 @@ public class PlayerAttackComponent : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, attackRange, Enemy))
         {
-            Debug.Log($"[RAYCAST] Hit: {hit.collider.name}");
+            
             return hit.collider.GetComponentInParent<EnemyDamageComponent>();
         }
 
