@@ -13,8 +13,8 @@ public class PlayerAttackComponent : MonoBehaviour
     public float javelinCooldown = 1.5f;
 
     [Header("Attack Settings")]
-    public float attackRange = 3.0f; //need to test this
-    public LayerMask enemyLayer; //Layer mask to filter for enemies
+    public float attackRange = 10.0f; //need to test this
+    public LayerMask Enemy; //Layer mask to filter for enemies
 
     private float lastDashTime = -Mathf.Infinity;
     private float lastJavelinTime = -Mathf.Infinity;
@@ -43,10 +43,9 @@ public class PlayerAttackComponent : MonoBehaviour
 
     private void Update()
     {
-        
         //Right click: Dash Attack
-        if (Input.GetMouseButtonDown(1) && Time.deltaTime >= lastDashTime + dashCooldown)
-        {
+        if (Input.GetMouseButtonDown(1) && Time.time >= lastDashTime + dashCooldown)
+        {       
             EnemyDamageComponent enemy = RaycastForEnemy();
             
             if(enemy != null)
@@ -59,12 +58,12 @@ public class PlayerAttackComponent : MonoBehaviour
             //if (anim != null)
             //    anim.SetTrigger("DashAttack"); //Trigger dash attack animation
 
-            lastDashTime = Time.deltaTime; //Reset cooldown timer
+            lastDashTime = Time.time; //Reset cooldown timer
             }
         }
 
         //Left click: Javelin Throw
-        if (Input.GetKeyDown(0) && Time.deltaTime >= lastJavelinTime + javelinCooldown)
+        if (Input.GetMouseButtonDown(0) && Time.time >= lastJavelinTime + javelinCooldown)
         {
             EnemyDamageComponent enemy = RaycastForEnemy();
 
@@ -77,22 +76,23 @@ public class PlayerAttackComponent : MonoBehaviour
             //if (anim != null)
             //    anim.SetTrigger("JavelinThrow"); //Trigger javelin throw animation
 
-            lastJavelinTime = Time.deltaTime; //Reset cooldown timer
+            lastJavelinTime = Time.time; //Reset cooldown timer
             }
         }
     }
 
     private EnemyDamageComponent RaycastForEnemy()
     {
+        Debug.DrawRay(transform.position + Vector3.up, transform.forward * attackRange, Color.cyan, 2.0f);
+
         Ray ray = new Ray(transform.position + Vector3.up * 1f, transform.forward);
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, attackRange, enemyLayer))
+        if (Physics.Raycast(ray, out hit, attackRange, Enemy))
         {
-            return hit.collider.GetComponent<EnemyDamageComponent>();
+            Debug.Log($"[RAYCAST] Hit: {hit.collider.name}");
+            return hit.collider.GetComponentInParent<EnemyDamageComponent>();
         }
-
-        Debug.DrawRay(transform.position + Vector3.up, transform.forward * attackRange, Color.cyan);
 
         return null;
     }
