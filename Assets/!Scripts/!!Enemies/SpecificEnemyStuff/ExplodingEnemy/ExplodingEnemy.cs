@@ -1,21 +1,14 @@
-//Asad 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ExplodingEnemy : MonoBehaviour
 {
-    // Patrol points
     public Transform[] patrolPoints;
-
-    // Speeds
     public float patrolSpeed = 2f;
     public float chaseSpeed = 3f;
-
-    // Detection
     public float detectionRadius = 5f;
 
-    // Explosion
     public float innerRadius = 1f;
     public float middleRadius = 2f;
     public float outerRadius = 3f;
@@ -31,7 +24,11 @@ public class ExplodingEnemy : MonoBehaviour
     [Header("Knockback Settings")]
     public float knockbackForce = 10f;
 
-    // Internals
+    [Header("Avoidance Settings")]
+    public float avoidanceRadius = 2f;
+    public LayerMask obstacleMask;
+    public float avoidanceStrength = 5f;
+
     private Transform player;
     private Rigidbody rb;
     private int currentPointIndex = 0;
@@ -41,25 +38,52 @@ public class ExplodingEnemy : MonoBehaviour
     private float explosionTimer = 0f;
     private bool middleRadiusReduced = false;
 
+    private float patrolYLevel;
+    private bool isLingering = false;
+    private Linger lingerScript;
+
+    // Last known position
+    private Vector3 lastKnownPlayerPosition;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
+
+        if (patrolPoints.Length > 0)
+            patrolYLevel = patrolPoints[0].position.y;
+
+        lingerScript = GetComponent<Linger>();
+        if (lingerScript != null)
+            lingerScript.enabled = false;
     }
 
     void Update()
     {
-        if (player == null || hasExploded) return;
+        if (player == null || hasExploded || isLingering) return;
+
+        if (transform.position.y < (patrolYLevel - 5f) || transform.position.y > (patrolYLevel + 5f))
+        {
+            EnterLingerMode();
+            return;
+        }
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         HandleRadiusExplosion(distanceToPlayer);
 
         if (distanceToPlayer <= detectionRadius)
         {
-            ChasePlayer();
-            FaceDirection((player.position - transform.position).normalized);
+            lastKnownPlayerPosition = player.position; // Lock in
+
+            Vector3 dirToPlayer = (player.position - transform.position).normalized;
+            Vector3 avoidanceDir = GetAvoidanceDirection(dirToPlayer);
+            Vector3 finalDir = (dirToPlayer + avoidanceDir * avoidanceStrength).normalized;
+
+            rb.linearVelocity = finalDir * chaseSpeed;
+            FaceDirection(finalDir);
         }
         else
         {
@@ -90,14 +114,6 @@ public class ExplodingEnemy : MonoBehaviour
         {
             currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
         }
-    }
-
-    void ChasePlayer()
-    {
-        if (player == null) return;
-
-        Vector3 direction = (player.position - transform.position).normalized;
-        rb.linearVelocity = direction * chaseSpeed;
     }
 
     void FaceDirection(Vector3 direction)
@@ -166,10 +182,9 @@ public class ExplodingEnemy : MonoBehaviour
         {
             if (alreadyDamaged.Contains(hit)) continue;
 
-            // Knockback direction = away from explosion center
             Vector3 knockbackDir = (hit.transform.position - position).normalized;
             float distance = Vector3.Distance(position, hit.transform.position);
-            float distanceFactor = 1f - Mathf.Clamp01(distance / radius); // 1 when close, 0 when at edge
+            float distanceFactor = 1f - Mathf.Clamp01(distance / radius);
 
             Rigidbody targetRb = hit.attachedRigidbody;
             if (targetRb != null)
@@ -180,14 +195,34 @@ public class ExplodingEnemy : MonoBehaviour
 
             if (hit.CompareTag("Player"))
             {
-                // NEEDS TO BE LOOKED AT MIGHT BE BROKEN NEED TO BE UPDATED TO NEW PLAYER HEALTH SYSTEM
-                /*PlayerHealth health = hit.GetComponent<PlayerHealth>() ?? hit.GetComponentInParent<PlayerHealth>();
-                if (health != null)
-                {
-                    health.TakeDamage(damage);
-                    alreadyDamaged.Add(hit);
-                }*/
+                // Player damage logic
             }
+
+            alreadyDamaged.Add(hit);
+        }
+    }
+
+    Vector3 GetAvoidanceDirection(Vector3 moveDir)
+    {
+        Ray ray = new Ray(transform.position, moveDir);
+        if (Physics.SphereCast(ray, avoidanceRadius, out RaycastHit hit, avoidanceRadius * 2f, obstacleMask))
+        {
+            Vector3 awayFromObstacle = Vector3.Reflect(moveDir, hit.normal);
+            return awayFromObstacle.normalized;
+        }
+        return Vector3.zero;
+    }
+
+    void EnterLingerMode()
+    {
+        isLingering = true;
+        rb.linearVelocity = Vector3.zero;
+
+        if (lingerScript != null)
+        {
+            lingerScript.targetPosition = lastKnownPlayerPosition;
+            lingerScript.enabled = true;
+            rb.isKinematic = false; // Enable physics before launch
         }
     }
 
@@ -204,5 +239,8 @@ public class ExplodingEnemy : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, outerRadius);
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, avoidanceRadius);
     }
 }
