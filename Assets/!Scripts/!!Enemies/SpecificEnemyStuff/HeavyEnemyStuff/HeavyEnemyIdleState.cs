@@ -2,21 +2,23 @@ using UnityEngine;
 
 public class HeavyEnemyIdleState : IHeavyEnemyState
 {
-    private HeavyEnemyAI enemy;
+    private readonly HeavyEnemyAI enemy;
 
-    public HeavyEnemyIdleState(HeavyEnemyAI enemy) { this.enemy = enemy; }
+    public HeavyEnemyIdleState(HeavyEnemyAI enemy)
+    {
+        this.enemy = enemy;
+    }
 
     public void Enter()
     {
         Debug.Log("Entered Idle State");
-        enemy.StopTracking();
+        enemy.StopTracking(); // Stops async process if running
     }
 
     public void Execute()
     {
         float playerDistance = Vector3.Distance(enemy.transform.position, enemy.player.position);
 
-        //  Only detect player if they are inside `detectionRange` again -_-
         if (playerDistance <= enemy.detectionRange && enemy.CanSeePlayer())
         {
             Debug.Log("Player detected! Switching to Shooting State.");
@@ -24,11 +26,13 @@ public class HeavyEnemyIdleState : IHeavyEnemyState
         }
         else
         {
-            //  Rotate back to original rotation -_-
-            enemy.transform.rotation = Quaternion.Slerp(enemy.transform.rotation, enemy.originalRotation, Time.deltaTime * enemy.rotationSpeed);
+            enemy.transform.rotation = Quaternion.Slerp(
+                enemy.transform.rotation,
+                enemy.originalRotation,
+                Time.deltaTime * enemy.rotationSpeed
+            );
         }
     }
-
 
     public void Exit()
     {
