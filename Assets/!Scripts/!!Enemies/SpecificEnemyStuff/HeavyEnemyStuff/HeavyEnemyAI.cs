@@ -45,10 +45,7 @@ public class HeavyEnemyAI : MonoBehaviour
     private bool isTracking = false;
     private Vector3 lockedTarget;
 
-    //Health UI
-    public int maxHealth = 75; //Set maxhealth for Splitter
-    private int currentHealth;
-    public HealthBar healthBar; //Reference to  UI health prefab
+    //JK - removing healthbar stuff to avoid conflict with damage component
 
     [Header("Temp Damage DeBug")] // DELETE WHEN OTHER STUFF ADDED
     public float damageAmount = 10f;
@@ -58,36 +55,33 @@ public class HeavyEnemyAI : MonoBehaviour
         stateMachine = new HeavyEnemyStateMachine();
         stateMachine.ChangeState(new HeavyEnemyIdleState(this));  // Start in idle -_-
         originalRotation = transform.rotation;
-
-        //Initialize health
-        currentHealth = maxHealth;
-        healthBar.SetHealth(1f);
     }
 
     private void Update()
     {
         stateMachine.Execute();
 
-        if (Input.GetMouseButtonDown(0)) // 0 means left mouse button  DELETE WHEN DAMAGE SYSTEM IMPLEMENTED
-        {
-            // Raycast from the camera to where the mouse is pointing
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+        //if (Input.GetMouseButtonDown(0)) // 0 means left mouse button  DELETE WHEN DAMAGE SYSTEM IMPLEMENTED
+        //JK - THIS TO BE DELETED, ALMOST HAVE DAMAGE SYSTEM
+        //{
+        //    // Raycast from the camera to where the mouse is pointing
+        //    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        //    RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit))
-            {
-                // Check if the raycast hits this enemy
-                if (hit.collider.CompareTag("Enemy"))
-                {
-                    // Call TakeDamage() on the enemy that was clicked
-                    HeavyEnemyAI enemy = hit.collider.GetComponent<HeavyEnemyAI>();
-                    if (enemy != null)
-                    {
-                        enemy.TakeDamage((int)damageAmount);
-                    }
-                }
-            }
-        }
+        //    if (Physics.Raycast(ray, out hit))
+        //    {
+        //        // Check if the raycast hits this enemy
+        //        if (hit.collider.CompareTag("Enemy"))
+        //        {
+        //            // Call TakeDamage() on the enemy that was clicked
+        //            HeavyEnemyAI enemy = hit.collider.GetComponent<HeavyEnemyAI>();
+        //            if (enemy != null)
+        //            {
+        //                enemy.TakeDamage((int)damageAmount);
+        //            }
+        //        }
+        //    }
+        //}
     }
 
     public bool CanSeePlayer()
@@ -231,25 +225,21 @@ public class HeavyEnemyAI : MonoBehaviour
         rockScript.Launch(target, shootSpeed, trajectoryHeight);
     }
 
-    public void TakeDamage(int damageAmount)
-    {
-        currentHealth -= damageAmount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); //Update health bar -JK
+    //JK - removing health bar stuff to avoid conflict with damage component
+    //public void TakeDamage(int damageAmount)
+    //{
+    //    currentHealth -= damageAmount;
+    //    currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); //Update health bar -JK
 
-        if (healthBar != null)
-        {
-            healthBar.SetHealth((float)currentHealth / maxHealth);
-        }
+    //    if (healthBar != null)
+    //    {
+    //        healthBar.SetHealth((float)currentHealth / maxHealth);
+    //    }
 
-        if (currentHealth <= 0)
-        {
-            Invoke(nameof(DestroyObject), 0.5f);
-            Debug.Log(gameObject.name + " is dead!");
-        }
-    }
-
-    private void DestroyObject()
-    {
-        Destroy(gameObject);
-    }
+    //    if (currentHealth <= 0)
+    //    {
+    //        Invoke(nameof(DestroyObject), 0.5f);
+    //        Debug.Log(gameObject.name + " is dead!");
+    //    }
+    //}
 }

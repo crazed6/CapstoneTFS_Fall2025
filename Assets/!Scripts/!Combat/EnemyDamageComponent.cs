@@ -12,7 +12,8 @@ public class EnemyDamageComponent : MonoBehaviour
 
     [Header("Health UI")]
     public HealthBar healthBar;
-    public float hideDelay = 3.0f; //Delay before hiding the health bar
+    public float hideDelay = 15.0f; //Delay before hiding the health bar
+    public float timeSinceLastDamage = 0f; //Time since last damage taken
 
     private Coroutine hideHealthBar;
 
@@ -46,6 +47,8 @@ public class EnemyDamageComponent : MonoBehaviour
 
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        timeSinceLastDamage = 0f; //Reset timer on damage taken
 
         Debug.Log($"{gameObject.name} took {damage} damage from {source?.name ?? "Unknown"} | HP: {currentHealth}/{maxHealth}");
 
@@ -94,28 +97,28 @@ public class EnemyDamageComponent : MonoBehaviour
             float normalized = currentHealth / maxHealth;
             healthBar.SetHealth(normalized);
 
-            bool shouldShow = currentHealth < maxHealth && currentHealth > 0;
+            //bool shouldShow = currentHealth < maxHealth && currentHealth > 0;
+            float hideHealthDuration = 5f;
+            timeSinceLastDamage += Time.deltaTime;
+            Debug.LogWarning($"Time since last damage: {timeSinceLastDamage}s");
 
-            if (shouldShow)
+            if (timeSinceLastDamage >= hideHealthDuration)
             {
-                healthBar.gameObject.SetActive(true);
-
-                if (hideHealthBar != null)
-                    StopCoroutine(hideHealthBar);
-
-                hideHealthBar = StartCoroutine(HideHealthBarAfterDelay(hideDelay));
+                healthBar.gameObject.SetActive(false);
+                Debug.LogWarning("Hiding health bar");
             }
             else
             {
-                healthBar.gameObject.SetActive(false);
+                healthBar.gameObject.SetActive(true);
+                Debug.LogWarning("Showing health bar");
             }
         }
     }
 
-    private IEnumerator HideHealthBarAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        if (healthBar != null && currentHealth > 0) healthBar.gameObject.SetActive(false);
-    }
+    //private IEnumerator HideHealthBarAfterDelay(float delay)
+    //{
+    //    yield return new WaitForSeconds(delay);
+    //    if (healthBar != null && currentHealth > 0) healthBar.gameObject.SetActive(false);
+    //}
 
 }

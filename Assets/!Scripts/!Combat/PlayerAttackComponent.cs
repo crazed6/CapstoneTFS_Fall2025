@@ -44,7 +44,7 @@ public class PlayerAttackComponent : MonoBehaviour
     private void Update()
     {
         //Right click: Dash Attack
-        if (Input.GetMouseButtonDown(1) && Time.time >= lastDashTime + dashCooldown)
+        if (Input.GetMouseButtonDown(0) && Time.time >= lastDashTime + dashCooldown) //0 means left mouse button
         {       
             EnemyDamageComponent enemy = RaycastForEnemy();
             
@@ -63,7 +63,7 @@ public class PlayerAttackComponent : MonoBehaviour
         }
 
         //Left click: Javelin Throw
-        if (Input.GetMouseButtonDown(0) && Time.time >= lastJavelinTime + javelinCooldown)
+        if (Input.GetMouseButtonDown(1) && Time.time >= lastJavelinTime + javelinCooldown) //1 means right mouse button
         {
             EnemyDamageComponent enemy = RaycastForEnemy();
 
