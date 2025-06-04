@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class HealthBar : MonoBehaviour
     }
     private void Update()
     {
-        
+        FaceCamera();
     }
 
     //Directly sets health value without interpolation
@@ -58,7 +59,17 @@ public class HealthBar : MonoBehaviour
         }
     }
 
-    
+    // Makes the health bar face the camera
+    private void FaceCamera()
+    {
+        if (Camera.main == null) return;
+
+        Vector3 direction = Camera.main.transform.position - transform.position;
+        direction.y = 0f; //Lock vertical rotation
+        transform.rotation = Quaternion.LookRotation(-direction);
+    }
+
+    //Health bar blinks red when low health
     private IEnumerator BlinkRedEffect()
     {
         while (true)
