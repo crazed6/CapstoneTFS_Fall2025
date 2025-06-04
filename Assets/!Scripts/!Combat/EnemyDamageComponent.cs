@@ -24,7 +24,25 @@ public class EnemyDamageComponent : MonoBehaviour
     //public string hurtTrigger = "TakeDamage";
     //public string dieTrigger = "Die";
 
-    void Awake()
+
+    private void Update()
+    {
+        if (healthBar != null && currentHealth < maxHealth && currentHealth > 0)
+        {
+            timeSinceLastDamage += Time.deltaTime;
+
+            if (timeSinceLastDamage >= hideDelay)
+            {
+                if(healthBar.gameObject.activeSelf)
+                {
+                    healthBar.gameObject.SetActive(false);
+                    Debug.LogWarning("Hiding health bar after delay");
+                }
+            }
+        }
+    }
+
+    private void Awake()
     { 
         currentHealth = maxHealth;
 
@@ -97,17 +115,8 @@ public class EnemyDamageComponent : MonoBehaviour
             float normalized = currentHealth / maxHealth;
             healthBar.SetHealth(normalized);
 
-            //bool shouldShow = currentHealth < maxHealth && currentHealth > 0;
-            float hideHealthDuration = 5f;
-            timeSinceLastDamage += Time.deltaTime;
-            Debug.LogWarning($"Time since last damage: {timeSinceLastDamage}s");
-
-            if (timeSinceLastDamage >= hideHealthDuration)
-            {
-                healthBar.gameObject.SetActive(false);
-                Debug.LogWarning("Hiding health bar");
-            }
-            else
+            //Show health bar if not already visible
+            if (!healthBar.gameObject.activeSelf && currentHealth > 0 && currentHealth < maxHealth)
             {
                 healthBar.gameObject.SetActive(true);
                 Debug.LogWarning("Showing health bar");

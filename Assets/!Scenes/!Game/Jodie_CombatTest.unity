@@ -3452,6 +3452,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 573915905262775102, guid: dd7a6f48b65b86c4ba43c4a5805bd219, type: 3}
+      propertyPath: hideDelay
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 573915905262775102, guid: dd7a6f48b65b86c4ba43c4a5805bd219, type: 3}
+      propertyPath: maxHealth
+      value: 200
+      objectReference: {fileID: 0}
     - target: {fileID: 2469733057374808176, guid: dd7a6f48b65b86c4ba43c4a5805bd219, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -20434,9 +20442,17 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 722242096901133265, guid: 2bb5fd8b79480dd4ab6edae1616c242a, type: 3}
+      propertyPath: hideDelay
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 1085235583356862916, guid: 2bb5fd8b79480dd4ab6edae1616c242a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3857311426102163413, guid: 2bb5fd8b79480dd4ab6edae1616c242a, type: 3}
+      propertyPath: m_Name
+      value: HealthBarPrefab
       objectReference: {fileID: 0}
     - target: {fileID: 4595776990284096356, guid: 2bb5fd8b79480dd4ab6edae1616c242a, type: 3}
       propertyPath: m_Name
