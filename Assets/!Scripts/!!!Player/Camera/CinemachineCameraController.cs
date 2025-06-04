@@ -3,6 +3,7 @@ using Cinemachine;
 
 public class CinemachineCameraController : MonoBehaviour
 {
+    
     [Header("References")]
     public CinemachineVirtualCamera vCam;
     public Transform cameraFollowTarget;     // Pivot used for horizontal movement (usually player root or pivot)
