@@ -13,12 +13,12 @@ public class MainMenu : MonoBehaviour
     }
     public void PlayGame() //method to start the first game scene
     {
-        SceneManager.LoadSceneAsync("BuildTesting"); //Replace SampleScene with the name of the first game scene 
+        SceneManager.LoadSceneAsync("tut"); //Replace SampleScene with the name of the first game scene 
         SoundManager.Instance.PlayBGM(2);
     }
     public void Settings() //method to start the first game scene
     {
-        SceneManager.LoadSceneAsync("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
+        SceneManager.LoadSceneAsync("Kaylani_SettingsMenu"); //Replace SampleScene with the name of the first game scene 
         SoundManager.Instance.PlayBGM(1);
     }
 
