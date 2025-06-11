@@ -1,7 +1,6 @@
 //Ritwik
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerJavelinThrow : MonoBehaviour
 {
