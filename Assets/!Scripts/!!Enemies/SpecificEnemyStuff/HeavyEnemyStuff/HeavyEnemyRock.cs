@@ -20,6 +20,11 @@ public class HeavyEnemyRock : MonoBehaviour
     private Vector3 peakPoint;
     private float flightTime;
 
+    //Declared Variable
+    //Josh testing
+    public DamageProfile RockShoot; // Reference to the damage profile for explosion damage
+    //Josh testing end
+
     public void Launch(Vector3 target, float speed, float height)
     {
         startPoint = transform.position;
@@ -73,11 +78,20 @@ public class HeavyEnemyRock : MonoBehaviour
             {
                 Debug.Log("Player hit by rock explosion!");
 
-                PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
+                //PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
+                //if (playerHealth != null)
+                //{
+                //    playerHealth.TakeDamage(damage);
+                //}
+
+                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && RockShoot != null)
                 {
-                    playerHealth.TakeDamage(damage);
+                    DamageData damageData = new DamageData(gameObject, RockShoot);
+                    playerHealth.TakeDamage(damageData);
                 }
+                //Josh script end
 
                 Rigidbody rb = hit.GetComponent<Rigidbody>();
                 if (rb != null)

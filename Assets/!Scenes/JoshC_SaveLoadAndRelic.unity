@@ -1443,7 +1443,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 898207522}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CheckpointSystem, Assembly-CSharp
         m_MethodName: HideCheckpointPanel
         m_Mode: 1
@@ -2347,7 +2347,7 @@ PrefabInstance:
     - target: {fileID: 5944527154247574494, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: CheckpointSystem
       value: 
-      objectReference: {fileID: 898207522}
+      objectReference: {fileID: 0}
     - target: {fileID: 6482197012055863319, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: m_Name
       value: PlayerAidenRitwik
@@ -2406,19 +2406,8 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6482197012055863319, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 898207530}
+      addedObject: {fileID: 898207525}
   m_SourcePrefab: {fileID: 100100000, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
---- !u!114 &898207522 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7628271712958233617, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
-  m_PrefabInstance: {fileID: 898207521}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 538331073}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &898207523 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7601121040537391273, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
@@ -2435,7 +2424,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f3f05b7a13f4a7438c3da47840e3e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &898207530
+--- !u!114 &898207525
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2444,14 +2433,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 538331073}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fb956e577b3d7b9418d843ce3ef07779, type: 3}
+  m_Script: {fileID: 11500000, guid: b207c8cddc7ddfa43a23b8f9154c4f70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rockDamage: 1
-  heavyMeleeDamage: 70
-  minorExplosionDamage: 20
-  mediumExplosionDamage: 50
-  majorExplosionDamage: 100
+  damageAmount: 10
+  maxHealth: 100
+  CheckpointSystem: {fileID: 0}
+  regenerationDelay: 5
+  regenerationAmount: 1
+  regenerationInterval: 1
+  invincibilityDuration: 10
+  attackProfile: {fileID: 0}
 --- !u!1 &899311438
 GameObject:
   m_ObjectHideFlags: 0
@@ -5035,6 +5027,10 @@ PrefabInstance:
     - target: {fileID: 5626978083835023484, guid: dd7a6f48b65b86c4ba43c4a5805bd219, type: 3}
       propertyPath: m_Name
       value: HeavyEnemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 7291015009664483351, guid: dd7a6f48b65b86c4ba43c4a5805bd219, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
