@@ -45,6 +45,11 @@ public class ExplodingEnemy : MonoBehaviour
     // Last known position
     private Vector3 lastKnownPlayerPosition;
 
+    //Declared Variable
+    //Josh testing
+    public DamageProfile explosionDamageProfile; // Reference to the damage profile for explosion damage
+    //Josh testing end
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -196,6 +201,17 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 // Player damage logic
+
+                //Josh Code, ensure to attach Relevant Damage Profile within inspector
+                DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
+                Health health = hit.GetComponent<Health>();
+                if (damageReceiver != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
+                    health.TakeDamage(damageData);
+                    alreadyDamaged.Add(hit);
+                }
+                //Josh Code end
             }
 
             alreadyDamaged.Add(hit);
