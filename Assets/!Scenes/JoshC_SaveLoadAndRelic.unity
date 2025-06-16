@@ -2407,6 +2407,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6482197012055863319, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 898207525}
+    - targetCorrespondingSourceObject: {fileID: 6482197012055863319, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 898207526}
   m_SourcePrefab: {fileID: 100100000, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
 --- !u!4 &898207523 stripped
 Transform:
@@ -2444,6 +2447,20 @@ MonoBehaviour:
   regenerationInterval: 1
   invincibilityDuration: 10
   attackProfile: {fileID: 0}
+--- !u!114 &898207526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538331073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 898207524}
+  checkpointPanel: {fileID: 151606597}
 --- !u!1 &899311438
 GameObject:
   m_ObjectHideFlags: 0
