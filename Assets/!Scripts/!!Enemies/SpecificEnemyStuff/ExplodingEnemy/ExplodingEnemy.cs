@@ -52,6 +52,14 @@ public class ExplodingEnemy : MonoBehaviour
     private Vector3 lastKnownPlayerPosition = Vector3.zero;
     private bool hasDetectedPlayer = false;
 
+    //Declared Variable
+    //Josh testing
+    public DamageProfile InnerRadiusExplosion; // Reference to the damage profile for explosion damage
+    public DamageProfile MiddleRadiusExplosion;
+    public DamageProfile OuterRadiusExplosion;
+    public DamageProfile GeneralExplosion; // General explosion damage profile
+    //Josh testing end
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -251,6 +259,15 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 Debug.Log($"Player hit by explosion for {damage} damage");
+
+                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && GeneralExplosion != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, GeneralExplosion);
+                    playerHealth.TakeDamage(damageData);
+                }
+                //Josh script end
             }
 
             alreadyDamaged.Add(hit);
