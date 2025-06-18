@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3253736840830334020}
   - component: {fileID: 5294152006194088198}
   - component: {fileID: 2732527358034909898}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 5204671151538287465}
   - component: {fileID: 6521171603070533924}
   - component: {fileID: 2730253375745856468}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FaceVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -245,7 +245,7 @@ GameObject:
   m_Component:
   - component: {fileID: 823624357090983258}
   - component: {fileID: 604212597335304732}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: BottomRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -260,7 +260,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 970170682976322914}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.01969242, y: 0.74414927, z: -0.40735334, w: 0.52907217}
+  m_LocalRotation: {x: 0.03719054, y: -0.013587227, z: 0.007437761, w: 0.9991882}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -324,7 +324,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8980465596529924018}
   - component: {fileID: 4929291174347947336}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Left Raycast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -374,7 +374,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8583414164980931170}
   - component: {fileID: 6321625491740563247}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Right Ray Cast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -427,7 +427,7 @@ GameObject:
   - component: {fileID: 4966184025789951506}
   - component: {fileID: 6474273481013294604}
   - component: {fileID: 6414220731907545993}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -442,8 +442,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1621327625013060536}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00035999066, y: 0.95373803, z: -0.30063668, w: -0.0011420323}
-  m_LocalPosition: {x: -53.388027, y: 23.483982, z: -30.649982}
+  m_LocalRotation: {x: 0.30060083, y: -0.014773194, z: 0.004656797, w: 0.95362425}
+  m_LocalPosition: {x: 0.15488012, y: 2.9239829, z: -5.297633}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -579,7 +579,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  m_CustomBlends: {fileID: 0}
+  m_CustomBlends: {fileID: 11400000, guid: 453b3c2884b8e9341b7343d11ef7b23a, type: 2}
   m_CameraCutEvent:
     m_PersistentCalls:
       m_Calls: []
@@ -595,7 +595,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7839706325088397365}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: camera Z rotation
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -629,7 +629,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7461283314920685786}
   - component: {fileID: 4299784897571589110}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: MiddleRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -644,8 +644,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1815547366588149219}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.029287321, y: 0.7366369, z: -0.42078623, w: 0.5286279}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.055311132, y: -0.013450059, z: 0.0076830285, w: 0.998349}
+  m_LocalPosition: {x: 0.00000011920929, y: -0.0000017059847, z: -0.000003411969}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -710,7 +710,7 @@ GameObject:
   - component: {fileID: 2624744066193918935}
   - component: {fileID: 4395224711976828412}
   - component: {fileID: 5952879245867915910}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: 3rdPersonCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -726,7 +726,7 @@ Transform:
   m_GameObject: {fileID: 2083457131186737087}
   serializedVersion: 2
   m_LocalRotation: {x: 0.22975294, y: 0, z: 0, w: 0.973249}
-  m_LocalPosition: {x: -4.491511, y: 2.9239829, z: 1.8969629}
+  m_LocalPosition: {x: 0.15488012, y: 2.9239829, z: -5.297633}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -919,7 +919,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7188546526891091394}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WallRunFollow(Right)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -950,7 +950,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 431623547732869184}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: CameraAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -982,7 +982,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1807201505414217043}
   - component: {fileID: 2379836196622440083}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Bottom Raycast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1033,7 +1033,7 @@ GameObject:
   - component: {fileID: 2238005256069501301}
   - component: {fileID: 2889891315427265152}
   - component: {fileID: 7425933317115786220}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1121,7 +1121,7 @@ GameObject:
   - component: {fileID: 7380163074680914706}
   - component: {fileID: 2235674769275852968}
   - component: {fileID: 4464493618147414773}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1245,7 +1245,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4600155835362264088}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: RightJavelinThrowPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1276,7 +1276,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8173712418046694290}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: LeftJavelinThrowPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1307,7 +1307,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2170271732655859369}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Raycast
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1341,7 +1341,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8588867914941767975}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: JavelinThrowPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1373,7 +1373,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8802039182866448457}
   - component: {fileID: 8813875858289624353}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: PlayerDamageComponent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1427,9 +1427,10 @@ GameObject:
   - component: {fileID: 4495337081787258367}
   - component: {fileID: 422024609607119328}
   - component: {fileID: 6194986973445605753}
-  m_Layer: 0
+  - component: {fileID: 7830118812784803936}
+  m_Layer: 3
   m_Name: PlayerAidenRitwik
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1596,6 +1597,26 @@ MonoBehaviour:
   verticalLookSpeed: 100
   verticalMinAngle: -25
   verticalMaxAngle: 45
+--- !u!114 &7830118812784803936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6482197012055863319}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b207c8cddc7ddfa43a23b8f9154c4f70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageAmount: 10
+  maxHealth: 100
+  CheckpointSystem: {fileID: 0}
+  regenerationDelay: 5
+  regenerationAmount: 1
+  regenerationInterval: 1
+  invincibilityDuration: 10
+  attackProfile: {fileID: 0}
 --- !u!1 &6594251145844244364
 GameObject:
   m_ObjectHideFlags: 0
@@ -1605,7 +1626,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2045362774110251987}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: DefaultFollow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1636,7 +1657,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8460198512293513955}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cameraHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1668,7 +1689,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6275156323265495567}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: leftCameraAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1701,7 +1722,7 @@ GameObject:
   - component: {fileID: 1054346626031099102}
   - component: {fileID: 63893563442997705}
   - component: {fileID: 36134344413934300}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1766,7 +1787,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6432279518089464940}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: WallRunFollow(Left)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1797,7 +1818,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7298444794031234449}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: FollowPoints
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1832,7 +1853,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8389460315189143828}
   - component: {fileID: 5172790377945897619}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: TopRig
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1847,8 +1868,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8936374212185369679}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.038897943, y: 0.7288611, z: -0.43411574, w: 0.5280077}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.073461466, y: -0.013308084, z: 0.007926408, w: 0.9971778}
+  m_LocalPosition: {x: 0.00000011920929, y: -0.0000017059847, z: -0.000003411969}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1910,7 +1931,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6409781158562854443}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: rightCameraAnchor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1942,7 +1963,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3107408806526795498}
   - component: {fileID: 7875578958239139660}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: JavelinManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1989,8 +2010,8 @@ MonoBehaviour:
   slowMotionDuration: 1
   timeSlowInSpeed: 3
   timeResetSpeed: 3
-  aimingCameraController: {fileID: 4061081451748967625, guid: 4c0af50fcd926514abd61b6032452f5e, type: 3}
-  mainVirtualCam: {fileID: 0}
+  aimingCameraController: {fileID: 0}
+  mainVirtualCam: {fileID: 2624744066193918935}
   aimingVirtualCam: {fileID: 0}
 --- !u!1 &9189322862764897294
 GameObject:
@@ -2004,7 +2025,7 @@ GameObject:
   - component: {fileID: 4903066198853400177}
   - component: {fileID: 4478001066072081689}
   - component: {fileID: 7070480587407234222}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: cm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
