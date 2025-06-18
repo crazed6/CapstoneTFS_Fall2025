@@ -1,12 +1,13 @@
 using UnityEngine;
-using System.Collections;
+using Cysharp.Threading.Tasks;
+using System;
 
 public class HeavyEnemyRock : MonoBehaviour
 {
     [Header("Explosion Settings")]
     public float explosionRadius = 3f;
     public float explosionForce = 10f;
-    public float explosionUpwardModifier = 0.5f; // upward force -_-
+    public float explosionUpwardModifier = 0.5f;
     public float damage = 20f;
     public GameObject explosionEffect;
 
@@ -18,7 +19,11 @@ public class HeavyEnemyRock : MonoBehaviour
     private Vector3 targetPoint;
     private Vector3 peakPoint;
     private float flightTime;
-    private float elapsedTime = 0;
+
+    //Declared Variable
+    //Josh testing
+    public DamageProfile RockShoot; // Reference to the damage profile for explosion damage
+    //Josh testing end
 
     public void Launch(Vector3 target, float speed, float height)
     {
@@ -27,55 +32,67 @@ public class HeavyEnemyRock : MonoBehaviour
         peakPoint = (startPoint + targetPoint) / 2 + Vector3.up * height;
         flightTime = Vector3.Distance(startPoint, targetPoint) / speed;
 
-        StartCoroutine(FollowArc());
+        _ = FollowArc(); // fire and forget using UniTask
     }
 
-    private IEnumerator FollowArc()
+    private async UniTaskVoid FollowArc()
     {
+        float elapsedTime = 0f;
+
         while (elapsedTime < flightTime)
         {
-            elapsedTime += Time.deltaTime;
-            float progress = elapsedTime / flightTime;
+            //  Defensive: If the object is destroyed, exit gracefully
+            if (this == null || transform == null) return;
 
-            Vector3 newPosition = QuadraticBezier(startPoint, peakPoint, targetPoint, progress);
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / flightTime);
+
+            Vector3 newPosition = QuadraticBezier(startPoint, peakPoint, targetPoint, t);
             transform.position = newPosition;
-            yield return null;
+
+            await UniTask.Yield(); // Wait until next frame
         }
 
-        Explode();
+        //  Extra check before explosion logic
+        if (this != null && transform != null)
+            Explode();
     }
 
-    private Vector3 QuadraticBezier(Vector3 start, Vector3 middle, Vector3 end, float t)
+    private Vector3 QuadraticBezier(Vector3 a, Vector3 b, Vector3 c, float t)
     {
-        return (1 - t) * (1 - t) * start + 2 * (1 - t) * t * middle + t * t * end;
+        return (1 - t) * (1 - t) * a + 2 * (1 - t) * t * b + t * t * c;
     }
 
     private void Explode()
     {
-        // Instantiate explosion effect (optional) -_-
         if (explosionEffect != null)
         {
-            Instantiate(explosionEffect, transform.position, Quaternion.identity);
-            Destroy(explosionEffect, 2f);
+            GameObject effect = Instantiate(explosionEffect, transform.position, Quaternion.identity);
+            Destroy(effect, 2f);
         }
 
-        // Detect objects in explosion radius -_-
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, explosionRadius);
-
-        foreach (Collider hit in hitColliders)
+        Collider[] hits = Physics.OverlapSphere(transform.position, explosionRadius);
+        foreach (var hit in hits)
         {
             if (hit.CompareTag("Player"))
             {
                 Debug.Log("Player hit by rock explosion!");
 
-                //  damage (if player has a health system)
-                PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
-                if (playerHealth != null)
-                {
-                    playerHealth.TakeDamage(damage);
-                }
+                //PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
+                //if (playerHealth != null)
+                //{
+                //    playerHealth.TakeDamage(damage);
+                //}
 
-                //  knockback -_-
+                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && RockShoot != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, RockShoot);
+                    playerHealth.TakeDamage(damageData);
+                }
+                //Josh script end
+
                 Rigidbody rb = hit.GetComponent<Rigidbody>();
                 if (rb != null)
                 {
@@ -84,23 +101,20 @@ public class HeavyEnemyRock : MonoBehaviour
             }
         }
 
-        Destroy(gameObject); // Destroy rock after explosion -_-
+        Destroy(gameObject);
     }
 
     private void ApplyKnockback(Rigidbody rb, Vector3 explosionCenter)
     {
-        //  Calculating knockback direction -_-
-        Vector3 knockbackDirection = (rb.transform.position - explosionCenter).normalized;
+        Vector3 direction = (rb.transform.position - explosionCenter).normalized;
+        direction.y = Mathf.Clamp(direction.y, 0.1f, 0.5f);
 
-        //  Scale down the vertical (Y) component -_-
-        knockbackDirection.y = Mathf.Clamp(knockbackDirection.y, 0.1f, 0.5f);
+        Vector3 finalForce = new Vector3(
+            direction.x * horizontalKnockbackMultiplier,
+            direction.y * explosionUpwardModifier,
+            direction.z * horizontalKnockbackMultiplier
+        );
 
-        //  Adding more force to the horizontal (XZ) push -_-
-        Vector3 finalKnockback = new Vector3(knockbackDirection.x, knockbackDirection.y * explosionUpwardModifier, knockbackDirection.z);
-
-        rb.AddForce(finalKnockback * explosionForce, ForceMode.Impulse);
+        rb.AddForce(finalForce * explosionForce, ForceMode.Impulse);
     }
-
-
 }
-
