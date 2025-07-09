@@ -1,3 +1,4 @@
+// Colton Reed
 using UnityEngine;
 using UnityEngine.Timeline;
 

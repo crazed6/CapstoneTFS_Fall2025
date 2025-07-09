@@ -1,3 +1,4 @@
+//Colton Reed
 using UnityEngine;
 
 public class CutScenePlayerController : MonoBehaviour
