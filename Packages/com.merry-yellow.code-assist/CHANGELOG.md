@@ -1,5 +1,17 @@
 List of new features, bug fixes and improvements
 
+# Version 1.4.15
+* Hotfix for code completion for attributes
+
+# Version 1.4.14
+* New code completions: Attributes and preprocessor directives (#if, #elif)
+* New gpt feature: Add mode, gpt can add new files to the project
+* New gpt feature: For CodeLens, follow-up question and custom prompt
+* Gpt responses are logged to Visual Studio output window
+
+# Version 1.4.13
+* Hotfix for gpt requests of OpenAI-API-Compatible platforms
+
 # Version 1.4.12
 * Additional properties options added for gpt requests
 * Version number mistype fix for Unity asset package

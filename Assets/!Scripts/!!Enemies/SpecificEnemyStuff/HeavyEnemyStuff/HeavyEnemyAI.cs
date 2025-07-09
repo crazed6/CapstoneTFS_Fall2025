@@ -1,6 +1,7 @@
-using Unity.IO.LowLevel.Unsafe;
 using UnityEngine;
-using System.Collections;
+using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 
 public class HeavyEnemyAI : MonoBehaviour
 {
@@ -8,25 +9,24 @@ public class HeavyEnemyAI : MonoBehaviour
     public Transform player;
 
     [Header("Detection Zones")]
-    public float detectionRange = 40f;   // Enemy sees player if inside this range -_-
-    public float firingZoneRange = 50f;  // Enemy stops throwing Rocks for sins if player moves beyond this -_-
+    public float detectionRange = 40f;
+    public float firingZoneRange = 50f;
 
     [Header("Enemy Rotation Settings")]
-    public float rotationSpeed = 5f;  // Speed of rotation -_-
-    public Quaternion originalRotation;  // Store original rotation -_-
-
+    public float rotationSpeed = 5f;
+    public Quaternion originalRotation;
 
     [Header("Line of Sight Obstruction")]
-    public LayerMask obstructionLayer;  // Objects that block enemy vision -_-
+    public LayerMask obstructionLayer;
 
     [Header("Shooting Settings")]
     public Transform rockSpawnPoint;
     public GameObject rockPrefab;
 
     [Header("Shooting Timings")]
-    public float trackDuration = 2f;  // Time to track player before locking Rock throw -_-
-    public float lockDuration = 0.5f; // Time locked before throwing -_-
-    public float postThrowCooldown = 1f; // Wait time before repeating -_-
+    public float trackDuration = 2f;
+    public float lockDuration = 0.5f;
+    public float postThrowCooldown = 1f;
 
     [Header("Rock Settings")]
     public float shootSpeed = 35.0f;
@@ -37,137 +37,135 @@ public class HeavyEnemyAI : MonoBehaviour
     public Gradient lockedColor;
 
     [Header("Trajectory Settings")]
-    public int trajectoryResolution = 30; // How many points in the curve -_-
-    public float trajectoryHeight = 3f;  // Peak height of the arc -_-
+    public int trajectoryResolution = 30;
+    public float trajectoryHeight = 3f;
 
+    [Header("Slam Attack Settings")]
+    public float slamRadius = 5f;
+    public float slamKnockbackForce = 25f;
+    public float slamCooldown = 3f;
+    public float slamDamage = 25f;
+    public Transform slamOrigin;
+
+    [HideInInspector]
+    public bool isSlamming = false;
 
     public HeavyEnemyStateMachine stateMachine;
     private bool isTracking = false;
     private Vector3 lockedTarget;
+    private CancellationTokenSource trackingTokenSource;
 
-    //Health UI
-    public int maxHealth = 75; //Set maxhealth for Splitter
+    /*[Header("Health Settings")]
+    public int maxHealth = 75;
     private int currentHealth;
-    public HealthBar healthBar; //Reference to  UI health prefab
+    public HealthBar healthBar;
 
-    [Header("Temp Damage DeBug")] // DELETE WHEN OTHER STUFF ADDED
-    public float damageAmount = 10f;
+    [Header("Temp Damage Debug")]
+    public float damageAmount = 10f;*/
+
+    //Declared Variable
+    //Josh testing
+    public DamageProfile GroundSlam; // Reference to the damage profile for explosion damage
+    //Josh testing end
 
     private void Start()
     {
         stateMachine = new HeavyEnemyStateMachine();
-        stateMachine.ChangeState(new HeavyEnemyIdleState(this));  // Start in idle -_-
+        stateMachine.ChangeState(new HeavyEnemyIdleState(this));
         originalRotation = transform.rotation;
 
-        //Initialize health
-        currentHealth = maxHealth;
-        healthBar.SetHealth(1f);
+        //currentHealth = maxHealth;
+        //healthBar.SetHealth(1f);
     }
 
     private void Update()
     {
         stateMachine.Execute();
 
-        if (Input.GetMouseButtonDown(0)) // 0 means left mouse button  DELETE WHEN DAMAGE SYSTEM IMPLEMENTED
-        {
-            // Raycast from the camera to where the mouse is pointing
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit))
-            {
-                // Check if the raycast hits this enemy
-                if (hit.collider.CompareTag("Enemy"))
-                {
-                    // Call TakeDamage() on the enemy that was clicked
-                    HeavyEnemyAI enemy = hit.collider.GetComponent<HeavyEnemyAI>();
-                    if (enemy != null)
-                    {
-                        enemy.TakeDamage((int)damageAmount);
-                    }
-                }
-            }
-        }
+        //if (Input.GetMouseButtonDown(0))
+        //{
+            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            //if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("Enemy"))
+            //{
+                //var enemy = hit.collider.GetComponent<HeavyEnemyAI>();
+                //enemy?.TakeDamage((int)damageAmount);
+            //}
+        //}
     }
 
     public bool CanSeePlayer()
     {
-        if (player == null) return false;
+        if (this == null || gameObject == null || !this || !gameObject.activeInHierarchy || player == null)
+            return false;
 
         float distance = Vector3.Distance(transform.position, player.position);
-
-        //  Player must be inside detection range -_-
         if (distance > firingZoneRange) return false;
 
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
         float angle = Vector3.Angle(transform.forward, directionToPlayer);
-
-        //  Player must be inside 180° vision cone -_-
         if (angle > 90f) return false;
 
-        //  Performing multiple raycasts to ensure vision is blocked properly -_-
-        Vector3 enemyEyeLevel = transform.position + Vector3.up * 1.5f;
-        Vector3 playerCenter = player.position + Vector3.up * 1.0f;
-        Vector3 playerHead = player.position + Vector3.up * 1.8f;
-        Vector3 playerFeet = player.position + Vector3.up * 0.5f;
+        Vector3 eyeLevel = transform.position + Vector3.up * 1.5f;
+        Vector3[] points = {
+            player.position + Vector3.up * 1.0f,
+            player.position + Vector3.up * 1.8f,
+            player.position + Vector3.up * 0.5f
+        };
 
-        // Performing multiple Linecasts (head, center, feet) -_-
-        bool canSeeCenter = !Physics.Linecast(enemyEyeLevel, playerCenter, obstructionLayer);
-        bool canSeeHead = !Physics.Linecast(enemyEyeLevel, playerHead, obstructionLayer);
-        bool canSeeFeet = !Physics.Linecast(enemyEyeLevel, playerFeet, obstructionLayer);
-
-        if (!canSeeCenter && !canSeeHead && !canSeeFeet)
+        foreach (var point in points)
         {
-            Debug.DrawLine(enemyEyeLevel, playerCenter, Color.red, 0.1f);
-            Debug.DrawLine(enemyEyeLevel, playerHead, Color.red, 0.1f);
-            Debug.DrawLine(enemyEyeLevel, playerFeet, Color.red, 0.1f);
-            return false; //  Only return false if ALL rays are blocked -_-
+            if (!Physics.Linecast(eyeLevel, point, obstructionLayer))
+            {
+                Debug.DrawLine(eyeLevel, point, Color.green, 0.1f);
+                return true;
+            }
+            else
+            {
+                Debug.DrawLine(eyeLevel, point, Color.red, 0.1f);
+            }
         }
 
-        Debug.DrawLine(enemyEyeLevel, playerCenter, Color.green, 0.1f);
-        Debug.DrawLine(enemyEyeLevel, playerHead, Color.green, 0.1f);
-        Debug.DrawLine(enemyEyeLevel, playerFeet, Color.green, 0.1f);
-
-        return true; //  At least one ray is clear, enemy still sees the player -_-
+        return false;
     }
 
-
-
-    public void StartTracking()
+    public async void StartTracking()
     {
-        if (!isTracking)
-        {
-            StartCoroutine(TrackAndThrowRock());
-        }
-    }
+        if (this == null || gameObject == null || !this || !gameObject.activeInHierarchy)
+            return;
 
-    private IEnumerator TrackAndThrowRock()
-    {
+        if (isTracking) return;
         isTracking = true;
-        float timer = 0f;
 
+        trackingTokenSource?.Cancel();
+        trackingTokenSource = new CancellationTokenSource();
+        CancellationToken token = trackingTokenSource.Token;
+
+        float timer = 0f;
         while (timer < trackDuration)
         {
+            if (token.IsCancellationRequested) return;
+
             if (player != null && CanSeePlayer())
             {
-                //  Keep updating the locked target position until locked -_-
                 lockedTarget = player.position;
                 DrawTrajectory(lockedTarget, false);
             }
 
             timer += Time.deltaTime;
-            yield return null;
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
         }
 
-        //  Stop updating target after locking
+        if (token.IsCancellationRequested) return;
         trajectoryLine.colorGradient = lockedColor;
-        yield return new WaitForSeconds(lockDuration);
+        await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token);
 
-        //  Throw at the locked position
+        if (token.IsCancellationRequested) return;
         ThrowRockAtLockedPosition(lockedTarget);
         isTracking = false;
 
-        yield return new WaitForSeconds(postThrowCooldown);
+        await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token);
+
+        if (token.IsCancellationRequested) return;
 
         if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
         {
@@ -180,50 +178,41 @@ public class HeavyEnemyAI : MonoBehaviour
         }
     }
 
-
     public void StopTracking()
     {
-        StopCoroutine(TrackAndThrowRock());  //  Stop the tracking coroutine -_-
-        trajectoryLine.enabled = false;      //  Hide the trajectory -_-
-        isTracking = false;                  //  Reset tracking flag -_-
+        trackingTokenSource?.Cancel();
+        trackingTokenSource = null;
+
+        trajectoryLine.enabled = false;
+        isTracking = false;
     }
-
-
 
     private void DrawTrajectory(Vector3 target, bool isLocked)
     {
         trajectoryLine.enabled = true;
         trajectoryLine.positionCount = trajectoryResolution;
 
-        //  Start from the spawn point
-        Vector3 startPoint = rockSpawnPoint.position;
-
-        //  Add height to the peak point for a better curve
-        Vector3 midPoint = (startPoint + target) / 2 + Vector3.up * trajectoryHeight;
-
-        //  End at the target point (aligned with player position)
-        Vector3 endPoint = target;
+        Vector3 start = rockSpawnPoint.position;
+        Vector3 mid = (start + target) / 2 + Vector3.up * trajectoryHeight;
 
         for (int i = 0; i < trajectoryResolution; i++)
         {
             float t = i / (float)(trajectoryResolution - 1);
-            Vector3 point = QuadraticBezier(startPoint, midPoint, endPoint, t);
+            Vector3 point = QuadraticBezier(start, mid, target, t);
             trajectoryLine.SetPosition(i, point);
         }
 
         trajectoryLine.colorGradient = isLocked ? lockedColor : normalColor;
     }
 
-
-    // Bezier curve formula for smooth arcs -_-
-    private Vector3 QuadraticBezier(Vector3 start, Vector3 middle, Vector3 end, float t)
+    private Vector3 QuadraticBezier(Vector3 a, Vector3 b, Vector3 c, float t)
     {
-        return (1 - t) * (1 - t) * start + 2 * (1 - t) * t * middle + t * t * end;
+        return (1 - t) * (1 - t) * a + 2 * (1 - t) * t * b + t * t * c;
     }
 
     private void ThrowRockAtLockedPosition(Vector3 target)
     {
-        trajectoryLine.enabled = false;  // Hide trajectory after throw -_-
+        trajectoryLine.enabled = false;
 
         GameObject rock = Instantiate(rockPrefab, rockSpawnPoint.position, Quaternion.identity);
         HeavyEnemyRock rockScript = rock.GetComponent<HeavyEnemyRock>();
@@ -231,10 +220,10 @@ public class HeavyEnemyAI : MonoBehaviour
         rockScript.Launch(target, shootSpeed, trajectoryHeight);
     }
 
-    public void TakeDamage(int damageAmount)
+    /*public void TakeDamage(int damageAmount)
     {
         currentHealth -= damageAmount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth); //Update health bar -JK
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         if (healthBar != null)
         {
@@ -244,12 +233,12 @@ public class HeavyEnemyAI : MonoBehaviour
         if (currentHealth <= 0)
         {
             Invoke(nameof(DestroyObject), 0.5f);
-            Debug.Log(gameObject.name + " is dead!");
+            Debug.Log($"{gameObject.name} is dead!");
         }
     }
 
     private void DestroyObject()
     {
         Destroy(gameObject);
-    }
+    }*/
 }
