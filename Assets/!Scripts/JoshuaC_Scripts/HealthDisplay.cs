@@ -1,6 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
+
 using UnityEngine.UI; //JK - added for Image component
 using UnityEngine;
 
