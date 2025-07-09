@@ -4,18 +4,11 @@ using UnityEngine;
 
 public class ExplodingEnemy : MonoBehaviour
 {
-    [Header("Movement Settings")]
-    public bool isStationary = false;
     public Transform[] patrolPoints;
     public float patrolSpeed = 2f;
     public float chaseSpeed = 3f;
     public float detectionRadius = 5f;
 
-    [Header("Y-Level Management")]
-    public GameObject yLevelReference;
-    public float yLevelBuffer = 5f;
-
-    [Header("Explosion Damage")]
     public float innerRadius = 1f;
     public float middleRadius = 2f;
     public float outerRadius = 3f;
@@ -45,12 +38,9 @@ public class ExplodingEnemy : MonoBehaviour
     private float explosionTimer = 0f;
     private bool middleRadiusReduced = false;
 
-    private float referenceYLevel;
-    private bool isLingering = false;
-    private Linger lingerScript;
+    private Vector3 lastKnownPlayerPosition;
 
-    private Vector3 lastKnownPlayerPosition = Vector3.zero;
-    private bool hasDetectedPlayer = false;
+    public DamageProfile explosionDamageProfile;
 
     void Start()
     {
@@ -59,40 +49,11 @@ public class ExplodingEnemy : MonoBehaviour
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
-
-        SetReferenceYLevel();
-
-        lingerScript = GetComponent<Linger>();
-        if (lingerScript != null)
-            lingerScript.enabled = false;
-    }
-
-    void SetReferenceYLevel()
-    {
-        if (yLevelReference != null)
-        {
-            referenceYLevel = yLevelReference.transform.position.y;
-        }
-        else if (!isStationary && patrolPoints.Length > 0)
-        {
-            referenceYLevel = patrolPoints[0].position.y;
-        }
-        else
-        {
-            referenceYLevel = transform.position.y;
-        }
     }
 
     void Update()
     {
-        if (player == null || hasExploded || isLingering) return;
-
-        if (transform.position.y < (referenceYLevel - yLevelBuffer) ||
-            transform.position.y > (referenceYLevel + yLevelBuffer))
-        {
-            EnterLingerMode();
-            return;
-        }
+        if (player == null || hasExploded) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         HandleRadiusExplosion(distanceToPlayer);
@@ -100,7 +61,6 @@ public class ExplodingEnemy : MonoBehaviour
         if (distanceToPlayer <= detectionRadius)
         {
             lastKnownPlayerPosition = player.position;
-            hasDetectedPlayer = true;
 
             Vector3 dirToPlayer = (player.position - transform.position).normalized;
             Vector3 avoidanceDir = GetAvoidanceDirection(dirToPlayer);
@@ -111,28 +71,7 @@ public class ExplodingEnemy : MonoBehaviour
         }
         else
         {
-            if (isStationary)
-            {
-                if (hasDetectedPlayer)
-                {
-                    EnterLingerMode();
-                }
-                else
-                {
-                    rb.linearVelocity = Vector3.zero;
-                }
-            }
-            else
-            {
-                if (hasDetectedPlayer)
-                {
-                    EnterLingerMode();
-                }
-                else
-                {
-                    Patrol();
-                }
-            }
+            Patrol();
         }
 
         if (timerStarted && explosionTimer > 0f)
@@ -226,31 +165,28 @@ public class ExplodingEnemy : MonoBehaviour
         foreach (Collider hit in hits)
         {
             if (alreadyDamaged.Contains(hit)) continue;
-            if (hit.transform == transform) continue;
 
             Vector3 knockbackDir = (hit.transform.position - position).normalized;
-            if (knockbackDir == Vector3.zero)
-                knockbackDir = Vector3.up;
-
             float distance = Vector3.Distance(position, hit.transform.position);
             float distanceFactor = 1f - Mathf.Clamp01(distance / radius);
 
-            // Apply full knockback in direction from explosion center to object
-            float finalForce = knockbackForce * distanceFactor;
-
-            Rigidbody targetRb = hit.GetComponent<Rigidbody>();
-            if (targetRb == null)
-                targetRb = hit.attachedRigidbody;
-
-            if (targetRb != null && !targetRb.isKinematic)
+            Rigidbody targetRb = hit.attachedRigidbody;
+            if (targetRb != null)
             {
+                float finalForce = knockbackForce * distanceFactor;
                 targetRb.AddForce(knockbackDir * finalForce, ForceMode.Impulse);
-                Debug.Log($"Applied knockback force of {finalForce:F2} to {hit.name}");
             }
 
             if (hit.CompareTag("Player"))
             {
-                Debug.Log($"Player hit by explosion for {damage} damage");
+                DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
+                Health health = hit.GetComponent<Health>();
+                if (damageReceiver != null && health != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
+                    health.TakeDamage(damageData);
+                    alreadyDamaged.Add(hit);
+                }
             }
 
             alreadyDamaged.Add(hit);
@@ -266,19 +202,6 @@ public class ExplodingEnemy : MonoBehaviour
             return awayFromObstacle.normalized;
         }
         return Vector3.zero;
-    }
-
-    void EnterLingerMode()
-    {
-        isLingering = true;
-        rb.linearVelocity = Vector3.zero;
-
-        if (lingerScript != null)
-        {
-            lingerScript.targetPosition = lastKnownPlayerPosition;
-            lingerScript.enabled = true;
-            rb.isKinematic = false;
-        }
     }
 
     void OnDrawGizmosSelected()
@@ -297,17 +220,5 @@ public class ExplodingEnemy : MonoBehaviour
 
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, avoidanceRadius);
-
-        if (Application.isPlaying)
-        {
-            Gizmos.color = Color.blue;
-            Vector3 pos = transform.position;
-            Vector3 upperBound = new Vector3(pos.x, referenceYLevel + yLevelBuffer, pos.z);
-            Vector3 lowerBound = new Vector3(pos.x, referenceYLevel - yLevelBuffer, pos.z);
-
-            Gizmos.DrawWireCube(upperBound, new Vector3(0.5f, 0.1f, 0.5f));
-            Gizmos.DrawWireCube(lowerBound, new Vector3(0.5f, 0.1f, 0.5f));
-            Gizmos.DrawLine(upperBound, lowerBound);
-        }
     }
 }
