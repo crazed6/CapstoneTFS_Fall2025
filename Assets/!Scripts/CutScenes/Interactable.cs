@@ -20,7 +20,7 @@ public abstract class Interactable : MonoBehaviour
 
     private void Update()
     {
-        if (_playerWithinRange && Input.GetKeyDown(KeyCode.E))
+        if (_playerWithinRange && Input.GetKeyDown(KeyCode.R))
         {
             Activate();
         }
