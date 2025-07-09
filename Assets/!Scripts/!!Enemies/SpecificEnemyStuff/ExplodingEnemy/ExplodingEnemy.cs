@@ -260,7 +260,7 @@ public class ExplodingEnemy : MonoBehaviour
             {
                 Debug.Log($"Player hit by explosion for {damage} damage");
 
-                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                //Josh script, ensure to attach Explode Damage Profile in inspector
                 Health playerHealth = hit.GetComponent<Health>();
                 if (playerHealth != null && GeneralExplosion != null)
                 {
