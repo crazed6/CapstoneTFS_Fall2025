@@ -14,6 +14,7 @@ public class Health : MonoBehaviour
     
     public int damageAmount = 10;
     [SerializeField] private int maxHealth = 100;
+    public int MaxHealth => maxHealth; // Read-only property to access max health
     private int _health = 50;
     public bool IsDead => _health <= 0;
     private bool isDead = false;
