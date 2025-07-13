@@ -62,7 +62,11 @@ public class ExplodingEnemy : MonoBehaviour
         {
             lastKnownPlayerPosition = player.position;
 
-            Vector3 dirToPlayer = (player.position - transform.position).normalized;
+            // Make enemy chase player only on XZ plane
+            Vector3 dirToPlayer = player.position - transform.position;
+            dirToPlayer.y = 0f;
+            dirToPlayer = dirToPlayer.normalized;
+
             Vector3 avoidanceDir = GetAvoidanceDirection(dirToPlayer);
             Vector3 finalDir = (dirToPlayer + avoidanceDir * avoidanceStrength).normalized;
 
@@ -90,6 +94,7 @@ public class ExplodingEnemy : MonoBehaviour
 
         Transform targetPoint = patrolPoints[currentPointIndex];
         Vector3 direction = (targetPoint.position - transform.position).normalized;
+        direction.y = 0f;
 
         rb.linearVelocity = direction * patrolSpeed;
         FaceDirection(direction);
@@ -175,6 +180,9 @@ public class ExplodingEnemy : MonoBehaviour
             {
                 float finalForce = knockbackForce * distanceFactor;
                 targetRb.AddForce(knockbackDir * finalForce, ForceMode.Impulse);
+
+                // Debug: Draw knockback direction
+                Debug.DrawRay(hit.transform.position, knockbackDir * 100f, Color.red, 1f);
             }
 
             if (hit.CompareTag("Player"))
