@@ -1,5 +1,5 @@
 using UnityEngine;
-
+//Diego's Script
 public class SpikeTrap : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
