@@ -8,6 +8,7 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
     private bool slamExecuted = false;
     private CancellationTokenSource slamTokenSource;
 
+
     public HeavyEnemySlamAttackState(HeavyEnemyAI enemy)
     {
         this.enemy = enemy;
@@ -64,8 +65,18 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
                 Debug.Log("Slam hit the player!");
 
                 // Damage
-                PlayerHealth health = hit.GetComponent<PlayerHealth>();
-                health?.TakeDamage(enemy.slamDamage);
+                //PlayerHealth health = hit.GetComponent<PlayerHealth>();
+                //health?.TakeDamage(enemy.slamDamage);
+
+                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && enemy.GroundSlam != null)
+                {
+                    DamageData damageData = new DamageData(enemy.gameObject, enemy.GroundSlam);
+                    playerHealth.TakeDamage(damageData);
+                }
+                //Josh script end
+
 
                 // Knockback
                 Rigidbody rb = hit.GetComponent<Rigidbody>();

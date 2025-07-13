@@ -1,9 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using DG.Tweening;
-using Unity.VisualScripting;
 
 public class CharacterController : MonoBehaviour
 {
@@ -221,55 +218,60 @@ public class CharacterController : MonoBehaviour
 
     void Move()
     {
-        // Move with WASD (the direction)
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
-        Vector3 movementDirection = transform.right * x + transform.forward * z;
+        Vector3 inputDirection = (transform.right * x + transform.forward * z).normalized;
 
-        // If wall running & sliding, don't take input
-        if (isSliding) return; // TODO: If moving in the opposite direction "cancel sliding", ...maybe
-        if (isWallRunning) return;
-
-        // Otherwise, if no input, stop fast if grounded
-        if (movementDirection == Vector3.zero)
+        // Handle idle grounded movement: stop sliding on slope
+        if (isGrounded && inputDirection == Vector3.zero && !isWallRunning && !isSliding)
         {
-            // Dampen speed fast
-            if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.95f;
+            // Apply small downward force to stay grounded without bouncing
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            rb.AddForce(-transform.up * 30f, ForceMode.Acceleration); // Stick to slope
             return;
         }
-
-        //* Applying the Movement
-
-        // Only consider horizontal velocity for movement (on ground OR in air)
-        //? On the ground horizontal vel. is 0, in air if you add it then you can keep speeding up infinitely
-        float horizontalSpeed = new Vector3(displacement.x, 0, displacement.z).magnitude; //? This used to be rb.velocity...
-        float speedToApply = Mathf.Max(baseSpeed, horizontalSpeed); // If the player is going FASTER than the limit, cap it there
-
-        // If in the air, keep the LAST speed before takeoff
-        //? Otherwise, the player can keep speeding up infinitely with gravity
-        if (!isGrounded) speedToApply = lastSpeedBeforeTakeoff;
-
-        // If the player is going over the limit, dampen it a bit
-        if (speedToApply > baseSpeed) speedToApply *= isGrounded ? 0.985f : 0.99f; // Dampens harder while on the ground
-
-        // The new velocity to apply
-        Vector3 newVelocity = movementDirection.normalized * speedToApply;
-        newVelocity.y = rb.linearVelocity.y; // Keep the current vertical speed
-
-        //? If in the air we add force instead of modifying the velocity so that the gravity can do its thing
-        if (isGrounded) rb.linearVelocity = newVelocity;
-        else rb.AddForce(movementDirection.normalized * speedToApply, ForceMode.Force);
-
-        // If player is going too fast HORIZONTALLY in AIR => dampen HORIZONTAL speed
-        //? Otherwise the speed applied above goes out of control
-        if (!isGrounded && horizontalSpeed > baseSpeed)
+        if (isWallRunning)
         {
-            Vector3 newHorizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            newHorizontalVelocity *= 0.98f;
-            rb.linearVelocity = new Vector3(newHorizontalVelocity.x, rb.linearVelocity.y, newHorizontalVelocity.z);
+            return; // Wall running handles its own movement
         }
 
+        // Get slope normal
+        Vector3 groundNormal = Vector3.up;
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 1.2f, LayerMask.GetMask("Default")))
+        {
+            groundNormal = hit.normal;
+        }
+
+        // Project input onto slope
+        Vector3 slopeAdjustedDirection = Vector3.ProjectOnPlane(inputDirection, groundNormal).normalized;
+
+        float horizontalSpeed = new Vector3(displacement.x, 0, displacement.z).magnitude;
+        float speedToApply = Mathf.Max(baseSpeed, horizontalSpeed);
+
+        if (!isGrounded) speedToApply = lastSpeedBeforeTakeoff;
+        if (speedToApply > baseSpeed) speedToApply *= isGrounded ? 0.985f : 0.99f;
+
+        Vector3 newVelocity = slopeAdjustedDirection * speedToApply;
+        newVelocity.y = rb.linearVelocity.y;
+
+        if (isGrounded)
+        {
+            rb.linearVelocity = newVelocity;
+        }
+        else
+        {
+            rb.AddForce(slopeAdjustedDirection * speedToApply, ForceMode.Force);
+
+            if (horizontalSpeed > baseSpeed)
+            {
+                Vector3 newHorizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+                newHorizontalVelocity *= 0.98f;
+                rb.linearVelocity = new Vector3(newHorizontalVelocity.x, rb.linearVelocity.y, newHorizontalVelocity.z);
+            }
+        }
     }
+
+
 
     void Jump()
     {
@@ -373,6 +375,8 @@ public class CharacterController : MonoBehaviour
 
         //change this so that it squish the collider and pushes into the ground 
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
+
+        
         playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 

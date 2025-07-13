@@ -63,6 +63,11 @@ public class HeavyEnemyAI : MonoBehaviour
     [Header("Temp Damage Debug")]
     public float damageAmount = 10f;*/
 
+    //Declared Variable
+    //Josh testing
+    public DamageProfile GroundSlam; // Reference to the damage profile for explosion damage
+    //Josh testing end
+
     private void Start()
     {
         stateMachine = new HeavyEnemyStateMachine();

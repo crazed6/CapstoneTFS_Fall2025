@@ -1,7 +1,6 @@
 //Ritwik
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerJavelinThrow : MonoBehaviour
 {
@@ -32,7 +31,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     public AimingCameraController aimingCameraController; // Reference to the aiming camera logic -_-
 
     [Header("Camera Switching")]
-    public CinemachineVirtualCamera mainVirtualCam;     // Reference to main gameplay camera -_-
+    public CinemachineFreeLook mainVirtualCam;     // Reference to main gameplay camera -_-
     public CinemachineVirtualCamera aimingVirtualCam;   // Reference to javelin aiming camera -_-
 
     private GameObject currentJavelin;                  // Currently held (unthrown) javelin -_-
