@@ -2,7 +2,7 @@
 using UnityEngine;
 
 //Diego's Script
-public class ChaserDrone : MonoBehaviour
+public class ChaserDroneRework : MonoBehaviour
 {
     [Header("Target Settings")]
     public Transform player;                  // Reference to the player
