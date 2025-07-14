@@ -1,5 +1,6 @@
 using UnityEngine;
 
+//Diego's Script
 public class SpikeTrap : MonoBehaviour
 {
     //Josh testing
