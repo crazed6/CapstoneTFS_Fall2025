@@ -667,8 +667,7 @@ public class CharacterController : MonoBehaviour
                         EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
                         if(dmg != null && dashDamageProfile != null)
                         {
-                            DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                            dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                            dmg.TakeDamage2(new DamageData(gameObject, dashDamageProfile));
                         }
                         else
                         {

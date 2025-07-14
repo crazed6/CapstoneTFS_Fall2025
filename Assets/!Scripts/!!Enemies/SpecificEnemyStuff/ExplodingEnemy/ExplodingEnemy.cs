@@ -265,7 +265,7 @@ public class ExplodingEnemy : MonoBehaviour
                 if (playerHealth != null && GeneralExplosion != null)
                 {
                     DamageData damageData = new DamageData(gameObject, GeneralExplosion);
-                    playerHealth.TakeDamage(damageData);
+                    playerHealth.PlayerTakeDamage(damageData);
                 }
                 //Josh script end
             }

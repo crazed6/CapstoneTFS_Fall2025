@@ -18,7 +18,7 @@ public class SpikeTrap : MonoBehaviour
             if (playerHealth != null && Trap != null)
             {
                 DamageData damageData = new DamageData(gameObject, Trap);
-                playerHealth.TakeDamage(damageData);
+                playerHealth.PlayerTakeDamage(damageData);
             }
             //Josh script end
 

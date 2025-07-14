@@ -19,7 +19,7 @@ public class LaserBeam : MonoBehaviour
             if (playerHealth != null && LaserTrap != null)
             {
                 DamageData damageData = new DamageData(gameObject, LaserTrap);
-                playerHealth.TakeDamage(damageData);
+                playerHealth.PlayerTakeDamage(damageData);
             }
             //Josh script end
         }

@@ -2,7 +2,7 @@
 - Project name: CapstoneTFS_Fall2025
 - Unity version: Unity 6000.0.32f1
 - Active game object:
-  - Name: Player
-  - Tag: Player
-  - Layer: Player
+  - Name: Resume Button
+  - Tag: Untagged
+  - Layer: UI
 <!-- UNITY CODE ASSIST INSTRUCTIONS END -->

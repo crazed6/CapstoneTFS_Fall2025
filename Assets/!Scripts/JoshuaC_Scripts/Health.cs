@@ -48,7 +48,7 @@ public class Health : MonoBehaviour
         }
     }
 
-    public void TakeDamage(DamageData damage) //previously (int damage)
+    public void PlayerTakeDamage(DamageData damage) //previously (int damage)
     {
         if (isInvincible) return; // Ignore damage if invincible
 
@@ -68,7 +68,7 @@ public class Health : MonoBehaviour
         if (_health <= 0)
         {
             isDead = true;
-            Die();
+            PlayerDie();
             return;
         }
 
@@ -84,7 +84,7 @@ public class Health : MonoBehaviour
         isInvincible = false;
     }
 
-    public void HealDamage(int heal)
+    public void PlayerHealDamage(int heal)
     {
         _health += heal;
         if (_health >= 100)
@@ -94,7 +94,7 @@ public class Health : MonoBehaviour
         Debug.Log($"Player healed {heal} health. Current health: {_health}"); //just used to show health in the console
     }
 
-    void Die()
+    void PlayerDie()
     {
         if (isDead == true)
         {
@@ -157,7 +157,7 @@ public class Health : MonoBehaviour
                 regenTimer += Time.deltaTime;
                 if (regenTimer >= regenerationInterval)
                 {
-                    HealDamage(regenerationAmount);
+                    PlayerHealDamage(regenerationAmount);
                     Debug.Log("Regenerating health: " + regenerationAmount);
                     regenTimer = 0f;
                 }
@@ -174,7 +174,7 @@ public class Health : MonoBehaviour
         if (targetHealth != null)
         {
             DamageData data = new DamageData(gameObject, attackProfile); // Create a new DamageData instance, and plug here
-            targetHealth.TakeDamage(data);
+            targetHealth.PlayerTakeDamage(data);
         }
     }
 
