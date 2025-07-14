@@ -37,7 +37,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     public CinemachineVirtualCamera aimingVirtualCam; // Aiming camera -_-
 
     private GameObject currentJavelin; // The currently held javelin -_-
-    private bool isAiming = false; // Whether the player is in aiming mode -_-
+    public bool isAiming = false; // Whether the player is in aiming mode -_-
     private float cooldownTimer = 0f; // Countdown for next throw -_-
     private bool isEnteringSlowMotion = false; // If currently lerping into slow motion -_-
     private bool isSlowMotionActive = false; // If slow motion is active -_-

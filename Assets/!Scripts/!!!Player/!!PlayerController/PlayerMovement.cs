@@ -12,7 +12,7 @@ public class CharacterController : MonoBehaviour
     //change slide so that it cant activate in air 
 
     public static CharacterController instance; // it's me -_-
-
+    public PlayerJavelinThrow pjt;
     //JoshuaC here :3, just adding my thing near the top for easy access
 
     [Header("Combat")]
@@ -150,6 +150,7 @@ public class CharacterController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         lastPosition = transform.position;
         wallrunJumpforce = jumpForce * 1.25f;
+        pjt = GetComponent<PlayerJavelinThrow>();
     }
 
     void Update()
@@ -652,38 +653,40 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
+            
+                Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
 
-            foreach (var hit in hits)
-            {
-                if (hit.CompareTag("enemy"))
+                foreach (var hit in hits)
                 {
-                    Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-                    float angle = Vector3.Angle(transform.forward, directionToTarget);
-
-                    if (angle < coneAngle / 2f)
+                    if (hit.CompareTag("enemy"))
                     {
-                        Debug.Log("Moving to enemy: " + hit.name);
-                        targetPosition = hit.transform.position;
-                        isMoving = true;
+                        Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
+                        float angle = Vector3.Angle(transform.forward, directionToTarget);
 
-                        //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
-                        EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
-                        if(dmg != null && dashDamageProfile != null)
+                        if (angle < coneAngle / 2f)
                         {
-                            DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                            dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
-                        }
-                        else
-                        {
-                            Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on:" + hit.name);
-                        }
-                        //This is where Josh's part ends again! :3, nice seeing ya!
+                            Debug.Log("Moving to enemy: " + hit.name);
+                            targetPosition = hit.transform.position;
+                            isMoving = true;
 
-                        break;
+                            //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
+                            EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
+                            if (dmg != null && dashDamageProfile != null)
+                            {
+                                DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
+                                dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on:" + hit.name);
+                            }
+                            //This is where Josh's part ends again! :3, nice seeing ya!
+
+                            break;
+                        }
                     }
                 }
-            }
+            
         }
 
         if (isMoving)

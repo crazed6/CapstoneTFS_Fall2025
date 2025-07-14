@@ -284,6 +284,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &67113780 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 1926697564}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4254d0d32071ebb47a05143c71b06dd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &113963687
 GameObject:
   m_ObjectHideFlags: 0
@@ -20776,6 +20787,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: pjt
+      value: 
+      objectReference: {fileID: 67113780}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: dashDamageProfile
       value: 
       objectReference: {fileID: 11400000, guid: 8cb15e9fe0f43f44ab8150b4f9253ffa, type: 2}
@@ -20850,6 +20865,10 @@ PrefabInstance:
     - target: {fileID: 2238005256069501301, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2982407505743257184, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3081269475143033825, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: m_LocalPosition.x
@@ -23212,3 +23231,5 @@ SceneRoots:
   - {fileID: 215878865}
   - {fileID: 809587098}
   - {fileID: 2061845887}
+  - {fileID: 1156333348}
+  - {fileID: 466556504}
