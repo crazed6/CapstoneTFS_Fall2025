@@ -73,7 +73,7 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
                 if (playerHealth != null && enemy.GroundSlam != null)
                 {
                     DamageData damageData = new DamageData(enemy.gameObject, enemy.GroundSlam);
-                    playerHealth.TakeDamage(damageData);
+                    playerHealth.PlayerTakeDamage(damageData);
                 }
                 //Josh script end
 

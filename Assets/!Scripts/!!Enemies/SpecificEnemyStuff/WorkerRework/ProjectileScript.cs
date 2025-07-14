@@ -39,7 +39,7 @@ public class ProjectileScript : MonoBehaviour
             if (playerHealth != null && WorkerProjectile != null)
             {
                 DamageData damageData = new DamageData(gameObject, WorkerProjectile);
-                playerHealth.TakeDamage(damageData);
+                playerHealth.PlayerTakeDamage(damageData);
             }
             //Josh script end
 
