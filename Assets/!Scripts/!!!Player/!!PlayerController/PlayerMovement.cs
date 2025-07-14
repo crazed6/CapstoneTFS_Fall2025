@@ -64,17 +64,8 @@ public class CharacterController : MonoBehaviour
     public float slideCooldownTime = 1.5f; // Time in seconds to wait before sliding again
     private float slideCooldownTimer = 0f; // Tracks the cooldown time
 
-
-
     bool isSliding = false;
     bool slideInitiated = false;
-
-
-    [Header ("Attack settings")]
-
-    public float coneAngle = 30f; // Angle in degrees
-    public float coneRange = 10f; // How far the cone reaches
-    public LayerMask enemyLayer;
 
     [Header("Wall Running")]
     public bool fallWhileWallRunning; // Slowly fall character while wall running
@@ -122,6 +113,10 @@ public class CharacterController : MonoBehaviour
     public bool IsDashing => isMoving; // Already tracked as isMoving -_-
     public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
 
+    [Header("Cutscene Cameras")]
+    public GameObject thirdPersonCamera;
+    public GameObject cutSceneCamera;
+    public GameObject cutScenePlayerCamera;
 
     void Awake()
     {
@@ -635,73 +630,48 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    private void CheckEnemyInCrosshair()
+    void CheckEnemyInCrosshair()
     {
-        Vector3 lastSpeed = rb.linearVelocity;
+        //saves rb curent speed
+        Vector3 lastspeed = rb.linearVelocity;
 
-        if (Input.GetMouseButtonDown(0))
+        //check for mouse down
+        if (Input.GetMouseButtonDown(0)) // Left click
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
 
-            foreach (var hit in hits)
+            //fire raycast from camera position
+            Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+            RaycastHit hit;
+
+            //check if raycast hits object with enemy tag
+            if (Physics.Raycast(ray, out hit, maxDistance))
             {
-                if (hit.CompareTag("enemy"))
+                if (hit.collider.CompareTag("enemy"))
                 {
-                    Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-                    float angle = Vector3.Angle(transform.forward, directionToTarget);
-
-                    if (angle < coneAngle / 2f)
-                    {
-                        Debug.Log("Moving to enemy: " + hit.name);
-                        targetPosition = hit.transform.position;
-                        isMoving = true;
-                        break;
-                    }
+                    Debug.Log("Moving to enemy: " + hit.collider.name);
+                    
+                    //find position for enemy 
+                    targetPosition = hit.collider.transform.position;
+                    isMoving = true;
                 }
             }
         }
 
         if (isMoving)
         {
+            //move player to enemy position 
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
-
+            
+            //stop movement when player is within 0.5 units of the enemy
             if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
             {
                 isMoving = false;
-                rb.linearVelocity = lastSpeed * 1.2f;
+
+                //reapply the rb velocity with a multiple of 1.2
+                rb.linearVelocity = lastspeed * 1.2f;
             }
         }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-
-        Vector3 origin = transform.position;
-        Vector3 forward = transform.forward;
-
-        // Draw the cone boundary lines
-        Quaternion leftRotation = Quaternion.Euler(0, -coneAngle / 2f, 0);
-        Quaternion rightRotation = Quaternion.Euler(0, coneAngle / 2f, 0);
-
-        Vector3 leftDir = leftRotation * forward;
-        Vector3 rightDir = rightRotation * forward;
-
-        Gizmos.DrawLine(origin, origin + leftDir * coneRange);
-        Gizmos.DrawLine(origin, origin + rightDir * coneRange);
-
-        // Draw arc to represent cone
-        int segments = 20;
-        for (int i = 0; i < segments; i++)
-        {
-            float angle1 = -coneAngle / 2f + (coneAngle / segments) * i;
-            float angle2 = -coneAngle / 2f + (coneAngle / segments) * (i + 1);
-
-            Vector3 dir1 = Quaternion.Euler(0, angle1, 0) * forward;
-            Vector3 dir2 = Quaternion.Euler(0, angle2, 0) * forward;
-
-            Gizmos.DrawLine(origin + dir1 * coneRange, origin + dir2 * coneRange);
-        }
+    
     }
 }
 
