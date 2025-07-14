@@ -12,7 +12,7 @@ public class PlayerHealthData
 public class Health : MonoBehaviour
 {
     
-    public int damageAmount = 10;
+    public int testDamageAmount = 10;
     [SerializeField] private int maxHealth = 100;
     public int MaxHealth => maxHealth; // Read-only property to access max health
     private int _health = 50;
@@ -120,17 +120,17 @@ public class Health : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.Alpha0))
-        //{
-        //    // Call the TakeDamage function on the player
-        //    Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
-        //    if (playerHealth != null)
-        //    {
-        //        playerHealth.TakeDamage(damageAmount);  // Pass the damage amount to the player's TakeDamage function
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            // Call the TakeDamage function on the player
+            Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
+            if (playerHealth != null)
+            {
+                playerHealth.DebugDamage(testDamageAmount);  // Pass the damage amount to the player's TakeDamage function
 
-        //    }
+            }
 
-        //}
+        }
 
         //if (Input.GetKeyDown(KeyCode.Alpha9))
         //{
@@ -138,7 +138,7 @@ public class Health : MonoBehaviour
         //    Health playerHealth = GetComponent<Health>();  // Assuming the player has a Health component attached
         //    if (playerHealth != null)
         //    {
-        //        playerHealth.HealDamage(damageAmount);  // Pass the damage amount to the player's TakeDamage function
+        //        playerHealth.PlayerHealDamage(testDamageAmount);  // Pass the damage amount to the player's TakeDamage function
 
         //    }
 
@@ -162,6 +162,17 @@ public class Health : MonoBehaviour
                     regenTimer = 0f;
                 }
             }
+        }
+    }
+
+    public void DebugDamage(int testDamageAmount)
+    {
+        // This function is for testing purposes to apply damage directly
+        _health -= testDamageAmount;
+        Debug.Log($"[Debug] Player took {testDamageAmount} damage. Current health: {_health}");
+        if (_health <= 0)
+        {
+            PlayerDie();
         }
     }
 
