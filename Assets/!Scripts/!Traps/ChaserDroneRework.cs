@@ -24,6 +24,11 @@ public class ChaserDroneRework : MonoBehaviour
     private Vector3 attackDirection;          // Final locked direction for the kamikaze
     private Rigidbody rb;                     // Rigidbody reference for physics-based movement
 
+    //Josh Addition for Damage Profile
+    public DamageProfile ChaserDroneDirect; // Reference to the DamageProfile ScriptableObject
+    public DamageProfile ChaserDroneAoE; // Reference to the DamageProfile ScriptableObject
+    // End of Josh Addition
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -121,6 +126,15 @@ public class ChaserDroneRework : MonoBehaviour
         if (collision.collider.CompareTag("Player"))
         {
             Debug.Log("Player directly hit by Chaser Drone!");
+
+            //Josh Damage Application for PlayerHealth (AoE)
+            Health playerHealth = collision.collider.GetComponent<Health>();
+            if (playerHealth != null && ChaserDroneDirect != null)
+            {
+                DamageData damageData = new DamageData(gameObject, ChaserDroneDirect);
+                playerHealth.PlayerTakeDamage(damageData);
+            }
+            //Josh script ends
         }
 
         // Check for AOE explosion hit using Physics.OverlapSphere
@@ -133,12 +147,22 @@ public class ChaserDroneRework : MonoBehaviour
             {
                 Debug.Log("Player hit by drone explosion AOE!");
                 aoeHit = true;
+
+                //Josh Damage Application for PlayerHealth
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && ChaserDroneAoE != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, ChaserDroneAoE);
+                    playerHealth.PlayerTakeDamage(damageData);
+                }
+                //Josh script ends
             }
         }
 
         if (!aoeHit)
         {
             Debug.Log("Player NOT hit by AOE.");
+
         }
 
         // Spawn explosion effect
