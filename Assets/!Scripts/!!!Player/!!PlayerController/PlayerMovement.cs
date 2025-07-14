@@ -13,6 +13,13 @@ public class CharacterController : MonoBehaviour
 
     public static CharacterController instance; // it's me -_-
 
+    //JoshuaC here :3, just adding my thing near the top for easy access
+
+    [Header("Combat")]
+    public DamageProfile dashDamageProfile; // Reference to the DashDamage ScriptableObject
+
+    //My part ends here :3, nice to see you Jaxson!
+
     [HideInInspector] public Rigidbody rb;
 
     [Header("Movement")]
@@ -655,6 +662,20 @@ public class CharacterController : MonoBehaviour
                         Debug.Log("Moving to enemy: " + hit.name);
                         targetPosition = hit.transform.position;
                         isMoving = true;
+
+                        //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
+                        EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
+                        if(dmg != null && dashDamageProfile != null)
+                        {
+                            DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
+                            dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on:" + hit.name);
+                        }
+                        //This is where Josh's part ends again! :3, nice seeing ya!
+
                         break;
                     }
                 }
