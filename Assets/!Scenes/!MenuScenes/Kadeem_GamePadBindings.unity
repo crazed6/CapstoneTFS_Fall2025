@@ -296,7 +296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Sprint
-  bindingIndex: 0
+  bindingIndex: 1
   bindingDisplay: {fileID: 2069118759}
   triggerButton: {fileID: 1069234362}
 --- !u!1 &215756052
@@ -390,7 +390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Attack
-  bindingIndex: 1
+  bindingIndex: 0
   bindingDisplay: {fileID: 1360835092}
   triggerButton: {fileID: 2146255883}
 --- !u!1 &256641946
@@ -664,7 +664,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 7
+  bindingIndex: 0
   displayText: {fileID: 293846217}
 --- !u!1 &337499538
 GameObject:
@@ -757,7 +757,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 9
+  bindingIndex: 0
   bindingDisplay: {fileID: 1189736796}
   triggerButton: {fileID: 1659672751}
 --- !u!1 &344593721
@@ -1314,7 +1314,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Crouch
-  bindingIndex: 1
+  bindingIndex: 0
   bindingDisplay: {fileID: 1018599157}
   triggerButton: {fileID: 1140018006}
 --- !u!1 &766111522
@@ -2090,7 +2090,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Jump
-  bindingIndex: 0
+  bindingIndex: 1
   displayText: {fileID: 997666993}
 --- !u!1 &1018599155
 GameObject:
@@ -2242,7 +2242,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Crouch
-  bindingIndex: 1
+  bindingIndex: 0
   displayText: {fileID: 1018599157}
 --- !u!1 &1029659708
 GameObject:
@@ -2335,7 +2335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 5
+  bindingIndex: 0
   bindingDisplay: {fileID: 1348485579}
   triggerButton: {fileID: 705302944}
 --- !u!1 &1069234360
@@ -2686,7 +2686,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Interact
-  bindingIndex: 0
+  bindingIndex: 1
   bindingDisplay: {fileID: 1373500472}
   triggerButton: {fileID: 256641948}
 --- !u!1 &1140018004
@@ -2960,7 +2960,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 9
+  bindingIndex: 0
   displayText: {fileID: 1189736796}
 --- !u!1 &1300196185
 GameObject:
@@ -3386,7 +3386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 5
+  bindingIndex: 0
   displayText: {fileID: 1348485579}
 --- !u!1 &1352311714
 GameObject:
@@ -3674,7 +3674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Attack
-  bindingIndex: 1
+  bindingIndex: 0
   displayText: {fileID: 1360835092}
 --- !u!1 &1364740268
 GameObject:
@@ -3767,7 +3767,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Jump
-  bindingIndex: 0
+  bindingIndex: 1
   bindingDisplay: {fileID: 997666993}
   triggerButton: {fileID: 1445897223}
 --- !u!1 &1373500470
@@ -3920,7 +3920,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Interact
-  bindingIndex: 0
+  bindingIndex: 1
   displayText: {fileID: 1373500472}
 --- !u!1 &1437111436
 GameObject:
@@ -3934,6 +3934,7 @@ GameObject:
   - component: {fileID: 1437111440}
   - component: {fileID: 1437111439}
   - component: {fileID: 1437111438}
+  - component: {fileID: 1437111441}
   m_Layer: 5
   m_Name: Back Button
   m_TagString: Untagged
@@ -4005,10 +4006,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 24037266}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 1437111441}
+        m_TargetAssemblyTypeName: GamePad_InputManager, Assembly-CSharp
+        m_MethodName: BackToMainMenu
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -4016,18 +4017,6 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
         m_CallState: 2
 --- !u!114 &1437111439
 MonoBehaviour:
@@ -4067,6 +4056,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1437111436}
   m_CullTransparentMesh: 1
+--- !u!114 &1437111441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437111436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d1fc1494ffb7914e9c24f70cf75833b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1445897221
 GameObject:
   m_ObjectHideFlags: 0
@@ -4701,7 +4702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 3
+  bindingIndex: 0
   displayText: {fileID: 1768103301}
 --- !u!1 &1864699307
 GameObject:
@@ -4794,7 +4795,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 3
+  bindingIndex: 0
   bindingDisplay: {fileID: 1768103301}
   triggerButton: {fileID: 1447024190}
 --- !u!1 &1997673261
@@ -5296,7 +5297,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Move
-  bindingIndex: 7
+  bindingIndex: 0
   bindingDisplay: {fileID: 293846217}
   triggerButton: {fileID: 443492267}
 --- !u!1 &2069118757
@@ -5449,7 +5450,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   actionName: Sprint
-  bindingIndex: 0
+  bindingIndex: 1
   displayText: {fileID: 2069118759}
 --- !u!1 &2087250918
 GameObject:
@@ -5644,7 +5645,6 @@ GameObject:
   - component: {fileID: 2143954802}
   - component: {fileID: 2143954801}
   - component: {fileID: 2143954800}
-  - component: {fileID: 2143954804}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5736,20 +5736,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &2143954804
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2143954799}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 400ac97f62533ea4ba5b085c03155762, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  resolutionDropdown: {fileID: 0}
-  audioMixer: {fileID: 24100000, guid: 4571f64207a9c5343b5b27d1cf2721d0, type: 2}
 --- !u!1 &2146255881
 GameObject:
   m_ObjectHideFlags: 0

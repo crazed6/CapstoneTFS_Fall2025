@@ -21,6 +21,7 @@ public static class RebindManager
             return;
         }
 
+        if (displayTxt != null)
         displayTxt.text = "Press any key...";
 
         // Disable the action before rebinding
@@ -36,10 +37,13 @@ public static class RebindManager
                 // Re-enable the action
                 action.Enable();
 
-                displayTxt.text = InputControlPath.ToHumanReadableString(
+               if (displayTxt != null)
+                {
+                    displayTxt.text = InputControlPath.ToHumanReadableString(
                     action.bindings[bindingIndx].effectivePath,
                     InputControlPath.HumanReadableStringOptions.OmitDevice
-                );
+                  );
+                }
 
                 InputManager.Instance.SaveRebinds();
                 onComplete?.Invoke();
