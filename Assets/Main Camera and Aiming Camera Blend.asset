@@ -24,17 +24,6 @@ MonoBehaviour:
         m_PreInfinity: 0
         m_PostInfinity: 0
         m_RotationOrder: 0
-  - m_From: AimingCameraUpdated
-    m_To: 3rdPersonFreelookCamera
-    m_Blend:
-      m_Style: 2
-      m_Time: 1
-      m_CustomCurve:
-        serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
-        m_RotationOrder: 0
   - m_From: 3rdPersonFreelookCamera
     m_To: LeftWallRunCamera
     m_Blend:
@@ -51,6 +40,17 @@ MonoBehaviour:
     m_Blend:
       m_Style: 1
       m_Time: 0.5
+      m_CustomCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
+        m_RotationOrder: 0
+  - m_From: AimingCameraUpdated
+    m_To: 3rdPersonFreelookCamera
+    m_Blend:
+      m_Style: 1
+      m_Time: 1
       m_CustomCurve:
         serializedVersion: 2
         m_Curve: []
