@@ -47,7 +47,7 @@ public class ExplodingEnemy : MonoBehaviour
 
     private Vector3 lastKnownPlayerPosition;
 
-    public DamageProfile explosionDamageProfile;
+    public DamageProfile GeneralExplosion; //Josh script, ensure to attach Explode Damage Profile in inspector
 
     void Start()
     {
@@ -252,14 +252,23 @@ public class ExplodingEnemy : MonoBehaviour
 
             if (hit.CompareTag("Player"))
             {
-                DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
-                Health health = hit.GetComponent<Health>();
-                if (damageReceiver != null && health != null)
+                //DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
+                //Health health = hit.GetComponent<Health>();
+                //if (damageReceiver != null && health != null)
+                //{
+                //    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
+                //    health.TakeDamage(damageData);
+                //    alreadyDamaged.Add(hit);
+                //}
+
+                //Josh script, ensure to attach Explode Damage Profile in inspector
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && GeneralExplosion != null)
                 {
-                    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
-                    health.TakeDamage(damageData);
-                    alreadyDamaged.Add(hit);
+                    DamageData damageData = new DamageData(gameObject, GeneralExplosion);
+                    playerHealth.PlayerTakeDamage(damageData);
                 }
+                //Josh script end
             }
 
             alreadyDamaged.Add(hit);
