@@ -1,94 +1,120 @@
 //Ritwik
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.UI;
+using Cysharp.Threading.Tasks;
+using UnityEngine.InputSystem;
 
 public class PlayerJavelinThrow : MonoBehaviour
 {
     [Header("Javelin Settings")]
-    public GameObject javelinPrefab;                    // Prefab of the javelin to be instantiated -_-
-    public Transform javelinSpawnPoint;                 // Point where javelin will be instantiated from -_-
-    public float throwForce = 50f;                      // Not used currently, but kept for future physical throw logic -_-
-    public float cooldownTime = 2f;                     // Time between javelin throws -_-
+    public GameObject javelinPrefab; // Prefab for the javelin -_-
+    public Transform javelinSpawnPoint; // Unused in current logic -_-
+    public float throwForce = 50f; // Stored for future use if needed -_-
+    public float cooldownTime = 2f; // Cooldown time between javelin throws -_-
 
     [Header("Throw Direction")]
-    public bool useCameraDirection = false;             // Toggle to determine throw direction source -_-
+    public bool useCameraDirection = false; // Option to use camera for direction (unused) -_-
 
     [Header("Throw Points")]
-    public Transform rightHandThrowPoint;               // Javelin spawn point when wallrunning on left wall -_-
-    public Transform leftHandThrowPoint;                // Javelin spawn point when wallrunning on right wall -_-
-    public Transform defaultThrowPoint;                 // Default spawn point when not wallrunning -_-
+    public Transform rightHandThrowPoint; // Throw point when wallrunning on left wall -_-
+    public Transform leftHandThrowPoint; // Throw point when wallrunning on right wall -_-
+    public Transform defaultThrowPoint; // Default throw point if not wallrunning -_-
 
     [Header("UI Settings")]
-    public GameObject crosshair;                        // Crosshair UI shown while aiming -_-
+    public GameObject crosshair; // Crosshair UI shown during aiming -_-
 
     [Header("Slow Motion Settings")]
-    public float slowMotionTimeScale = 0.1f;            // Time scale during slow motion -_-
-    public float slowMotionDuration = 1f;               // Duration of slow motion effect -_-
-    public float timeSlowInSpeed = 5f;                  // Speed at which slow motion kicks in -_-
-    public float timeResetSpeed = 5f;                   // Speed at which normal time resumes -_-
+    public float slowMotionTimeScale = 0.1f; // Target time scale for slow motion -_-
+    public float slowMotionDuration = 1f; // How long slow motion should last -_-
+    public float timeSlowInSpeed = 5f; // Lerp speed into slow motion -_-
+    public float timeResetSpeed = 5f; // Lerp speed to return to normal time -_-
 
     [Header("Camera Reference")]
-    public AimingCameraController aimingCameraController; // Reference to the aiming camera logic -_-
+    public AimingCameraController aimingCameraController; // Reference to camera anchor system -_-
 
     [Header("Camera Switching")]
-    public CinemachineFreeLook mainVirtualCam;     // Reference to main gameplay camera -_-
-    public CinemachineVirtualCamera aimingVirtualCam;   // Reference to javelin aiming camera -_-
+    public CinemachineFreeLook mainVirtualCam; // Main free look camera -_-
+    public CinemachineVirtualCamera aimingVirtualCam; // Aiming camera -_-
 
-    private GameObject currentJavelin;                  // Currently held (unthrown) javelin -_-
-    private bool isAiming = false;                      // If the player is currently aiming -_-
-    private float cooldownTimer = 0f;                   // Internal cooldown timer -_-
-    private bool isEnteringSlowMotion = false;          // If slow motion is being activated -_-
-    private bool isSlowMotionActive = false;            // If slow motion is currently active -_-
-    private float slowMotionTimer = 0f;                 // Timer for how long slow motion lasts -_-
-    private Transform currentThrowPoint;                // Throw point selected based on wall side or default -_-
+    private GameObject currentJavelin; // The currently held javelin -_-
+    private bool isAiming = false; // Whether the player is in aiming mode -_-
+    private float cooldownTimer = 0f; // Countdown for next throw -_-
+    private bool isEnteringSlowMotion = false; // If currently lerping into slow motion -_-
+    private bool isSlowMotionActive = false; // If slow motion is active -_-
+    private float slowMotionTimer = 0f; // Countdown timer for slow motion -_-
+    private Transform currentThrowPoint; // Selected throw point based on wall state -_-
+    private Camera playerCamera; // Cached camera reference -_-
 
-    private Camera playerCamera;                        // Active camera used for screen raycasting -_-
+    private PlayerInputActions input; // Input system instance -_-
+
+    void Awake()
+    {
+        input = new PlayerInputActions(); // Create input asset instance -_-
+    }
+
+    void OnEnable()
+    {
+        input.Player.Enable(); // Enable Player action map -_-
+        input.Player.Aim.started += OnAimStarted; // Register event for aim press -_-
+        input.Player.Throw.canceled += OnThrowReleased; // Register event for throw release -_-
+    }
+
+    void OnDisable()
+    {
+        input.Player.Disable(); // Disable Player input map -_-
+        input.Player.Aim.started -= OnAimStarted; // Unregister event -_-
+        input.Player.Throw.canceled -= OnThrowReleased; // Unregister event -_-
+    }
 
     void Start()
     {
-        playerCamera = aimingCameraController.GetCamera(); // Assign main camera with Cinemachine brain for raycasts -_-
-
-        if (crosshair) crosshair.SetActive(false);         // Disable crosshair at start -_-
+        playerCamera = aimingCameraController.GetCamera(); // Cache camera reference -_-
+        if (crosshair) crosshair.SetActive(false); // Hide crosshair initially -_-
     }
 
     void Update()
     {
-        HandleCooldown();                                  // Update throw cooldown -_-
-
-        if (Input.GetMouseButtonDown(1) && cooldownTimer <= 0)
-        {
-            StartAiming();                                 // Start aiming when right-click is pressed -_-
-        }
-
-        if (Input.GetMouseButtonUp(1) && isAiming)
-        {
-            ThrowJavelin();                                // Throw the javelin when right-click is released -_-
-        }
-
-        HandleSlowMotion();                                // Manage slow motion transitions -_-
+        HandleCooldown(); // Handle throw cooldown -_-
+        HandleSlowMotion(); // Handle slow motion lerping -_-
     }
 
-    void StartAiming()
+    void OnAimStarted(InputAction.CallbackContext context)
     {
-        if (crosshair) crosshair.SetActive(true);          // Enable crosshair UI -_-
+        if (cooldownTimer <= 0)
+        {
+            StartAiming().Forget(); // Begin aiming if not on cooldown -_-
+        }
+    }
+
+    void OnThrowReleased(InputAction.CallbackContext context)
+    {
+        if (isAiming)
+        {
+            ThrowJavelin(); // Triggered on right-click release -_-
+        }
+    }
+
+    async UniTaskVoid StartAiming()
+    {
+        if (crosshair) crosshair.SetActive(true); // Show crosshair -_-
 
         if (javelinPrefab && javelinSpawnPoint)
         {
-            UpdateCurrentThrowPoint();                     // Determine correct hand to spawn from -_-
+            UpdateCurrentThrowPoint(); // Determine which hand to use -_-
 
             currentJavelin = Instantiate(javelinPrefab, currentThrowPoint.position, currentThrowPoint.rotation); // Spawn javelin -_-
-            currentJavelin.transform.SetParent(currentThrowPoint);                                               // Attach it to hand -_-
+            currentJavelin.transform.SetParent(currentThrowPoint); // Parent to hand -_-
+            isAiming = true; // Set aiming state -_-
 
-            isAiming = true;                               // Mark aiming as active -_-
+            SwitchToAimingCamera(); // Switch to aim cam -_-
 
-            SwitchToAimingCamera();                        // Raise priority to activate aiming camera -_-
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.3f), ignoreTimeScale: true); // Wait for camera transition -_-
 
-            if (IsEligibleForSlowMotion())                 // Check if conditions meet slow motion trigger -_-
+            if (IsEligibleForSlowMotion())
             {
-                isEnteringSlowMotion = true;               // Begin slow motion lerp -_-
-                Time.timeScale = 1f;                       // Reset time scale to begin lerp properly -_-
-                Time.fixedDeltaTime = 0.02f * slowMotionTimeScale; // Set physics step for slowed time -_-
+                isEnteringSlowMotion = true;
+                Time.timeScale = 1f;
+                Time.fixedDeltaTime = 0.02f * slowMotionTimeScale;
             }
         }
     }
@@ -97,39 +123,39 @@ public class PlayerJavelinThrow : MonoBehaviour
     {
         if (currentJavelin)
         {
-            currentJavelin.transform.SetParent(null);      // Detach javelin from hand -_-
-
-            Vector3 throwDirection = GetThrowDirection();  // Get direction from crosshair ray -_-
-            currentJavelin.GetComponent<JavelinController>().SetDirection(throwDirection); // Initiate arc flight -_-
+            currentJavelin.transform.SetParent(null); // Unparent the javelin -_-
+            Vector3 throwDirection = GetThrowDirection(); // Get direction -_-
+            currentJavelin.GetComponent<JavelinController>().SetDirection(throwDirection); // Throw it -_-
 
             currentJavelin = null;
             isAiming = false;
 
-            SwitchToMainCamera();                          // Return to main gameplay cam -_-
-            if (crosshair) crosshair.SetActive(false);     // Disable crosshair -_-
-            cooldownTimer = cooldownTime;                  // Start throw cooldown -_-
+            SwitchToMainCamera(); // Switch back to main cam -_-
+            if (crosshair) crosshair.SetActive(false); // Hide crosshair -_-
+
+            cooldownTimer = cooldownTime; // Reset cooldown -_-
 
             if (isSlowMotionActive || isEnteringSlowMotion)
             {
                 isEnteringSlowMotion = false;
                 slowMotionTimer = 0f;
-                isSlowMotionActive = true;                 // Allow time reset to begin -_-
+                isSlowMotionActive = true;
             }
         }
     }
 
     Vector3 GetThrowDirection()
     {
-        Camera cam = aimingCameraController.GetCamera();   // Use active camera with brain -_-
-        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f)); // Cast ray from screen center -_-
-        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f);                     // Debug the ray in scene -_-
-        return ray.direction.normalized;                // Return direction vector for throw -_-
+        Camera cam = aimingCameraController.GetCamera(); // Use aiming cam -_-
+        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f)); // Cast from screen center -_-
+        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f); // Debug ray -_-
+        return ray.direction.normalized; // Return direction -_-
     }
 
     void HandleCooldown()
     {
         if (cooldownTimer > 0)
-            cooldownTimer -= Time.unscaledDeltaTime;    // Countdown based on real time -_-
+            cooldownTimer -= Time.unscaledDeltaTime; // Count down cooldown -_-
     }
 
     void HandleSlowMotion()
@@ -144,47 +170,47 @@ public class PlayerJavelinThrow : MonoBehaviour
                 Time.fixedDeltaTime = 0.02f * slowMotionTimeScale;
                 isEnteringSlowMotion = false;
                 isSlowMotionActive = true;
-                slowMotionTimer = slowMotionDuration;   // Begin countdown of slow motion -_-
+                slowMotionTimer = slowMotionDuration;
             }
         }
 
         if (isSlowMotionActive && !isEnteringSlowMotion)
         {
-            slowMotionTimer -= Time.unscaledDeltaTime;  // Countdown slow motion timer -_-
+            slowMotionTimer -= Time.unscaledDeltaTime; // Count down slow motion -_-
 
             if (slowMotionTimer <= 0f)
             {
-                Time.timeScale = Mathf.Lerp(Time.timeScale, 1f, timeResetSpeed * Time.unscaledDeltaTime); // Lerp back to normal time -_-
+                Time.timeScale = Mathf.Lerp(Time.timeScale, 1f, timeResetSpeed * Time.unscaledDeltaTime); // Lerp back to normal -_-
 
                 if (Mathf.Abs(Time.timeScale - 1f) < 0.005f)
                 {
                     Time.timeScale = 1f;
                     Time.fixedDeltaTime = 0.02f;
-                    isSlowMotionActive = false;          // End slow motion completely -_-
+                    isSlowMotionActive = false;
                 }
             }
         }
     }
 
-    public bool IsAiming() => isAiming;                 // Getter for current aiming state -_-
+    public bool IsAiming() => isAiming; // Returns if aiming is active -_-
 
     bool IsEligibleForSlowMotion()
     {
         var cc = CharacterController.instance;
-        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding; // Check for air/wallrun, but not dash or slide -_-
+        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding; // Conditions for slow motion -_-
     }
 
     void SwitchToAimingCamera()
     {
-        mainVirtualCam.Priority = 10;                   // Lower main camera priority -_-
-        aimingVirtualCam.Priority = 20;                 // Raise aiming cam priority to activate it -_-
-        playerCamera = aimingCameraController.GetCamera(); // Refresh raycast cam reference -_-
+        mainVirtualCam.Priority = 10; // Lower priority of main cam -_-
+        aimingVirtualCam.Priority = 20; // Raise priority of aiming cam -_-
+        playerCamera = aimingCameraController.GetCamera(); // Refresh camera -_-
     }
 
     void SwitchToMainCamera()
     {
-        aimingVirtualCam.Priority = 5;                  // Lower aiming cam priority -_-
-        mainVirtualCam.Priority = 20;                   // Raise main cam back to top -_-
+        aimingVirtualCam.Priority = 5; // Lower aim cam priority -_-
+        mainVirtualCam.Priority = 20; // Restore main cam -_-
     }
 
     void UpdateCurrentThrowPoint()
@@ -193,12 +219,11 @@ public class PlayerJavelinThrow : MonoBehaviour
 
         if (cc.IsWallRunning)
         {
-            currentThrowPoint = cc.IsWallOnRight ? leftHandThrowPoint : rightHandThrowPoint; // Flip throw side based on wall -_-
+            currentThrowPoint = cc.IsWallOnRight ? leftHandThrowPoint : rightHandThrowPoint; // Flip based on wall side -_-
         }
         else
         {
-            currentThrowPoint = defaultThrowPoint != null ? defaultThrowPoint : rightHandThrowPoint; // Use default if set, fallback to right -_-
+            currentThrowPoint = defaultThrowPoint != null ? defaultThrowPoint : rightHandThrowPoint; // Fallback to default -_-
         }
     }
 }
-

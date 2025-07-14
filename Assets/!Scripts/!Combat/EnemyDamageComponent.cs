@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 public class EnemyDamageComponent : MonoBehaviour
@@ -130,4 +129,11 @@ public class EnemyDamageComponent : MonoBehaviour
     //    if (healthBar != null && currentHealth > 0) healthBar.gameObject.SetActive(false);
     //}
 
+    //Josh code here
+    public void TakeDamage2(DamageData data)
+    {
+        Debug.Log($"{gameObject.name} is taking {data.profile.damageAmount} {data.profile.damageType} damage from {data.source?.name ?? "Unknown"} (via DamageData)");
+        TakeDamage(data.profile.damageAmount, data.source);
+    }
+    //Josh code ends
 }

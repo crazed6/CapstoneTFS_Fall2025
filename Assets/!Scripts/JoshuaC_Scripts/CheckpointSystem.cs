@@ -1,8 +1,5 @@
 using UnityEngine;
 using System.IO;
-using System.Collections;
-using UnityEngine.UI;
-
 
 public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has to be attached to the Player object.
     // The Checkpoint will still require the tag however.
