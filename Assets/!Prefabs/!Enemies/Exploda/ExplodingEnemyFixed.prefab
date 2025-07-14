@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 4105170514180547943}
   m_Layer: 0
   m_Name: ExplodingEnemyFixed
-  m_TagString: Untagged
+  m_TagString: enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -152,7 +152,9 @@ MonoBehaviour:
   liftRadius: 3
   liftForce: 100
   KnockbackForce: 10
-  explosionDamageProfile: {fileID: 0}
+  OuterExplosion: {fileID: 0}
+  MiddleExplosion: {fileID: 0}
+  InnerExplosion: {fileID: 0}
 --- !u!54 &5776929324321902514
 Rigidbody:
   m_ObjectHideFlags: 0

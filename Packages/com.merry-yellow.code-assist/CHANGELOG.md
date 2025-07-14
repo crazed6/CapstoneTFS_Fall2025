@@ -1,5 +1,14 @@
 List of new features, bug fixes and improvements
 
+# Version 1.4.16
+* New code completions: RenderingLayerMask (Unity 6 and newer only)
+* New inline visuals: RenderingLayerMask (Unity 6 and newer only), and LayerMask
+* Hotfix for Unity editor freezes
+* Hotfix for inline visuals not showing properly when changing document in Visual Studio
+* Category SortingLayer removed, its items are now under category Layer
+* Minor fix for output window in Visual Studio
+* Gpt libraries and models are updated
+
 # Version 1.4.15
 * Hotfix for code completion for attributes
 
