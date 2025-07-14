@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2319889070226615031}
+  - component: {fileID: 8949634546554299122}
   - component: {fileID: 3897829633899558539}
   - component: {fileID: 3187017217538679972}
   m_Layer: 0
@@ -26,14 +27,44 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 962301011841097520}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0000000053887104, y: 0.66737795, z: -0.0000000011172042, w: 0.74471927}
+  m_LocalRotation: {x: 0, y: 0.6673778, z: 0, w: 0.7447193}
   m_LocalPosition: {x: -9.940184, y: 1, z: -1.0921353}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8979070972606811402}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 83.73, z: 0}
+--- !u!114 &8949634546554299122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 962301011841097520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e501d18bb52cf8c40b1853ca4904654f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_CollideAgainst:
+    serializedVersion: 2
+    m_Bits: 193
+  m_IgnoreTag: Player
+  m_TransparentLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_MinimumDistanceFromTarget: 0.1
+  m_AvoidObstacles: 1
+  m_DistanceLimit: 0
+  m_MinimumOcclusionTime: 0
+  m_CameraRadius: 0.1
+  m_Strategy: 1
+  m_MaximumEffort: 4
+  m_SmoothingTime: 0
+  m_Damping: 0
+  m_DampingWhenOccluded: 0
+  m_OptimalTargetDistance: 0
 --- !u!114 &3897829633899558539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,7 +124,7 @@ MonoBehaviour:
   debugRayCamera: {fileID: 0}
   mouseSensitivity: 300
   horizontalClamp: 45
-  verticalClamp: 20
+  verticalClamp: 25
   normalFOV: 70
   aimingFOV: 60
   fovLerpSpeed: 0.2
