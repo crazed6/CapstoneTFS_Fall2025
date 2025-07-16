@@ -7,6 +7,12 @@ public class MainMenu : MonoBehaviour
     public void Start()
     {
         SoundManager.Instance.PlayBGM(0);
+
+        // Ensure input bindings are loaded (once)
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.LoadRebinds(); // Load rebinds from PlayerPrefs  
+        }
     }
     public void PlayGame() //method to start the first game scene
     {
@@ -15,7 +21,7 @@ public class MainMenu : MonoBehaviour
     }
     public void Settings() //method to start the first game scene
     {
-        SceneManager.LoadSceneAsync("SettingsMenu"); //Replace SampleScene with the name of the first game scene 
+        SceneManager.LoadSceneAsync("Kadeem_SettingsMenu"); //Replace SampleScene with the name of the first game scene 
         SoundManager.Instance.PlayBGM(1);
     }
 
