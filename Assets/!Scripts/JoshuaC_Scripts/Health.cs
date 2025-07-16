@@ -103,12 +103,16 @@ public class Health : MonoBehaviour
             health = 100;
             isDead = false;
         }
-        
+
+        //Respawn All Enemies after death
+        FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
+
+
         // Mark player as dead
-        
+
         // Optionally, disable players movement or play a death animation here
-        
-          // Allow player to die again
+
+        // Allow player to die again
     }
 
     // Start is called before the first frame update
