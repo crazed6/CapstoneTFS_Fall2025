@@ -31,34 +31,10 @@ public class RebindButton : MonoBehaviour
 
     private void OnEnable()
     {
-       UsedKeyRegistry.RefreshUsedKeys(); // make sure used keys are up to date
-
         if (InputManager.Instance != null)
             UpdateDisplay();
         else
             StartCoroutine(WaitForInputManager());
-
-        var action = InputManager.Instance.FindAction(actionName);
-        if (action == null || bindingIndex >= action.bindings.Count) return;
-
-        string path = action.bindings[bindingIndex].effectivePath;
-        if (!string.IsNullOrEmpty(path) && UsedKeyRegistry.IsKeyUsed(path))
-        {
-            // Allow this one (it's this button's binding)
-            return;
-        }
-
-        // If the key is used by another, gray out and disable
-        if (UsedKeyRegistry.IsKeyUsed(path))
-        {
-            bindingDisplay.color = Color.gray;
-            triggerButton.interactable = false;
-        }
-        else
-        {
-            bindingDisplay.color = Color.white;
-            triggerButton.interactable = true;
-        }
     }
 
     private System.Collections.IEnumerator WaitForInputManager()

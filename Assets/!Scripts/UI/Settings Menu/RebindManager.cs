@@ -22,15 +22,10 @@ public static class RebindManager
         }
 
         if (displayTxt != null)
-        {
-            displayTxt.color = Color.white; // Reset color to white
-            displayTxt.text = "Press any key...";
-        }
+        displayTxt.text = "Press any key...";
 
         // Disable the action before rebinding
         action.Disable();
-
-        var originalPath = action.bindings[bindingIndx].effectivePath;
 
         action.PerformInteractiveRebinding(bindingIndx)
             .WithControlsExcluding("Mouse") // Exclude mouse ?? Confirm with Team group.
@@ -38,42 +33,19 @@ public static class RebindManager
             .OnComplete(operation =>
             {
                 operation.Dispose();
-                string newPath = action.bindings[bindingIndx].effectivePath;
-
-                if (UsedKeyRegistry.IsKeyUsed(newPath) && newPath != originalPath)
-                {
-                    Debug.LogWarning($"Key {newPath} is already in use.");
-                    action.RemoveBindingOverride(bindingIndx); // Revert
-                    displayTxt.color = Color.red;
-                    displayTxt.text = "Key already in use!";
-                    action.Enable();
-                    return;
-                }
-
-                // Register new key
-                UsedKeyRegistry.RemoveUsedKey(originalPath);
-                UsedKeyRegistry.AddUsedKey(newPath);
-
-                action.Enable();
-                displayTxt.color = Color.white;
-                displayTxt.text = InputControlPath.ToHumanReadableString(
-                    newPath,
-                    InputControlPath.HumanReadableStringOptions.OmitDevice
-                );
 
                 // Re-enable the action
-                // action.Enable();
+                action.Enable();
 
-                //if (displayTxt != null)
-                // {
-                //     displayTxt.text = InputControlPath.ToHumanReadableString(
-                //     action.bindings[bindingIndx].effectivePath,
-                //     InputControlPath.HumanReadableStringOptions.OmitDevice
-                //   );
-                // }
+               if (displayTxt != null)
+                {
+                    displayTxt.text = InputControlPath.ToHumanReadableString(
+                    action.bindings[bindingIndx].effectivePath,
+                    InputControlPath.HumanReadableStringOptions.OmitDevice
+                  );
+                }
 
                 InputManager.Instance.SaveRebinds();
-                UsedKeyRegistry.RefreshUsedKeys(); // Update all other UIs
                 onComplete?.Invoke();
             })
             .Start();
