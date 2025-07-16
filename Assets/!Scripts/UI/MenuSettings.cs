@@ -53,7 +53,7 @@ public class MenuSettings : MonoBehaviour
     public void MainMenu()
     {
         // Load the main menu scene (assuming it has the name "Main Menu")
-        SceneManager.LoadSceneAsync("MainMenu");  // Change to your game's scene index or name
+        SceneManager.LoadSceneAsync("Kadeem_MainMenu");  // Change to your game's scene index or name
         SoundManager.Instance.PlayBGM(0);
     }
 
