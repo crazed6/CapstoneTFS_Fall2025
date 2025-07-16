@@ -101,6 +101,7 @@ namespace Meryel.UnityCodeAssist.Editor
                 currentEditorFocus = Selection.activeObject.GetType().ToString();
 
             //**-- use this instead? https://learn.microsoft.com/en-us/dotnet/api/system.io.filesystemwatcher?view=net-8.0
+            // there is also this approach, but need to check OnUpdate anyways for focus checking, https://github.com/AlkimeeGames/TagLayerTypeGenerator/blob/main/Editor/TypeGenerator.cs#L36
             var currentTagManagerLastWrite = previousTagManagerLastWrite;
             try
             {

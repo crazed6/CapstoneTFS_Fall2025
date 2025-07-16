@@ -8,6 +8,11 @@ public class ProjectileScript : MonoBehaviour
 
     private Vector3 direction;        // The direction the projectile will move in
 
+    //Declared Variable
+    //Josh testing
+    public DamageProfile WorkerProjectile; // Reference to the damage profile for explosion damage
+    //Josh testing end
+
     // This method is called when the projectile is first spawned
     public void Initialize(Vector3 shootDirection)
     {
@@ -28,6 +33,16 @@ public class ProjectileScript : MonoBehaviour
         {
             Debug.Log("Player hit!");
             // Here you can add logic to apply damage to the player (e.g., other.GetComponent<PlayerHealth>().TakeDamage(damage);)
+
+            //Josh script, ensure to attach Damage Profile in inspector, on Projectile script
+            Health playerHealth = other.GetComponent<Health>();
+            if (playerHealth != null && WorkerProjectile != null)
+            {
+                DamageData damageData = new DamageData(gameObject, WorkerProjectile);
+                playerHealth.PlayerTakeDamage(damageData);
+            }
+            //Josh script end
+
             Destroy(gameObject); // Remove the projectile after hitting
         }
         // If the projectile hits anything else solid (like a wall or ground), and it's not a trigger

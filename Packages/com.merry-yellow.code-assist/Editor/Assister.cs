@@ -19,7 +19,7 @@ namespace Meryel.UnityCodeAssist.Editor
 {
     public class Assister
     {
-        public const string Version = "1.4.15"; //do NOT modify this line, except the number value, its being used by VSCode/Typescript for version detection (in exporter.ts.getVersionOfUnitySide())
+        public const string Version = "1.4.17"; //do NOT modify this line, except the number value, its being used by VSCode/Typescript for version detection (in exporter.ts.getVersionOfUnitySide())
 
 #if MERYEL_UCA_LITE_VERSION
         public const string Title = "Code Assist Lite";
@@ -473,15 +473,30 @@ namespace Meryel.UnityCodeAssist.Editor
             var tags = UnityEditorInternal.InternalEditorUtility.tags;
             MQTTnetInitializer.Publisher?.SendTags(tags);
 
-            var names = UnityEditorInternal.InternalEditorUtility.layers;
-            var indices = names.Select(l => LayerMask.NameToLayer(l).ToString()).ToArray();
-            MQTTnetInitializer.Publisher?.SendLayers(indices, names);
+            var layerNames = UnityEditorInternal.InternalEditorUtility.layers;
+            var layerIndices = layerNames.Select(l => LayerMask.NameToLayer(l).ToString()).ToArray();
+            MQTTnetInitializer.Publisher?.SendLayers(layerNames, layerIndices);
 
             var sls = SortingLayer.layers;
             var sortingNames = sls.Select(sl => sl.name).ToArray();
             var sortingIds = sls.Select(sl => sl.id.ToString()).ToArray();
             var sortingValues = sls.Select(sl => sl.value.ToString()).ToArray();
             MQTTnetInitializer.Publisher?.SendSortingLayers(sortingNames, sortingIds, sortingValues);
+
+#if UNITY_6000_0_OR_NEWER
+            // Version 6+ only, 2022.3 doesn't have class RenderingLayerMask, even though some renderingLayerMask fields/properties are declared
+
+            var renderingLayerCount = RenderingLayerMask.GetRenderingLayerCount();
+            var renderingLayerIndices = new string[renderingLayerCount];
+            var renderingLayerNames = new string[renderingLayerCount];
+            for (var i = 0; i < renderingLayerCount; i++)
+            {
+                renderingLayerIndices[i] = i.ToString();
+                renderingLayerNames[i] = RenderingLayerMask.RenderingLayerToName(i);
+            }
+            MQTTnetInitializer.Publisher?.SendRenderingLayers(renderingLayerNames, renderingLayerIndices);
+
+#endif // UNITY_6000_0_OR_NEWER
         }
 
         public static bool GetCodeEditor(bool checkVersion, out bool isVisualStudio, out bool isVisualStudioCode, out string? error)

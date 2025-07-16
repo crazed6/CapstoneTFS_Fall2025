@@ -1,6 +1,6 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
-using System;
+
 
 public class HeavyEnemyRock : MonoBehaviour
 {
@@ -89,7 +89,7 @@ public class HeavyEnemyRock : MonoBehaviour
                 if (playerHealth != null && RockShoot != null)
                 {
                     DamageData damageData = new DamageData(gameObject, RockShoot);
-                    playerHealth.TakeDamage(damageData);
+                    playerHealth.PlayerTakeDamage(damageData);
                 }
                 //Josh script end
 
