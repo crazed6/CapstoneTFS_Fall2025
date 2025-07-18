@@ -1,6 +1,7 @@
 //Ritwik
 using Cinemachine;
 using UnityEngine;
+using Cysharp.Threading.Tasks; // UniTask support -_-
 
 public class PlayerJavelinThrow : MonoBehaviour
 {
@@ -31,7 +32,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     public AimingCameraController aimingCameraController; // Reference to the aiming camera logic -_-
 
     [Header("Camera Switching")]
-    public CinemachineFreeLook mainVirtualCam;     // Reference to main gameplay camera -_-
+    public CinemachineFreeLook mainVirtualCam;          // Reference to main gameplay camera -_-
     public CinemachineVirtualCamera aimingVirtualCam;   // Reference to javelin aiming camera -_-
 
     private GameObject currentJavelin;                  // Currently held (unthrown) javelin -_-
@@ -47,7 +48,6 @@ public class PlayerJavelinThrow : MonoBehaviour
     void Start()
     {
         playerCamera = aimingCameraController.GetCamera(); // Assign main camera with Cinemachine brain for raycasts -_-
-
         if (crosshair) crosshair.SetActive(false);         // Disable crosshair at start -_-
     }
 
@@ -57,7 +57,7 @@ public class PlayerJavelinThrow : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1) && cooldownTimer <= 0)
         {
-            StartAiming();                                 // Start aiming when right-click is pressed -_-
+            StartAiming().Forget();                        // Use UniTask for async aiming logic -_-
         }
 
         if (Input.GetMouseButtonUp(1) && isAiming)
@@ -68,7 +68,7 @@ public class PlayerJavelinThrow : MonoBehaviour
         HandleSlowMotion();                                // Manage slow motion transitions -_-
     }
 
-    void StartAiming()
+    private async UniTaskVoid StartAiming()                // Converted to UniTask async method -_-
     {
         if (crosshair) crosshair.SetActive(true);          // Enable crosshair UI -_-
 
@@ -82,6 +82,8 @@ public class PlayerJavelinThrow : MonoBehaviour
             isAiming = true;                               // Mark aiming as active -_-
 
             SwitchToAimingCamera();                        // Raise priority to activate aiming camera -_-
+
+            await UniTask.Delay(System.TimeSpan.FromSeconds(0.2f), ignoreTimeScale: true); // Wait for camera switch or visual feel -_-
 
             if (IsEligibleForSlowMotion())                 // Check if conditions meet slow motion trigger -_-
             {
@@ -97,22 +99,21 @@ public class PlayerJavelinThrow : MonoBehaviour
         if (currentJavelin)
         {
             currentJavelin.transform.SetParent(null);      // Detach javelin from hand -_-
-
             Vector3 throwDirection = GetThrowDirection();  // Get direction from crosshair ray -_-
             currentJavelin.GetComponent<JavelinController>().SetDirection(throwDirection); // Initiate arc flight -_-
-
             currentJavelin = null;
             isAiming = false;
-
             SwitchToMainCamera();                          // Return to main gameplay cam -_-
             if (crosshair) crosshair.SetActive(false);     // Disable crosshair -_-
             cooldownTimer = cooldownTime;                  // Start throw cooldown -_-
 
             if (isSlowMotionActive || isEnteringSlowMotion)
             {
-                isEnteringSlowMotion = false;
-                slowMotionTimer = 0f;
-                isSlowMotionActive = true;                 // Allow time reset to begin -_-
+                isEnteringSlowMotion = false;               // Cancel slowmo in-transition -_-
+                isSlowMotionActive = false;                 // Exit slowmo active state -_-
+                slowMotionTimer = 0f;                       // Reset timer -_-
+                Time.timeScale = 1f;                        // Restore time to normal -_-
+                Time.fixedDeltaTime = 0.02f;                // Restore physics step -_-
             }
         }
     }
@@ -200,4 +201,3 @@ public class PlayerJavelinThrow : MonoBehaviour
         }
     }
 }
-
