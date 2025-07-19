@@ -1,47 +1,124 @@
 //Ritwik
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 
 public class JavelinController : MonoBehaviour
 {
     [Header("Arc Settings")]
-    public float speed = 50f;                // Initial launch speed of the javelin -_-
-    public float gravityStrength = 30f;      // Custom gravity strength for creating arc -_-
-    public float lifetime = 5f;              // Time after which the javelin auto-destroys -_-
+    public float speed = 90f;
+    public float gravityStrength = 30f;
+    public float lifetime = 5f;
 
     [Header("Rotation")]
-    public float rotationSpeed = 720f;       // Z-axis spin speed for visual flair -_-
+    public float rotationSpeed = 720f;
 
-    private Vector3 velocity;                // Current velocity of the javelin in world space -_-
-    private bool isFlying = false;           // Whether the javelin is currently in flight -_-
+    [Header("AoE Settings")]
+    public float aoeRadius = 3f;
+    public float damageAmount = 25f;
+    public LayerMask damageMask;
 
-    // Called when the javelin is thrown to initialize its direction and start movement -_-
+    [Header("Damage Profile")]
+    public DamageProfile damageProfile; // Assign your JavelinDamage in Inspector
+
+    private Vector3 velocity;
+    private bool isFlying = false;
+    private bool hasExploded = false;
+    private Vector3 hitPoint = Vector3.zero;
+
+    private CancellationTokenSource cts;
+
     public void SetDirection(Vector3 direction)
     {
-        velocity = direction.normalized * speed;                    // Set the initial velocity in the throw direction -_-
-        transform.rotation = Quaternion.LookRotation(velocity);     // Rotate javelin to face the initial velocity direction -_-
-        isFlying = true;                                            // Enable movement logic -_-
-        Destroy(gameObject, lifetime);                              // Auto-destroy after a certain time -_-
+        velocity = direction.normalized * speed;
+        transform.rotation = Quaternion.LookRotation(velocity);
+        isFlying = true;
+
+        cts = new CancellationTokenSource();
+        MoveAlongArc(cts.Token).Forget();
     }
 
-    // Update is called once per frame -_-
-    void Update()
+    private async UniTaskVoid MoveAlongArc(CancellationToken token)
     {
-        if (!isFlying) return;                                      // If not flying, skip movement logic -_-
+        float timer = 0f;
 
-        velocity += Vector3.down * gravityStrength * Time.deltaTime; // Apply custom gravity to simulate arc -_-
+        try
+        {
+            while (timer < lifetime && !hasExploded)
+            {
+                token.ThrowIfCancellationRequested();
 
-        transform.position += velocity * Time.deltaTime;            // Move javelin according to current velocity -_-
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-        if (velocity != Vector3.zero)
-            transform.rotation = Quaternion.LookRotation(velocity.normalized); // Align javelin rotation with new trajectory -_-
+                velocity += Vector3.down * gravityStrength * Time.deltaTime;
+                transform.position += velocity * Time.deltaTime;
 
-        transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime, Space.Self); // Optional Z-axis spin effect -_-
+                if (velocity != Vector3.zero)
+                    transform.rotation = Quaternion.LookRotation(velocity);
+
+                transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime, Space.Self);
+
+                timer += Time.deltaTime;
+            }
+
+            if (!hasExploded)
+            {
+                hitPoint = transform.position;
+                TriggerAoE();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Safe exit
+        }
     }
 
-    // Handle collision with any object -_-
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        Destroy(gameObject); // Destroy javelin on collision -_-
+        if (!hasExploded)
+        {
+            hitPoint = transform.position;
+            TriggerAoE();
+        }
+    }
+
+    private void TriggerAoE()
+    {
+        hasExploded = true;
+
+        if (cts != null && !cts.IsCancellationRequested)
+            cts.Cancel();
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, aoeRadius, damageMask);
+
+        foreach (var hit in hits)
+        {
+            EnemyDamageComponent damageable = hit.GetComponent<EnemyDamageComponent>();
+            if (damageable != null)
+            {
+                DamageData data = new DamageData
+                {
+                    source = gameObject,
+                    profile = damageProfile
+                };
+
+                damageable.TakeDamage2(data);
+            }
+        }
+
+        Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        if (cts != null && !cts.IsCancellationRequested)
+            cts.Cancel();
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(1f, 1f, 0f, 0.4f);
+        Gizmos.DrawSphere(hitPoint == Vector3.zero ? transform.position : hitPoint, aoeRadius);
     }
 }
-
