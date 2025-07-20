@@ -4337,6 +4337,73 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &381350029
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 381350030}
+  - component: {fileID: 381350032}
+  - component: {fileID: 381350031}
+  m_Layer: 0
+  m_Name: DeathZone
+  m_TagString: DeathZone
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &381350030
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 381350029}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 110.56189, y: -45, z: 74.355865}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &381350031
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 381350029}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 771.9272, y: 1, z: 472.8755}
+  m_Center: {x: -199.11002, y: 0, z: -207.0156}
+--- !u!114 &381350032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 381350029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b97d7c71f51ae4340b66768f5d8fb696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DeathZoneProfile: {fileID: 11400000, guid: 73a0be74f9e15e041ab3c19c725c2ce4, type: 2}
 --- !u!1 &395026047
 GameObject:
   m_ObjectHideFlags: 0
@@ -21192,6 +21259,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1926697566}
   checkpointPanel: {fileID: 693828168}
+  useManualCheckpoint: 1
+  initialCheckpointPosition: {x: -54.9, y: 40, z: -30}
+  initialCheckpointObject: {fileID: 0}
 --- !u!114 &1926697568 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7830118812784803936, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
@@ -23297,3 +23367,4 @@ SceneRoots:
   - {fileID: 2061845887}
   - {fileID: 1156333348}
   - {fileID: 466556504}
+  - {fileID: 381350030}
