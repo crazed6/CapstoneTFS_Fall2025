@@ -230,7 +230,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 972bc8fbab1c9b548bb1485367ec1c29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 100
+  speed: 150
   gravityStrength: 30
   lifetime: 5
   rotationSpeed: 720
+  aoeRadius: 3
+  damageAmount: 50
+  damageMask:
+    serializedVersion: 2
+    m_Bits: 0
+  damageProfile: {fileID: 11400000, guid: 2002ad50c0508d040808b833e76a571d, type: 2}
