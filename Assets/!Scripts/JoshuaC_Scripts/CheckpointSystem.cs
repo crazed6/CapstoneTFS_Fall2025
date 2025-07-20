@@ -13,6 +13,12 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
     public GameObject checkpointPanel; //This is the panel that will be shown when the player reaches a checkpoint.
     private bool isInCheckpointZone = false; //This is to check if the player is in the checkpoint zone.
 
+    //=== New Variables ===
+    [Header("Initial Checkpoint Settings")]
+    public bool useManualCheckpoint = false; // If true, the player must manually set a checkpoint
+    public Vector3 initialCheckpointPosition; // Default position for the initial checkpoint
+    public Transform initialCheckpointObject;
+
     void Start()
     {
         saveFilePath = Application.persistentDataPath + "/checkpoint.json";
@@ -33,6 +39,8 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
 
         HideCheckpointPanel(); // Hide the checkpoint panel at the start
+
+        LoadCheckpoint(); // Load the last checkpoint position
 
     }
 
@@ -137,8 +145,26 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
         else
         {
-            lastCheckpoint = transform.position; // Default starting position
-            Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
+
+            //Fallback to initial checkpoint position if no saved checkpoint exists
+            if (useManualCheckpoint)
+            {
+                lastCheckpoint = initialCheckpointPosition;
+                Debug.Log("No checkpoint found, using manual initial position: " + lastCheckpoint);
+            }
+            else if (initialCheckpointObject != null)
+            {
+                lastCheckpoint = initialCheckpointObject.position;
+                Debug.Log("Using initial checkpoint object from GameObject: " + lastCheckpoint);
+            }
+            else
+            {
+                lastCheckpoint = transform.position; // Default starting position
+                Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
+            }
+
+            hasCheckpoint = true; // Set hasCheckpoint to true even if no saved checkpoint exists
+
         }
     }
 

@@ -94,7 +94,7 @@ public class Health : MonoBehaviour
         Debug.Log($"Player healed {heal} health. Current health: {_health}"); //just used to show health in the console
     }
 
-    void PlayerDie()
+    public void PlayerDie()
     {
         if (isDead == true)
         {
