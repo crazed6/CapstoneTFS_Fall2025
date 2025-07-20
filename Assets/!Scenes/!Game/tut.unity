@@ -20791,9 +20791,53 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 67113780}
     - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: upForce
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: maxSpeed
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: baseSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: jumpForce
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: forwardForce
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: addedSlideSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: wallrunJumpforce
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: dashDamageProfile
       value: 
       objectReference: {fileID: 11400000, guid: 8cb15e9fe0f43f44ab8150b4f9253ffa, type: 2}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: downwardGravityForce
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: wallrunJumpSpeedBoost
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: downwardForceLerpSpeed
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 422024609607119328, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: keepWallRunningSpeedThreshold
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 823624357090983258, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -20867,6 +20911,10 @@ PrefabInstance:
       value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 2982407505743257184, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: m_Mass
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2982407505743257184, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: m_CollisionDetection
       value: 1
       objectReference: {fileID: 0}
@@ -20883,8 +20931,16 @@ PrefabInstance:
       value: -13.239652
       objectReference: {fileID: 0}
     - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: slideFOV
+      value: 65
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: topOrbitHeight
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: topOrbitRadius
-      value: 7
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: leftShoulderCam
@@ -20895,12 +20951,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: bottomOrbitHeight
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: bottomOrbitRadius
-      value: 7
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+      propertyPath: middleOrbitHeight
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: middleOrbitRadius
-      value: 10
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6194986973445605753, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: leftShoulderLookAtTarget

@@ -303,18 +303,18 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
 
-        // custom gravity code unchanged
-        if (rb.linearVelocity.y <= 0)
+        // Custom gravity handling (affects both ascent and descent)
+        if (rb.linearVelocity.y > 0) // Going up
         {
-            if (!isFalling)
-                isFalling = true;
+            float upwardGravity = downwardGravityForce * 0.5f; // Use half gravity when rising
+            rb.AddForce(Vector3.down * upwardGravity, ForceMode.Acceleration);
+        }
+        else // Falling
+        {
+            if (!isFalling) isFalling = true;
 
             currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
             rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
-        }
-        else
-        {
-            isFalling = false;
         }
     }
 
