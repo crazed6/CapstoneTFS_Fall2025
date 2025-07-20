@@ -1,85 +1,96 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+
+//Joshuas and Diego's Script
 
 public class HealthUI : MonoBehaviour
 {
-    public Slider healthSlider; // Reference to the UI Slider component
-    public Health playerHealth; // Reference to the player's Health component
-    public Image fillImage; // Reference to the fill image of the slider
-    public Gradient healthGradient; // Gradient for the fill color based on health
+    [Header("References")]
+    public RectTransform maskTransform; // The transform of the mask
+    public Image fillImage;             // The fill image (can be used to set color)
+    public Health playerHealth;
 
-    private Coroutine warningCoroutine; // Coroutine for warning about low health
-    private bool isWarningActive = false; // Flag to check if warning is active
+    [Header("Visuals")]
+    public Gradient healthGradient;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private float originalWidth;
+    private Coroutine warningCoroutine;
+    private bool isWarningActive = false;
+
     void Start()
     {
-        if (playerHealth != null && healthSlider != null)
+        if (maskTransform != null)
         {
-            healthSlider.maxValue = playerHealth.MaxHealth; // Set the maximum value of the slider
+            originalWidth = maskTransform.sizeDelta.x;
+        }
+
+        if (playerHealth != null)
+        {
+            SetHealth(playerHealth.health, playerHealth.MaxHealth);
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (playerHealth == null || healthSlider == null)
+        if (playerHealth != null)
         {
-            Debug.LogWarning("Player Health or Health Slider is not assigned.");
-            return;
+            SetHealth(playerHealth.health, playerHealth.MaxHealth);
         }
-
-        SetHealth(playerHealth.health, playerHealth.MaxHealth);
     }
 
     public void SetHealth(int currentHealth, int maxHealth)
     {
-        //Updating the slider value
-        healthSlider.value = currentHealth;
+        // Clamp health percentage between 0 and 1
+        float healthPercent = Mathf.Clamp01((float)currentHealth / maxHealth);
 
-        float healthPercentage = (float)currentHealth / maxHealth;
-
-        //Update color based on health percentage
-        if (fillImage != null && healthGradient != null)
+        // Resize the mask width to reflect current health (left-to-right)
+        if (maskTransform != null)
         {
-            fillImage.color = healthGradient.Evaluate(healthPercentage);
+            // Multiply original full width by health percentage
+            maskTransform.sizeDelta = new Vector2(originalWidth * healthPercent, maskTransform.sizeDelta.y);
         }
 
-        //Low health warning, under 20% of max health
-        if (healthPercentage < 0.2f && !isWarningActive)
+        // Update the fill image color if no warning is active
+        if (fillImage != null && !isWarningActive)
+        {
+            fillImage.color = healthGradient.Evaluate(healthPercent);
+        }
+
+        // Low health warning logic (below 20%)
+        if (healthPercent < 0.2f && !isWarningActive)
         {
             isWarningActive = true;
             if (warningCoroutine != null)
-            {
                 StopCoroutine(warningCoroutine);
-            }
             warningCoroutine = StartCoroutine(BlinkRedEffect());
         }
-        else if (healthPercentage >= 0.2f && isWarningActive)
+        else if (healthPercent >= 0.2f && isWarningActive)
         {
             isWarningActive = false;
             if (warningCoroutine != null)
-            {
                 StopCoroutine(warningCoroutine);
-                warningCoroutine = null;
-            }
+            warningCoroutine = null;
+
+            // Restore fill color immediately after warning stops
+            if (fillImage != null)
+                fillImage.color = healthGradient.Evaluate(healthPercent);
         }
     }
+
 
     private IEnumerator BlinkRedEffect()
     {
         while (isWarningActive)
         {
             if (fillImage != null)
-            {
-                fillImage.color = Color.red; // Set to red
-            }
+                fillImage.color = Color.red;
+
             yield return new WaitForSeconds(0.3f);
+
             if (fillImage != null)
-            {
-                fillImage.color = healthGradient.Evaluate((float)playerHealth.health / playerHealth.MaxHealth); // Reset to gradient color
-            }
+                fillImage.color = healthGradient.Evaluate((float)playerHealth.health / playerHealth.MaxHealth);
+
             yield return new WaitForSeconds(0.3f);
         }
     }
