@@ -5,7 +5,8 @@ public enum DamageType
     Melee,
     Ranged,
     Explosion,
-    Trap
+    Trap,
+    Death
 }
 
 public struct DamageData

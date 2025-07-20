@@ -2,16 +2,25 @@ using UnityEngine;
 using System.IO;
 
 public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has to be attached to the Player object.
-    // The Checkpoint will still require the tag however.
+                                              // The Checkpoint will still require the tag however.
 {
     private Vector3 lastCheckpoint;
     private bool hasCheckpoint = false;
     private string saveFilePath;
     public CharacterController controller;
 
-    private bool panelTriggered = false; //This is to check if the panel is active or has been triggered.
+    private bool CheckpointPanelTriggered = false; //This is to check if the panel is active or has been triggered.
+    private bool GameOverPanelTriggered = false; //This is to check if the game over panel is active or has been triggered.
     public GameObject checkpointPanel; //This is the panel that will be shown when the player reaches a checkpoint.
+    public GameObject gameOverPanel; //This is the panel that will be shown when the player dies.
     private bool isInCheckpointZone = false; //This is to check if the player is in the checkpoint zone.
+
+    //=== New Variables ===
+    [Header("Initial Checkpoint Settings")]
+    public bool useManualCheckpoint = false; // If true, the player must manually set a checkpoint
+    public Vector3 initialCheckpointPosition; // Default position for the initial checkpoint
+    public Transform initialCheckpointObject;
+    private Vector3 spawnPosition; // This will be used to store the spawn position
 
     void Start()
     {
@@ -33,6 +42,15 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
 
         HideCheckpointPanel(); // Hide the checkpoint panel at the start
+        HideGameOverPanel(); // Hide the game over panel at the start
+
+        spawnPosition = transform.position; // Store the initial spawn position
+        LoadCheckpoint(); // Load the last checkpoint position
+
+        if (!hasCheckpoint)
+        {
+            lastCheckpoint = spawnPosition; // If no checkpoint exists, use the spawn position
+        }
 
     }
 
@@ -56,7 +74,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
         if (Input.GetKeyDown(KeyCode.P) && isInCheckpointZone)
         {
-            if (!panelTriggered)
+            if (!CheckpointPanelTriggered)
             {
                 ShowCheckpointPanel();
             }
@@ -118,12 +136,15 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
     private void LoadCheckpoint() //add more coment
     {
+        bool checkpointLoaded = false; // Flag to check if a checkpoint was loaded
+
         if (File.Exists(saveFilePath))
         {
             string json = File.ReadAllText(saveFilePath);
             CheckpointData data = JsonUtility.FromJson<CheckpointData>(json);
             lastCheckpoint = new Vector3(data.x, data.y, data.z);
             hasCheckpoint = true;
+            checkpointLoaded = true; // Set the flag to true since a checkpoint was loaded from file
             Debug.Log("Loaded checkpoint from file: " + lastCheckpoint);
         }
         else if (PlayerPrefs.HasKey("CheckpointX"))
@@ -133,12 +154,36 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
             float z = PlayerPrefs.GetFloat("CheckpointZ");
             lastCheckpoint = new Vector3(x, y, z);
             hasCheckpoint = true;
+            checkpointLoaded = true; // Set the flag to true since a checkpoint was loaded from PlayerPrefs
             Debug.Log("Loaded checkpoint from PlayerPrefs: " + lastCheckpoint);
+        }
+
+        if (!checkpointLoaded)
+        {
+
+            //Fallback to initial checkpoint position if no saved checkpoint exists
+            if (useManualCheckpoint)
+            {
+                lastCheckpoint = initialCheckpointPosition;
+                Debug.Log("No checkpoint found, using manual initial position: " + lastCheckpoint);
+            }
+            else if (initialCheckpointObject != null)
+            {
+                lastCheckpoint = initialCheckpointObject.position;
+                Debug.Log("Using initial checkpoint object from GameObject: " + lastCheckpoint);
+            }
+            else
+            {
+                lastCheckpoint = transform.position; // Default starting position
+                Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
+            }
+
+            hasCheckpoint = false; // Set hasCheckpoint to true even if no saved checkpoint exists
+
         }
         else
         {
-            lastCheckpoint = transform.position; // Default starting position
-            Debug.Log("No checkpoint found, using default start position: " + lastCheckpoint);
+            hasCheckpoint = true; // Ensure hasCheckpoint is true if a checkpoint was loaded
         }
     }
 
@@ -151,7 +196,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
         checkpointPanel.SetActive(true); // Show the checkpoint panel
         Time.timeScale = 0; // Pause the game
-        panelTriggered = true; // Set the trigger to true to prevent multiple activations
+        CheckpointPanelTriggered = true; // Set the trigger to true to prevent multiple activations
 
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true;                  // Make it visible
@@ -163,12 +208,66 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
     {
         checkpointPanel.SetActive(false); // Hide the checkpoint panel
         Time.timeScale = 1; // Resume the game
-        panelTriggered = false; // Reset the trigger for next checkpoint
+        CheckpointPanelTriggered = false; // Reset the trigger for next checkpoint
 
         Cursor.lockState = CursorLockMode.Locked; // Lock the cursor
         Cursor.visible = false;                  // Make it invisible
 
         Debug.Log("Checkpoint panel hidden.");
+    }
+
+    public void ShowGameOverPanel()
+    {
+        if (gameOverPanel == null)
+        {
+            Debug.LogError("Game Over Panel is not assigned in Inspector!");
+            return;
+        }
+        gameOverPanel.SetActive(true); // Show the game over panel
+        Time.timeScale = 0; // Pause the game
+        GameOverPanelTriggered = true; // Set the trigger to true to prevent multiple activations
+
+        Cursor.lockState = CursorLockMode.None; // Unlock the cursor
+        Cursor.visible = true;                  // Make it visible
+        Debug.Log("GameOver panel shown.");
+    }
+
+    public void HideGameOverPanel()
+    {
+        gameOverPanel.SetActive(false); // Hide the checkpoint panel
+        Time.timeScale = 1; // Resume the game
+        GameOverPanelTriggered = false; // Reset the trigger for next checkpoint
+
+        Cursor.lockState = CursorLockMode.Locked; // Lock the cursor
+        Cursor.visible = false;                  // Make it invisible
+
+        Debug.Log("GameOver panel hidden.");
+    }
+
+    public void RespawnFromGameOver()
+    {
+        //Reset Player state
+        Health playerHealth = GetComponent<Health>();
+        playerHealth.ResetHealth(); // Reset the player's health
+
+        //Respawn at last checkpoint
+        Respawn();
+
+        //Hide the game over panel
+        HideGameOverPanel();
+
+        //Respawn All Enemies After Death
+        EnemyRespawner enemyRespawner = FindFirstObjectByType<EnemyRespawner>();
+        if (enemyRespawner != null)
+        {
+            enemyRespawner.RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
+            Debug.Log("All enemies respawned after player death.");
+        }
+        else
+        {
+            Debug.LogWarning("No EnemyRespawner found in the scene!");
+        }
+
     }
 }
 

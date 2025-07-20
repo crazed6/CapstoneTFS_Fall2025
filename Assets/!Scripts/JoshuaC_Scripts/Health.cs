@@ -94,21 +94,26 @@ public class Health : MonoBehaviour
         Debug.Log($"Player healed {heal} health. Current health: {_health}"); //just used to show health in the console
     }
 
-    void PlayerDie()
+    public void PlayerDie()
     {
         if (isDead == true)
         {
             Debug.Log("Player has died!");
-            CheckpointSystem.Respawn();
-            health = 100;
-            isDead = false;
+            CheckpointSystem.ShowGameOverPanel(); // Show the game over panel
+
+            //Respawn All Enemies after death
+            FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
+            //CheckpointSystem.Respawn();
+            //health = 100;
+            //isDead = false;
         }
-        
+
+
         // Mark player as dead
-        
+
         // Optionally, disable players movement or play a death animation here
-        
-          // Allow player to die again
+
+        // Allow player to die again
     }
 
     // Start is called before the first frame update
@@ -174,6 +179,15 @@ public class Health : MonoBehaviour
         {
             PlayerDie();
         }
+    }
+
+    public void ResetHealth()
+    {
+        // Reset health to max health
+        _health = maxHealth;
+        isDead = false;
+        canRegenerate = true;
+        Debug.Log("Player health reset to " + _health);
     }
 
     //Example Script for inside Enemy Attack script
