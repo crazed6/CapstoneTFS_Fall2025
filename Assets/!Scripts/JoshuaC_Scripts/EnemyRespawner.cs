@@ -19,25 +19,30 @@ public class EnemyRespawner : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
         //Find enemies in the scene with the tag "enemy" (Lower case is important)
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("enemy");
 
         foreach (GameObject enemy in enemies)
         {
-            //Save spawning information
-            spawnPoints.Add(new EnemySpawnData
+            var identity = enemy.GetComponent<EnemyIdentity>(); //Get the EnemyIdentity component from the enemy
+            if (identity != null)
             {
 
-                prefab = enemy, //assumes the object in scene is a prefab
-                position = enemy.transform.position, //get the position of the enemy in the scene
-                rotation = enemy.transform.rotation //get the rotation of the enemy in the scene
-            }
+                //Save spawning information
+                spawnPoints.Add(new EnemySpawnData {
+
+
+                    prefab = identity.enemyPrefab, //assumes the object in scene is a prefab
+                    position = enemy.transform.position, //get the position of the enemy in the scene
+                    rotation = enemy.transform.rotation //get the rotation of the enemy in the scene
+                }
             );
 
-            currentEnemies.Add(enemy); //add the enemy to the current enemies list
-        }
+                currentEnemies.Add(enemy); //add the enemy to the current enemies list
+            }
 
+        }
     }
 
     public void RespawnAllEnemies()
@@ -51,6 +56,7 @@ public class EnemyRespawner : MonoBehaviour
             {
                 Destroy(enemy);
             }
+        }
 
             currentEnemies.Clear(); //clear the current enemies list
 
@@ -62,7 +68,7 @@ public class EnemyRespawner : MonoBehaviour
                 newEnemy.tag = "enemy"; //set the tag of the new enemy to "enemy"
                 currentEnemies.Add(newEnemy); //add the new enemy to the current enemies list
             }
-        }
+
     }
 
     // Update is called once per frame
