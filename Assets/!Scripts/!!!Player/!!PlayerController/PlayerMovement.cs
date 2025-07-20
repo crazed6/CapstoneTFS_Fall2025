@@ -101,6 +101,15 @@ public class CharacterController : MonoBehaviour
     bool isWallRunning = false;
     bool onRightWall = false;
 
+
+    [Header("Ledge Vaulting")]
+    public float ledgeDetectDistance = 1f;     // How far forward to check for a wall
+    public float ledgeCheckHeight = 1.5f;      // From player's origin, how high to start check
+    public float ledgeCheckDown = 2f;          // How far down to check for top of ledge
+    public float vaultUpForce = 8f;
+    public float vaultForwardForce = 4f;
+    public LayerMask ledgeLayerMask;           // Layers to check against (e.g. Default, Environment)
+
     [Header("Pole Vault")]
     public float upForce;
     public float forwardForce;
@@ -202,38 +211,23 @@ public class CharacterController : MonoBehaviour
     }
 
     void FixedUpdate()
-    {
-        // Update grounded state first for accurate jump/coyote checks
-        SetIsGrounded(bottomCollider.IsColliding);
+{
+    SetIsGrounded(bottomCollider.IsColliding);
 
-        // Decrease jump buffer timer
-        if (jumpBufferTimer > 0)
-            jumpBufferTimer -= Time.fixedDeltaTime;
+    if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
+    if (isGrounded) coyoteTimer = coyoteTime;
+    else coyoteTimer -= Time.fixedDeltaTime;
 
-        // Reset coyote timer if grounded, else decrease it
-        if (isGrounded)
-            coyoteTimer = coyoteTime;
-        else
-            coyoteTimer -= Time.fixedDeltaTime;
-
-        // Call jump logic (consumes jumpBuffer and coyote timers)
-        Jump();
-
-        // Call wall run logic (checks jumpInitiated)
-        WallRun();
-
-        // Movement and sliding
-        Move();
-        Slide();
-
-        // Update displacement and last position for speed tracking
-        displacement = (transform.position - lastPosition) * 50;
-        lastPosition = transform.position;
-
-        // Clamp velocity to max speed
-        LimitVelocity(maxSpeed);
-    }
-
+    Jump();
+    CheckForLedgeVault(); //<-- right here
+    WallRun();
+    Move();
+    Slide();
+    
+    displacement = (transform.position - lastPosition) * 50;
+    lastPosition = transform.position;
+    LimitVelocity(maxSpeed);
+}
     void Move()
     {
         float x = Input.GetAxisRaw("Horizontal");
@@ -702,6 +696,33 @@ public class CharacterController : MonoBehaviour
             {
                 isMoving = false;
                 rb.linearVelocity = lastSpeed * 1.2f;
+            }
+        }
+    }
+
+
+
+    private void CheckForLedgeVault()
+    {
+        if (!isGrounded || isSliding || isWallRunning) return;
+
+        Vector3 origin = transform.position + Vector3.up * ledgeCheckHeight;
+        Vector3 forward = transform.forward;
+
+        // Step 1: Detect wall in front
+        if (Physics.Raycast(origin, forward, out RaycastHit wallHit, ledgeDetectDistance, ledgeLayerMask))
+        {
+            // Step 2: Check if there's a surface above it we can stand on
+            Vector3 ledgeCheckOrigin = wallHit.point + Vector3.up * 0.5f + forward * 0.1f;
+
+            if (Physics.Raycast(ledgeCheckOrigin, Vector3.down, out RaycastHit ledgeHit, ledgeCheckDown, ledgeLayerMask))
+            {
+                // Vault: Reset Y velocity, and apply upward & forward force
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+                rb.AddForce(Vector3.up * vaultUpForce, ForceMode.Impulse);
+                rb.AddForce(forward * vaultForwardForce, ForceMode.Impulse);
+
+                // Optional: trigger animation or sound here
             }
         }
     }
