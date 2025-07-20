@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿//Asad and some brain power with Joshua's health
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,7 +47,9 @@ public class ExplodingEnemy : MonoBehaviour
 
     private Vector3 lastKnownPlayerPosition;
 
-    public DamageProfile GeneralExplosion; //Josh script, ensure to attach Explode Damage Profile in inspector
+    public DamageProfile OuterExplosion; //Josh script, ensure to attach Explode Damage Profile in inspector
+    public DamageProfile MiddleExplosion; //Josh script, ensure to attach Explode Damage Profile in inspector
+    public DamageProfile InnerExplosion; //Josh script, ensure to attach Explode Damage Profile in inspector
 
     void Start()
     {
@@ -183,6 +187,15 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 Debug.Log("Player caught in INNER explosion radius");
+
+                //Josh script, ensure to attach Explode Damage Profile in inspector
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && InnerExplosion != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, InnerExplosion);
+                    playerHealth.PlayerTakeDamage(damageData);
+                }
+                //Josh script end
             }
         }
 
@@ -193,6 +206,15 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 Debug.Log("Player caught in MIDDLE explosion radius");
+
+                //Josh script, ensure to attach Explode Damage Profile in inspector
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && MiddleExplosion != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, MiddleExplosion);
+                    playerHealth.PlayerTakeDamage(damageData);
+                }
+                //Josh script end
             }
         }
 
@@ -203,6 +225,15 @@ public class ExplodingEnemy : MonoBehaviour
             if (hit.CompareTag("Player"))
             {
                 Debug.Log("Player caught in OUTER explosion radius");
+
+                //Josh script, ensure to attach Explode Damage Profile in inspector
+                Health playerHealth = hit.GetComponent<Health>();
+                if (playerHealth != null && OuterExplosion != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, OuterExplosion);
+                    playerHealth.PlayerTakeDamage(damageData);
+                }
+                //Josh script end
             }
         }
 
@@ -248,26 +279,26 @@ public class ExplodingEnemy : MonoBehaviour
                 Debug.Log("Knockback vector applied: " + knockbackVector);
             }
 
-            if (hit.CompareTag("Player"))
-            {
-                //DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
-                //Health health = hit.GetComponent<Health>();
-                //if (damageReceiver != null && health != null)
-                //{
-                //    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
-                //    health.TakeDamage(damageData);
-                //    alreadyDamaged.Add(hit);
-                //}
+            //if (hit.CompareTag("Player"))
+            //{
+            //    //DamageReceive damageReceiver = hit.GetComponent<DamageReceive>();
+            //    //Health health = hit.GetComponent<Health>();
+            //    //if (damageReceiver != null && health != null)
+            //    //{
+            //    //    DamageData damageData = new DamageData(gameObject, explosionDamageProfile);
+            //    //    health.TakeDamage(damageData);
+            //    //    alreadyDamaged.Add(hit);
+            //    //}
 
-                //Josh script, ensure to attach Explode Damage Profile in inspector
-                Health playerHealth = hit.GetComponent<Health>();
-                if (playerHealth != null && GeneralExplosion != null)
-                {
-                    DamageData damageData = new DamageData(gameObject, GeneralExplosion);
-                    playerHealth.PlayerTakeDamage(damageData);
-                }
-                //Josh script end
-            }
+            //    //Josh script, ensure to attach Explode Damage Profile in inspector
+            //    Health playerHealth = hit.GetComponent<Health>();
+            //    if (playerHealth != null && GeneralExplosion != null)
+            //    {
+            //        DamageData damageData = new DamageData(gameObject, GeneralExplosion);
+            //        playerHealth.PlayerTakeDamage(damageData);
+            //    }
+            //    //Josh script end
+            //}
 
             alreadyDamaged.Add(hit);
         }

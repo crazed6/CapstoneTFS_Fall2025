@@ -134,16 +134,30 @@ namespace Meryel.UnityCodeAssist.Editor
 
             try
             {
-                broker.StartAsync().GetAwaiter().GetResult();
+                //broker.StartAsync().GetAwaiter().GetResult();
+
+                var startTask = Task.Run(() => broker.StartAsync());
+                if (!startTask.Wait(TimeSpan.FromSeconds(5)))
+                {
+                    Serilog.Log.Error("MQTTnet broker.StartAsync timed out.");
+                    return;
+                }
+
+
                 Serilog.Log.Debug("MQTTnet server initializing, started broker");
             }
-            catch (System.Net.Sockets.SocketException ex)
+            catch (System.Net.Sockets.SocketException socketEx)
             {
-                Serilog.Log.Warning(ex, "Socket exception");
+                Serilog.Log.Error(socketEx, "Socket exception");
                 LogContext();
                 //Serilog.Log.Warning("Socket exception disposing pubSocket");
                 //broker.Dispose();
                 //broker = null;
+                return;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "MQTTnet broker.StartAsync failed.");
                 return;
             }
 
@@ -222,11 +236,35 @@ namespace Meryel.UnityCodeAssist.Editor
             cancellationTokenSource?.Cancel();
             cancellationTokenSource = null;
             Serilog.Log.Verbose("MQTTnet clearing, cancelled async token");
-            
-            broker?.StopAsync().GetAwaiter().GetResult();
-            Serilog.Log.Verbose("MQTTnet clearing, stopped broker");
 
-            broker?.Dispose();
+            if (server == null)
+                return;
+
+            // broker?.StopAsync().GetAwaiter().GetResult(); // this line was freezing Unity editor, so calling Task.Run().Wait() instead
+            try
+            {
+                var stopTask = Task.Run(() => server.StopAsync());
+                if (!stopTask.Wait(TimeSpan.FromSeconds(5))) // give it five secs to complete
+                {
+                    Serilog.Log.Error("MQTTnet broker.StopAsync timed out.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "MQTTnet broker.StopAsync failed.");
+            }
+
+            Serilog.Log.Verbose("MQTTnet clearing, stopped broker");
+            try
+            {
+                server.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "MQTTnet broker.Dispose failed.");
+            }
+
+            server = null;
             broker = null;
 
             Serilog.Log.Debug("MQTTnet clearing, cleared");
@@ -281,7 +319,8 @@ namespace Meryel.UnityCodeAssist.Editor
                     .WithPayload(SerializeObject(content))
                     .Build();
 
-                broker?.InjectApplicationMessage(new InjectedMqttApplicationMessage(applicationMessage), cancellationTokenSource?.Token ?? default).GetAwaiter().GetResult();
+                //broker?.InjectApplicationMessage(new InjectedMqttApplicationMessage(applicationMessage), cancellationTokenSource?.Token ?? default).GetAwaiter().GetResult();
+                broker?.InjectApplicationMessage(new InjectedMqttApplicationMessage(applicationMessage), cancellationTokenSource?.Token ?? default);
             }
             else
                 Serilog.Log.Error("Publisher socket is null");
@@ -398,7 +437,7 @@ namespace Meryel.UnityCodeAssist.Editor
         public void SendTags(string[] tags) =>
             SendStringArrayAux(Synchronizer.Model.Ids.Tags, tags);
 
-        public void SendLayers(string[] layerIndices, string[] layerNames)
+        public void SendLayers(string[] layerNames, string[] layerIndices)
         {
             SendStringArrayContainerAux(
                 (Synchronizer.Model.Ids.Layers, layerNames),
@@ -411,6 +450,13 @@ namespace Meryel.UnityCodeAssist.Editor
                 (Synchronizer.Model.Ids.SortingLayers, sortingLayers),
                 (Synchronizer.Model.Ids.SortingLayerIds, sortingLayerIds),
                 (Synchronizer.Model.Ids.SortingLayerValues, sortingLayerValues));
+        }
+
+        public void SendRenderingLayers(string[] renderingLayers, string[] renderingLayerIndices)
+        {
+            SendStringArrayContainerAux(
+                (Synchronizer.Model.Ids.RenderingLayers, renderingLayers),
+                (Synchronizer.Model.Ids.RenderingLayerIndices, renderingLayerIndices));
         }
 
         public void SendPlayerPrefs(string[] playerPrefKeys, string[] playerPrefValues,
