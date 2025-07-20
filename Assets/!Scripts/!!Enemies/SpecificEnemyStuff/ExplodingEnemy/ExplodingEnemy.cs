@@ -46,7 +46,10 @@ public class ExplodingEnemy : MonoBehaviour
 
     private Vector3 lastKnownPlayerPosition;
 
-    public DamageProfile GeneralExplosion; // Josh's damage profile reference
+    //public DamageProfile GeneralExplosion; // Josh's damage profile reference
+    public DamageProfile InnerExplosionDamage; // Josh's damage profile reference
+    public DamageProfile MiddleExplosionDamage; // Josh's damage profile reference
+    public DamageProfile OuterExplosionDamage; // Josh's damage profile reference
 
     void Start()
     {
@@ -193,21 +196,27 @@ public class ExplodingEnemy : MonoBehaviour
 
             float distance = Vector3.Distance(position, hit.transform.position);
             float damageToApply = 0f;
+            DamageProfile selectedProfile = null;
 
             // Decide damage based on tiered radii
             if (distance <= innerRadius)
             {
                 damageToApply = innerDamage;
+                selectedProfile = InnerExplosionDamage; // Use Josh's damage profile for inner explosion
                 Debug.Log("Player caught in INNER explosion radius");
+
+
             }
             else if (distance <= middleRadius && distance >= innerRadius)
             {
                 damageToApply = middleDamage;
+                selectedProfile = MiddleExplosionDamage; // Use Josh's damage profile for middle explosion
                 Debug.Log("Player caught in MIDDLE explosion radius");
             }
             else if (distance <= outerRadius && distance >= middleRadius)
             {
                 damageToApply = outerDamage;
+                selectedProfile = OuterExplosionDamage; // Use Josh's damage profile for outer explosion
                 Debug.Log("Player caught in OUTER explosion radius");
             }
             else
@@ -240,9 +249,9 @@ public class ExplodingEnemy : MonoBehaviour
             {
                 // Apply damage through Josh's custom damage system
                 Health playerHealth = hit.GetComponent<Health>();
-                if (playerHealth != null && GeneralExplosion != null)
+                if (playerHealth != null && selectedProfile!= null)
                 {
-                    DamageData damageData = new DamageData(gameObject, GeneralExplosion);
+                    DamageData damageData = new DamageData(gameObject, selectedProfile);
                     playerHealth.PlayerTakeDamage(damageData);
                 }
             }

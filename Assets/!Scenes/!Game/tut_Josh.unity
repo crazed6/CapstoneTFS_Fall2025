@@ -8064,24 +8064,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 274766748694175801, guid: a8cb25fb744143b4c9006ac52e12d019, type: 3}
   m_PrefabInstance: {fileID: 792590725}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &689060217 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7050838999477027297, guid: f94003300fd0182459d077788eb36297, type: 3}
-  m_PrefabInstance: {fileID: 809587098}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &689060226
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 689060217}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dae16c9da2fc9434d8941589777c5141, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 7050838999477027297, guid: f94003300fd0182459d077788eb36297, type: 3}
 --- !u!1 &693828168 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3505526502439743696, guid: 7f42b835b42cfd54fabcafec624d5a18, type: 3}
@@ -8533,34 +8515,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: liftForce
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: liftRadius
-      value: 1.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: InnerExplosion
-      value: 
-      objectReference: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: KnockbackForce
-      value: 30
-      objectReference: {fileID: 0}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: OuterExplosion
-      value: 
-      objectReference: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: knockbackForce
-      value: 5000
-      objectReference: {fileID: 0}
-    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
-      propertyPath: MiddleExplosion
-      value: 
-      objectReference: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
     - target: {fileID: 7050838999477027297, guid: f94003300fd0182459d077788eb36297, type: 3}
       propertyPath: m_Name
       value: ExplodingEnemyFixed
@@ -8608,10 +8562,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 7050838999477027297, guid: f94003300fd0182459d077788eb36297, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 689060226}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f94003300fd0182459d077788eb36297, type: 3}
 --- !u!1001 &824907015
 PrefabInstance:
