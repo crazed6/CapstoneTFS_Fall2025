@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static CinemachineCameraController;
 
 public class MainMenu : MonoBehaviour
 {
@@ -45,27 +46,40 @@ public class MainMenu : MonoBehaviour
 
     //!!!!!!!    SAVE AND LOAD SYSTEM BEING REDONE DELETE THIS CODE OR CHANGE LATER   !!!!!!!
 
-    //public void LoadGameButton()       
-    //{
-    //    string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
+    public void LoadGameButton()
+    {
+        string sceneName = LoadSaveSystem.GetSavedSceneName(); // Get the saved scene name from the save file
 
-    //    if (string.IsNullOrEmpty(sceneName))
-    //    {
-    //        Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
-    //        return;
-    //    }
+        if (string.IsNullOrEmpty(sceneName))
+        {
+            Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
+            return;
+        }
 
-    //    // Subscribe to sceneLoaded event before loading
-    //    SceneManager.sceneLoaded += OnSceneLoaded;
-    //    SceneManager.LoadScene(sceneName);
-    //}
+        // Subscribe to sceneLoaded event before loading
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.LoadScene(sceneName);
+    }
 
-    //private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    //{
-    //    SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
 
-    //    SaveLoadSystem.Load(); // 
-    //}
+        SaveData data = LoadSaveSystem.Load(); // 
 
+        if (data != null)
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+            if (player != null)
+            {
+                player.transform.position = data.playerPosition;
 
+                PlayerStats stats = player.GetComponent<PlayerStats>(); // Example component
+                if (stats != null)
+                {
+                    stats.health = data.playerHealth;
+                }
+            }
+        }
+    }
 }
