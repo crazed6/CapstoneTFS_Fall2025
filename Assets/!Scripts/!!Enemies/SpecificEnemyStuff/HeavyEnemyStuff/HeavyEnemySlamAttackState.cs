@@ -1,13 +1,13 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using System;
 
 public class HeavyEnemySlamAttackState : IHeavyEnemyState
 {
     private HeavyEnemyAI enemy;
-    private bool slamExecuted = false;
+    private bool slamInProgress = false;
     private CancellationTokenSource slamTokenSource;
-
 
     public HeavyEnemySlamAttackState(HeavyEnemyAI enemy)
     {
@@ -18,40 +18,53 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
     {
         Debug.Log("Entered Slam Attack State");
 
-        enemy.StopTracking(); // ?? Kill all tracking and rock logic
+        enemy.StopTracking(); // Cancel rock logic
         enemy.isSlamming = true;
         slamTokenSource = new CancellationTokenSource();
 
-        SlamAttackAsync().Forget(); // Start slam logic
+        SlamAttackAsync().Forget(); // Start the async slam
     }
 
     public void Execute()
     {
-        // Nothing needed, handled asynchronously
+        // Nothing here – slam is async driven
     }
 
     public void Exit()
     {
         Debug.Log("Exiting Slam Attack State");
+
         enemy.isSlamming = false;
-        slamTokenSource?.Cancel();
+        slamTokenSource?.Cancel(); // Cancel delay safely
     }
 
     private async UniTaskVoid SlamAttackAsync()
     {
-        // Add optional delay or animation trigger if needed later
+        slamInProgress = true;
+
         ApplySlamAOE();
 
-        await UniTask.Delay((int)(enemy.slamCooldown * 1000f), cancellationToken: slamTokenSource.Token);
+        // Start cooldown timer on enemy
+        enemy.StartSlamCooldown().Forget();
 
-        if (enemy != null && enemy.CanSeePlayer())
+        try
         {
+            await UniTask.Delay((int)(enemy.slamCooldown * 1000f), cancellationToken: slamTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.Log("Slam Attack was cancelled early.");
+        }
+
+        slamInProgress = false;
+
+        // Double-check enemy state before continuing
+        if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
+
+        if (enemy.CanSeePlayer())
             enemy.stateMachine.ChangeState(new HeavyEnemyShootingState(enemy));
-        }
         else
-        {
             enemy.stateMachine.ChangeState(new HeavyEnemyIdleState(enemy));
-        }
     }
 
     private void ApplySlamAOE()
@@ -64,26 +77,26 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
             {
                 Debug.Log("Slam hit the player!");
 
-                // Damage
-                //PlayerHealth health = hit.GetComponent<PlayerHealth>();
-                //health?.TakeDamage(enemy.slamDamage);
-
-                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
                 Health playerHealth = hit.GetComponent<Health>();
                 if (playerHealth != null && enemy.GroundSlam != null)
                 {
                     DamageData damageData = new DamageData(enemy.gameObject, enemy.GroundSlam);
                     playerHealth.PlayerTakeDamage(damageData);
                 }
-                //Josh script end
-
 
                 // Knockback
-                Rigidbody rb = hit.GetComponent<Rigidbody>();
-                if (rb != null)
+                KnockbackReceiver kb = hit.GetComponent<KnockbackReceiver>();
+                if (kb != null)
                 {
-                    Vector3 forceDir = (hit.transform.position - enemy.transform.position).normalized;
-                    rb.AddForce(forceDir * enemy.slamKnockbackForce, ForceMode.Impulse);
+                    KnockbackData kbData = new KnockbackData(
+                        source: enemy.slamOrigin.position,
+                        force: enemy.slamKnockbackForce,
+                        duration: 0.35f,
+                        upwardForce: 0.6f,
+                        overrideVel: true
+                    );
+
+                    kb.ApplyKnockback(kbData);
                 }
             }
         }
