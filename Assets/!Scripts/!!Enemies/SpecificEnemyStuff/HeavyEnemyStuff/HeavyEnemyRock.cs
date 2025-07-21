@@ -78,31 +78,34 @@ public class HeavyEnemyRock : MonoBehaviour
             {
                 Debug.Log("Player hit by rock explosion!");
 
-                //PlayerHealth playerHealth = hit.GetComponent<PlayerHealth>();
-                //if (playerHealth != null)
-                //{
-                //    playerHealth.TakeDamage(damage);
-                //}
-
-                //Josh script, ensure to attach RockShoot Damage Profile in inspector, on Rock script
+                // Damage
                 Health playerHealth = hit.GetComponent<Health>();
                 if (playerHealth != null && RockShoot != null)
                 {
                     DamageData damageData = new DamageData(gameObject, RockShoot);
                     playerHealth.PlayerTakeDamage(damageData);
                 }
-                //Josh script end
 
-                Rigidbody rb = hit.GetComponent<Rigidbody>();
-                if (rb != null)
+                // Knockback
+                KnockbackReceiver kb = hit.GetComponent<KnockbackReceiver>();
+                if (kb != null)
                 {
-                    ApplyKnockback(rb, hit.transform.position);
+                    KnockbackData kbData = new KnockbackData(
+                        source: transform.position,
+                        force: explosionForce,
+                        duration: 0.3f,
+                        upwardForce: verticalKnockbackMultiplier,
+                        overrideVel: true
+                    );
+
+                    kb.ApplyKnockback(kbData);
                 }
             }
         }
 
         Destroy(gameObject);
     }
+
 
     private void ApplyKnockback(Rigidbody rb, Vector3 explosionCenter)
     {

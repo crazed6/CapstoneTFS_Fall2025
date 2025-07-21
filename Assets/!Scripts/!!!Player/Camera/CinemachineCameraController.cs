@@ -27,14 +27,6 @@ public class CinemachineCameraController : MonoBehaviour
     public float wallRunTiltAngle = 20f;
     public float tiltLerpSpeed = 3f;
 
-    [Header("Orbit Configuration")]
-    public float topOrbitHeight = 4f;
-    public float topOrbitRadius = 8f;
-    public float middleOrbitHeight = 2f;
-    public float middleOrbitRadius = 6f;
-    public float bottomOrbitHeight = 0.5f;
-    public float bottomOrbitRadius = 4f;
-
     private float targetFOV;
     private float targetLeftDutch = 0f;
     private float targetRightDutch = 0f;
@@ -89,23 +81,7 @@ public class CinemachineCameraController : MonoBehaviour
 
     private void SyncHorizontalToPlayer()
     {
-        if (playerTransform == null || freeLookCam == null) return;
-
-        // Get the player's Y rotation (forward direction)
-        float playerYRotation = playerTransform.eulerAngles.y;
-
-        // Convert to FreeLook's X-axis value (which controls horizontal orbit)
-        // FreeLook X-axis is typically in degrees, with 0 being the "front" of the orbit
-        float targetXValue = playerYRotation;
-
-        // Smoothly interpolate to the target rotation
-        float currentXValue = freeLookCam.m_XAxis.Value;
-
-        // Handle angle wrapping for smooth interpolation
-        float angleDifference = Mathf.DeltaAngle(currentXValue, targetXValue);
-        float newXValue = currentXValue + angleDifference * Time.deltaTime * horizontalSyncSpeed;
-
-        freeLookCam.m_XAxis.Value = newXValue;
+        freeLookCam.m_XAxis.Value = playerTransform.eulerAngles.y;
     }
 
     private void SetupFreeLookCamera()
@@ -129,12 +105,6 @@ public class CinemachineCameraController : MonoBehaviour
         freeLookCam.m_YAxis.m_Wrap = false;
         freeLookCam.m_YAxis.m_Recentering.m_enabled = false;
 
-        // Setup orbits for different vertical positions
-        freeLookCam.m_Orbits = new CinemachineFreeLook.Orbit[3];
-        freeLookCam.m_Orbits[0] = new CinemachineFreeLook.Orbit(topOrbitHeight, topOrbitRadius);
-        freeLookCam.m_Orbits[1] = new CinemachineFreeLook.Orbit(middleOrbitHeight, middleOrbitRadius);
-        freeLookCam.m_Orbits[2] = new CinemachineFreeLook.Orbit(bottomOrbitHeight, bottomOrbitRadius);
-
         // FOV and binding
         freeLookCam.m_Lens.FieldOfView = defaultFOV;
         freeLookCam.m_BindingMode = CinemachineTransposer.BindingMode.WorldSpace;
@@ -156,7 +126,6 @@ public class CinemachineCameraController : MonoBehaviour
             case PlayerState.Sliding:
                 SetCameraPriorities(); // FreeLook stays active
                 targetFOV = slideFOV;
-                AdjustOrbitsForSliding();
                 break;
 
             case PlayerState.WallRunningLeft:
@@ -173,26 +142,11 @@ public class CinemachineCameraController : MonoBehaviour
             default:
                 SetCameraPriorities();
                 targetFOV = defaultFOV;
-                ResetOrbits();
                 // Reset Dutch angles
                 targetLeftDutch = 0f;
                 targetRightDutch = 0f;
                 break;
         }
-    }
-
-    private void AdjustOrbitsForSliding()
-    {
-        freeLookCam.m_Orbits[0] = new CinemachineFreeLook.Orbit(topOrbitHeight - 1f, topOrbitRadius - 1f);
-        freeLookCam.m_Orbits[1] = new CinemachineFreeLook.Orbit(middleOrbitHeight - 0.5f, middleOrbitRadius - 1f);
-        freeLookCam.m_Orbits[2] = new CinemachineFreeLook.Orbit(bottomOrbitHeight, bottomOrbitRadius - 1f);
-    }
-
-    private void ResetOrbits()
-    {
-        freeLookCam.m_Orbits[0] = new CinemachineFreeLook.Orbit(topOrbitHeight, topOrbitRadius);
-        freeLookCam.m_Orbits[1] = new CinemachineFreeLook.Orbit(middleOrbitHeight, middleOrbitRadius);
-        freeLookCam.m_Orbits[2] = new CinemachineFreeLook.Orbit(bottomOrbitHeight, bottomOrbitRadius);
     }
 
     private void SetCameraPriorities(CinemachineVirtualCamera activeCam = null)
