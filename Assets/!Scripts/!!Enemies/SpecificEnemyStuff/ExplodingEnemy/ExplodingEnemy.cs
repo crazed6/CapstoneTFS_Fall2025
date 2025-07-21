@@ -120,7 +120,9 @@ public class ExplodingEnemy : MonoBehaviour
     {
         if (distance <= innerRadius)
         {
-            Explode(); // Immediate explosion if player is in inner zone
+            explosionTimer = 0f;     // Ensures timer is irrelevant
+            timerStarted = false;    // Reset the timer flag
+            Explode();               // Immediate explosion
             return;
         }
 
@@ -134,7 +136,7 @@ public class ExplodingEnemy : MonoBehaviour
 
             if (!middleRadiusReduced)
             {
-                explosionTimer -= middleRadiusTimeReduction; // Faster if player is closer
+                explosionTimer -= middleRadiusTimeReduction; // Reduce time if closer
                 middleRadiusReduced = true;
             }
         }
@@ -147,6 +149,7 @@ public class ExplodingEnemy : MonoBehaviour
             }
         }
     }
+
 
     void Explode()
     {
