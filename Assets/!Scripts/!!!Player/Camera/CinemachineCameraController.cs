@@ -81,23 +81,7 @@ public class CinemachineCameraController : MonoBehaviour
 
     private void SyncHorizontalToPlayer()
     {
-        if (playerTransform == null || freeLookCam == null) return;
-
-        // Get the player's Y rotation (forward direction)
-        float playerYRotation = playerTransform.eulerAngles.y;
-
-        // Convert to FreeLook's X-axis value (which controls horizontal orbit)
-        // FreeLook X-axis is typically in degrees, with 0 being the "front" of the orbit
-        float targetXValue = playerYRotation;
-
-        // Smoothly interpolate to the target rotation
-        float currentXValue = freeLookCam.m_XAxis.Value;
-
-        // Handle angle wrapping for smooth interpolation
-        float angleDifference = Mathf.DeltaAngle(currentXValue, targetXValue);
-        float newXValue = currentXValue + angleDifference * Time.deltaTime * horizontalSyncSpeed;
-
-        freeLookCam.m_XAxis.Value = newXValue;
+        freeLookCam.m_XAxis.Value = playerTransform.eulerAngles.y;
     }
 
     private void SetupFreeLookCamera()
