@@ -200,7 +200,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     bool IsEligibleForSlowMotion()
     {
         var cc = CharacterController.instance;
-        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding;
+        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding && currentJavelin != null;
     }
 
     void SwitchToAimingCamera()
