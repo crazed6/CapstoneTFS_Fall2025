@@ -50,6 +50,8 @@ public class HeavyEnemyAI : MonoBehaviour
     [HideInInspector]
     public bool isSlamming = false;
 
+    [HideInInspector] public bool slamOnCooldown = false;
+
     public HeavyEnemyStateMachine stateMachine;
     private bool isTracking = false;
     private Vector3 lockedTarget;
@@ -141,40 +143,51 @@ public class HeavyEnemyAI : MonoBehaviour
         CancellationToken token = trackingTokenSource.Token;
 
         float timer = 0f;
-        while (timer < trackDuration)
-        {
-            if (token.IsCancellationRequested) return;
 
-            if (player != null && CanSeePlayer())
+        try
+        {
+            while (timer < trackDuration)
             {
-                lockedTarget = player.position;
-                DrawTrajectory(lockedTarget, false);
+                if (token.IsCancellationRequested) return;
+
+                if (player != null && CanSeePlayer())
+                {
+                    lockedTarget = player.position;
+                    DrawTrajectory(lockedTarget, false);
+                }
+
+                timer += Time.deltaTime;
+                await UniTask.Yield(PlayerLoopTiming.Update, token); //  Catch this
             }
 
-            timer += Time.deltaTime;
-            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            if (token.IsCancellationRequested) return;
+            trajectoryLine.colorGradient = lockedColor;
+
+            await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token); //  Catch this
+
+            if (token.IsCancellationRequested) return;
+
+            ThrowRockAtLockedPosition(lockedTarget);
+            isTracking = false;
+
+            await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token); //  Catch this
+
+            if (token.IsCancellationRequested) return;
+
+            if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
+            {
+                stateMachine.ChangeState(new HeavyEnemyShootingState(this));
+            }
+            else
+            {
+                StopTracking();
+                stateMachine.ChangeState(new HeavyEnemyIdleState(this));
+            }
         }
-
-        if (token.IsCancellationRequested) return;
-        trajectoryLine.colorGradient = lockedColor;
-        await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token);
-
-        if (token.IsCancellationRequested) return;
-        ThrowRockAtLockedPosition(lockedTarget);
-        isTracking = false;
-
-        await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token);
-
-        if (token.IsCancellationRequested) return;
-
-        if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
+        catch (OperationCanceledException)
         {
-            stateMachine.ChangeState(new HeavyEnemyShootingState(this));
-        }
-        else
-        {
-            StopTracking();
-            stateMachine.ChangeState(new HeavyEnemyIdleState(this));
+            Debug.Log("StartTracking() was safely cancelled.");
+            isTracking = false;
         }
     }
 
@@ -241,4 +254,11 @@ public class HeavyEnemyAI : MonoBehaviour
     {
         Destroy(gameObject);
     }*/
+
+    public async UniTaskVoid StartSlamCooldown()
+    {
+        slamOnCooldown = true;
+        await UniTask.Delay(TimeSpan.FromSeconds(slamCooldown));
+        slamOnCooldown = false;
+    }
 }
