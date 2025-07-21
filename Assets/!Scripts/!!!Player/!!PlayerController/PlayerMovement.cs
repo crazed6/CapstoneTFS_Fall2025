@@ -7,7 +7,6 @@ public class CharacterController : MonoBehaviour
 
     //Jaxson Vignal 
 
-    //clips through the wall during dash movement assuming its because speed jumps to 500 during dash and colliders cant keep up 
     //player can reattach to same wall need to change that will check for prev wall normal 
     //change slide so that it cant activate in air 
 
@@ -92,8 +91,24 @@ public class CharacterController : MonoBehaviour
     public float wallrunJumpforce;
     bool jumpPressedThisFrame = false;
 
+    bool lastWallWasRight = false;
+    bool recentlyWallRan = false;
+    float wallRunCooldown = 1.0f;
+    float lastWallRunTime = -999f;
+
+
+
     bool isWallRunning = false;
     bool onRightWall = false;
+
+
+    [Header("Ledge Vaulting")]
+    public float ledgeDetectDistance = 1f;     // How far forward to check for a wall
+    public float ledgeCheckHeight = 1.5f;      // From player's origin, how high to start check
+    public float ledgeCheckDown = 2f;          // How far down to check for top of ledge
+    public float vaultUpForce = 8f;
+    public float vaultForwardForce = 4f;
+    public LayerMask ledgeLayerMask;           // Layers to check against (e.g. Default, Environment)
 
     [Header("Pole Vault")]
     public float upForce;
@@ -196,38 +211,23 @@ public class CharacterController : MonoBehaviour
     }
 
     void FixedUpdate()
-    {
-        // Update grounded state first for accurate jump/coyote checks
-        SetIsGrounded(bottomCollider.IsColliding);
+{
+    SetIsGrounded(bottomCollider.IsColliding);
 
-        // Decrease jump buffer timer
-        if (jumpBufferTimer > 0)
-            jumpBufferTimer -= Time.fixedDeltaTime;
+    if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
+    if (isGrounded) coyoteTimer = coyoteTime;
+    else coyoteTimer -= Time.fixedDeltaTime;
 
-        // Reset coyote timer if grounded, else decrease it
-        if (isGrounded)
-            coyoteTimer = coyoteTime;
-        else
-            coyoteTimer -= Time.fixedDeltaTime;
-
-        // Call jump logic (consumes jumpBuffer and coyote timers)
-        Jump();
-
-        // Call wall run logic (checks jumpInitiated)
-        WallRun();
-
-        // Movement and sliding
-        Move();
-        Slide();
-
-        // Update displacement and last position for speed tracking
-        displacement = (transform.position - lastPosition) * 50;
-        lastPosition = transform.position;
-
-        // Clamp velocity to max speed
-        LimitVelocity(maxSpeed);
-    }
-
+    Jump();
+    CheckForLedgeVault(); //<-- right here
+    WallRun();
+    Move();
+    Slide();
+    
+    displacement = (transform.position - lastPosition) * 50;
+    lastPosition = transform.position;
+    LimitVelocity(maxSpeed);
+}
     void Move()
     {
         float x = Input.GetAxisRaw("Horizontal");
@@ -431,23 +431,27 @@ public class CharacterController : MonoBehaviour
 
     void WallRun()
     {
+        // Reset wallrun lockout when grounded or after cooldown
+        if (isGrounded || Time.time - lastWallRunTime > wallRunCooldown)
+        {
+            recentlyWallRan = false;
+        }
+
         if (jumpInitiated && !isGrounded)
         {
             if (isWallRunning)
             {
-                int directionCount = 1; // Can be up to 3 directions, magnitude can be 1, 1.25, 1.5 depending
+                int directionCount = 1;
 
                 // Jump off the wall
                 Vector3 jumpDirection = Vector3.up;
 
-                // If holding forward, add a force forward
                 if (Input.GetAxisRaw("Vertical") > 0)
                 {
                     jumpDirection += transform.forward;
                     directionCount++;
                 }
 
-                // If holding the horizontal direction AWAY from the wall, add that horizontal direction as well
                 if (Input.GetAxisRaw("Horizontal") < 0 && onRightWall)
                 {
                     jumpDirection += rightCollider.outHit.normal;
@@ -459,7 +463,6 @@ public class CharacterController : MonoBehaviour
                     directionCount++;
                 }
 
-                // Normalize to prevent artificial speed boost
                 float magnitude = 1 + (directionCount - 1) * 0.25f;
                 jumpDirection = jumpDirection.normalized * magnitude;
 
@@ -468,118 +471,114 @@ public class CharacterController : MonoBehaviour
 
                 StopWallRunning();
 
-                jumpInitiated = false; // Consume the jump input here
+                jumpInitiated = false;
             }
             else
             {
-                // Try to start wallrunning if near a wall
-                if (leftCollider.IsColliding) StartWallRunning(false);
-                else if (rightCollider.IsColliding) StartWallRunning(true);
-
-                jumpInitiated = false; // Consume the jump input here as well
+                // Check for starting wallrun on allowed wall only
+                if (leftCollider.IsColliding && (!recentlyWallRan || lastWallWasRight))
+                {
+                    StartWallRunning(false); // left wall
+                    jumpInitiated = false;
+                }
+                else if (rightCollider.IsColliding && (!recentlyWallRan || !lastWallWasRight))
+                {
+                    StartWallRunning(true); // right wall
+                    jumpInitiated = false;
+                }
+                else
+                {
+                    jumpInitiated = false;
+                }
             }
         }
 
         if (isWallRunning)
         {
-            // Stop wallrun if grounded
             if (isGrounded)
             {
                 StopWallRunning();
                 return;
             }
 
-            // Stop wallrun if no walls are detected
             if (!leftCollider.IsColliding && !rightCollider.IsColliding)
             {
                 StopWallRunning();
                 return;
             }
 
-            // Determine which wall we are running on
             onRightWall = rightCollider.IsColliding;
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
-            // Calculate wall forward direction
             Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
 
-            // Align wallForward with player forward direction
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
             {
                 wallForward = -wallForward;
             }
 
-            // Keep vertical speed component for smooth movement
             float ySpeed = rb.linearVelocity.y;
 
-            // Set velocity along the wall
             rb.linearVelocity = wallForward * wallRunStartingSpeed;
 
-            // Stop wallrun if speed too low
             if (rb.linearVelocity.magnitude < keepWallRunningSpeedThreshold)
             {
                 StopWallRunning();
                 return;
             }
 
-            // Apply some vertical velocity while wallrunning (simulate slight falling)
             if (fallWhileWallRunning && ySpeed < 0)
                 rb.linearVelocity += new Vector3(0, ySpeed * 0.75f, 0);
 
-            // Push player towards the wall
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
         }
     }
 
-
-    //initiate our wallrun movement 
+    // initiate our wallrun movement
     void StartWallRunning(bool rightWall)
     {
-        
         SetIsWallRunning(true);
 
-        //disable players gravity (if set that way in inspector)
-        if (!fallWhileWallRunning) rb.useGravity = false;
+        if (!fallWhileWallRunning)
+            rb.useGravity = false;
 
-        // Rotate camera Z 20 degrees away from wall
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
         wallRunStartingSpeed = rb.linearVelocity.magnitude + 5f;
 
-        // Debug.Log($"WALL RUN [START] (spd: {wallRunStartingSpeed})");
-        //cameraController.SetFollowTarget(rightWall ? cameraController.wallFollowRight : cameraController.wallFollowLeft); // AIDEN CAMERA ADJUSTMENT
-       
-                cameraController.UpdateCameraState(rightWall
+        // Set lockout data
+        lastWallWasRight = rightWall;
+        recentlyWallRan = true;
+        lastWallRunTime = Time.time;
+
+        cameraController.UpdateCameraState(rightWall
             ? CinemachineCameraController.PlayerState.WallRunningRight
             : CinemachineCameraController.PlayerState.WallRunningLeft);
     }
 
-    //stop our wallrun movement 
+    // stop our wallrun movement
     void StopWallRunning()
     {
         SetIsWallRunning(false);
 
-        //reactivate players gravity 
-        if (!fallWhileWallRunning) rb.useGravity = true;
+        if (!fallWhileWallRunning)
+            rb.useGravity = true;
 
-        // Rotate camera and player Z to 0
-        playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f); ;
+        playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
 
-        //cameraController.SetFollowTarget(cameraController.defaultFollowTarget); // AIDEN CAMERA ADJUSTMENT  
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
-
     }
 
-    //manages switching to and from wallrun state
+    // manages switching to and from wallrun state
     void SetIsWallRunning(bool state)
     {
         isWallRunning = state;
-        if (PlayerStatesManager.instance) PlayerStatesManager.instance.SetWallRunningState(isWallRunning);
+        if (PlayerStatesManager.instance)
+            PlayerStatesManager.instance.SetWallRunningState(isWallRunning);
     }
-
     #endregion
 
     //limits the players speed to a max of 50  to prevent breaking levels
@@ -697,6 +696,33 @@ public class CharacterController : MonoBehaviour
             {
                 isMoving = false;
                 rb.linearVelocity = lastSpeed * 1.2f;
+            }
+        }
+    }
+
+
+
+    private void CheckForLedgeVault()
+    {
+        if (!isGrounded || isSliding || isWallRunning) return;
+
+        Vector3 origin = transform.position + Vector3.up * ledgeCheckHeight;
+        Vector3 forward = transform.forward;
+
+        // Step 1: Detect wall in front
+        if (Physics.Raycast(origin, forward, out RaycastHit wallHit, ledgeDetectDistance, ledgeLayerMask))
+        {
+            // Step 2: Check if there's a surface above it we can stand on
+            Vector3 ledgeCheckOrigin = wallHit.point + Vector3.up * 0.5f + forward * 0.1f;
+
+            if (Physics.Raycast(ledgeCheckOrigin, Vector3.down, out RaycastHit ledgeHit, ledgeCheckDown, ledgeLayerMask))
+            {
+                // Vault: Reset Y velocity, and apply upward & forward force
+                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+                rb.AddForce(Vector3.up * vaultUpForce, ForceMode.Impulse);
+                rb.AddForce(forward * vaultForwardForce, ForceMode.Impulse);
+
+                // Optional: trigger animation or sound here
             }
         }
     }

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 5776929324321902514}
   - component: {fileID: 5679854509101760946}
   - component: {fileID: 4105170514180547943}
+  - component: {fileID: 2545284013006564628}
   m_Layer: 0
   m_Name: ExplodingEnemyFixed
   m_TagString: enemy
@@ -143,18 +144,18 @@ MonoBehaviour:
   explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
   outerRadiusTimerStart: 2
   middleRadiusTimeReduction: 0.5
-  knockbackForce: 100000
+  knockbackForceX: 10
+  knockbackForceY: 10
   avoidanceRadius: 1.2
   obstacleMask:
     serializedVersion: 2
     m_Bits: 128
   avoidanceStrength: 1.3
-  liftRadius: 3
-  liftForce: 100
-  KnockbackForce: 10
-  OuterExplosion: {fileID: 0}
-  MiddleExplosion: {fileID: 0}
-  InnerExplosion: {fileID: 0}
+  liftRadius: 1.5
+  liftForce: 10
+  InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
+  MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
+  OuterExplosionDamage: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
 --- !u!54 &5776929324321902514
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -298,6 +299,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2545284013006564628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050838999477027297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dae16c9da2fc9434d8941589777c5141, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyPrefab: {fileID: 7050838999477027297}
 --- !u!1 &8756144169969002728
 GameObject:
   m_ObjectHideFlags: 0
