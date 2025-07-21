@@ -673,7 +673,7 @@ public class CharacterController : MonoBehaviour
                             if (dmg != null && dashDamageProfile != null)
                             {
                                 DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                                dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                                dmg.TakeDamage2(dashDamage);
                             }
                             else
                             {
