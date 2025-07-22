@@ -6,13 +6,15 @@ public class ResetBindings : MonoBehaviour
     public void ResetToDefault()
     {
         InputManager.Instance.ResetRebinds();
+        InputManager.Instance.LoadRebinds(); // Reload the default bindings
         Debug.Log("Bindings have been reset to default.");
 
-        // Optional: Refresh displayed key texts
-        RebindDisplayUpdater[] updaters = Object.FindObjectsByType<RebindDisplayUpdater>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        foreach (var updater in updaters)
+        // Refresh all RebindButtons in the scene
+        foreach (var rebindBtn in Object.FindObjectsByType<RebindButton>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            updater.UpdateKeyDisplay();
+            rebindBtn.SendMessage("UpdateDisplay");
         }
+
+        Debug.Log("Bindings reset to default and UI updated.");
     }
 }

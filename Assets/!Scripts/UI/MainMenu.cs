@@ -6,7 +6,7 @@ public class MainMenu : MonoBehaviour
 {
     public void Start()
     {
-        SoundManager.Instance.PlayBGM(0);
+        //SoundManager.Instance.PlayBGM(0);
 
         // Ensure input bindings are loaded (once)
         if (InputManager.Instance != null)

@@ -11,10 +11,10 @@ public class RebindButton : MonoBehaviour
 {
     [Header("Input Action")]
     [Tooltip("The action name exactly as it appears in the Input Actions asset")]
-    public string actionName;
+    public string actionName = "Move";
 
     [Tooltip("Which binding slot in that action this row represents")]
-    public int bindingIndex;          // e.g., 1 = W (Move Forward)
+    public int bindingIndex = 1;          // e.g., 1 = W (Move Forward)
 
     [Header("UI References")]
     public TMP_Text bindingDisplay;       // The TMP text that shows the key
@@ -31,10 +31,34 @@ public class RebindButton : MonoBehaviour
 
     private void OnEnable()
     {
+        UsedKeyRegistry.RefreshUsedKeys(); // make sure used keys are up to date
+        
         if (InputManager.Instance != null)
             UpdateDisplay();
         else
             StartCoroutine(WaitForInputManager());
+
+        var action = InputManager.Instance.FindAction(actionName);
+        if (action == null || bindingIndex >= action.bindings.Count) return;
+
+        string path = action.bindings[bindingIndex].effectivePath;
+        if (!string.IsNullOrEmpty(path) && UsedKeyRegistry.IsKeyUsed(path))
+        {
+            // Allow this one (it's this button's binding)
+            return;
+        }
+
+        // If the key is used by another, gray out and disable
+        if (UsedKeyRegistry.IsKeyUsed(path))
+        {
+            bindingDisplay.color = Color.gray;
+            triggerButton.interactable = false;
+        }
+        else
+        {
+            bindingDisplay.color = Color.white;
+            triggerButton.interactable = true;
+        }
     }
 
     private System.Collections.IEnumerator WaitForInputManager()
