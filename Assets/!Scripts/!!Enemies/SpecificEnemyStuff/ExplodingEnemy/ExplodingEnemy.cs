@@ -165,14 +165,14 @@ public class ExplodingEnemy : MonoBehaviour
         Collider[] liftHits = Physics.OverlapSphere(origin, liftRadius);
         foreach (Collider hit in liftHits)
         {
-            if (hit.CompareTag("Player") || hit.CompareTag("Javilin"))
+           /* if (hit.CompareTag("Player") || hit.CompareTag("Javilin"))
             {
                 Rigidbody rb = hit.attachedRigidbody;
                 if (rb != null && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
                 {
                     rb.linearVelocity = new Vector3(rb.linearVelocity.x, liftForce, rb.linearVelocity.z);
                 }
-            }
+            }*/
         }
 
         // Apply explosion damage and knockback only once per target
@@ -190,6 +190,7 @@ public class ExplodingEnemy : MonoBehaviour
     /// Applies knockback and determines correct damage tier based on distance.
     /// Ensures only one hit per target.
     /// </summary>
+    
     void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged)
     {
         Collider[] hits = Physics.OverlapSphere(position, outerRadius);
@@ -207,7 +208,6 @@ public class ExplodingEnemy : MonoBehaviour
                 damageToApply = innerDamage;
                 selectedProfile = InnerExplosionDamage; // Use Josh's damage profile for inner explosion
                 Debug.Log("Player caught in INNER explosion radius");
-
 
             }
             else if (distance <= middleRadius && distance >= innerRadius)
@@ -266,14 +266,14 @@ public class ExplodingEnemy : MonoBehaviour
     /// <summary>
     /// Used for future vertical lift delay if needed (currently unused)
     /// </summary>
-    private IEnumerator ApplyStaggeredKnockback(Rigidbody targetRb, Vector3 knockbackDir, float finalForce)
-    {
-        Vector3 liftVector = Vector3.up * liftForce;
-        targetRb.AddForce(liftVector, ForceMode.VelocityChange);
-        Debug.Log("Vertical lift applied: " + liftVector);
+   // private IEnumerator ApplyStaggeredKnockback(Rigidbody targetRb, Vector3 knockbackDir, float finalForce)
+  //  {
+       // Vector3 liftVector = Vector3.up * liftForce;
+       // targetRb.AddForce(liftVector, ForceMode.VelocityChange);
+       // Debug.Log("Vertical lift applied: " + liftVector);
 
-        yield return new WaitForSeconds(0.2f);
-    }
+       // yield return new WaitForSeconds(0.2f);
+   // }
 
     Vector3 GetAvoidanceDirection(Vector3 moveDir)
     {
