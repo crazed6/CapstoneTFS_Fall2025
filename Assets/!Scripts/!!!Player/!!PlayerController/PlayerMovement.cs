@@ -88,7 +88,6 @@ public class CharacterController : MonoBehaviour
     public Transform playerCameraZRotator; // To be able to rotate the camera on the Z axis without affecting other rotations
     float wallRunStartingSpeed; // The speed that you begin wall running with, will be maintained while you keep wall running
     public float wallrunJumpSpeedBoost = 1.2f;
-    public float wallrunStartSpeedBoost = 1.2f;
     public float wallrunJumpforce;
     bool jumpPressedThisFrame = false;
 
@@ -540,14 +539,14 @@ public class CharacterController : MonoBehaviour
     void StartWallRunning(bool rightWall)
     {
         SetIsWallRunning(true);
-        
+
         if (!fallWhileWallRunning)
             rb.useGravity = false;
 
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
-        wallRunStartingSpeed = rb.linearVelocity.magnitude * 1.2f;
+        wallRunStartingSpeed = rb.linearVelocity.magnitude + 5f;
 
         // Set lockout data
         lastWallWasRight = rightWall;
@@ -674,7 +673,7 @@ public class CharacterController : MonoBehaviour
                             if (dmg != null && dashDamageProfile != null)
                             {
                                 DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                                dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                                dmg.TakeDamage2(dashDamage);
                             }
                             else
                             {
