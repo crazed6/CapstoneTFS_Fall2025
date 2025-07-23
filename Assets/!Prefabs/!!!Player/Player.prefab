@@ -1706,7 +1706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pjt: {fileID: 0}
-  dashDamageProfile: {fileID: 0}
+  dashDamageProfile: {fileID: 11400000, guid: 8cb15e9fe0f43f44ab8150b4f9253ffa, type: 2}
   rb: {fileID: 0}
   baseSpeed: 20
   maxSpeed: 50
@@ -1740,6 +1740,14 @@ MonoBehaviour:
   playerCameraZRotator: {fileID: 7839706325088397365}
   wallrunJumpSpeedBoost: 1.15
   wallrunJumpforce: 0
+  ledgeDetectDistance: 1
+  ledgeCheckHeight: 1.5
+  ledgeCheckDown: 2
+  vaultUpForce: 8
+  vaultForwardForce: 4
+  ledgeLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
   upForce: 38
   forwardForce: 30
   displacement: {x: 0, y: 0, z: 0}
