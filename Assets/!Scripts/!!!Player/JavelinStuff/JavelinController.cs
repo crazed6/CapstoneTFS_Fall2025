@@ -6,60 +6,83 @@ using System.Threading;
 
 public class JavelinController : MonoBehaviour
 {
-    [Header("Arc Settings")]
-    public float speed = 90f;
-    public float gravityStrength = 30f;
+    [Header("Settings")]
+    public float speed = 120f;
     public float lifetime = 5f;
-
-    [Header("Rotation")]
-    public float rotationSpeed = 720f;
-
-    [Header("AoE Settings")]
     public float aoeRadius = 3f;
     public float damageAmount = 25f;
     public LayerMask damageMask;
+    public DamageProfile damageProfile;
 
-    [Header("Damage Profile")]
-    public DamageProfile damageProfile; // Assign your JavelinDamage in Inspector
-
-    private Vector3 velocity;
-    private bool isFlying = false;
-    private bool hasExploded = false;
-    private Vector3 hitPoint = Vector3.zero;
+    [Header("Collider Delay")]
+    public float colliderActivationDelay = 0.1f;
 
     private CancellationTokenSource cts;
+    private bool hasExploded = false;
+    private float timer = 0f;
+    private float activationTimer = 0f;
+    private Vector3 direction;
+    private Vector3 hitPoint = Vector3.zero;
 
-    public void SetDirection(Vector3 direction)
+    private bool isAiming = false;
+
+    public void SetDirection(Vector3 dir)
     {
-        velocity = direction.normalized * speed;
-        transform.rotation = Quaternion.LookRotation(velocity);
-        isFlying = true;
+        direction = dir.normalized;
+        transform.rotation = Quaternion.LookRotation(direction);
 
+        // Enable collider & change layer AFTER aiming
+        SetAimingMode(false);
+
+        // Begin movement
         cts = new CancellationTokenSource();
-        MoveAlongArc(cts.Token).Forget();
+        FlyForward(cts.Token).Forget();
     }
 
-    private async UniTaskVoid MoveAlongArc(CancellationToken token)
+    public void SetAimingMode(bool aiming)
     {
-        float timer = 0f;
+        isAiming = aiming;
+
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (var col in colliders)
+            col.enabled = !aiming;
+
+        // Only change layer when no longer aiming
+        if (!aiming)
+            gameObject.layer = LayerMask.NameToLayer("Default");
+    }
+
+    private async UniTaskVoid FlyForward(CancellationToken token)
+    {
+        Vector3 previousPos = transform.position;
 
         try
         {
             while (timer < lifetime && !hasExploded)
             {
                 token.ThrowIfCancellationRequested();
-
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                velocity += Vector3.down * gravityStrength * Time.deltaTime;
-                transform.position += velocity * Time.deltaTime;
+                float deltaTime = Time.deltaTime;
+                activationTimer += deltaTime;
+                timer += deltaTime;
 
-                if (velocity != Vector3.zero)
-                    transform.rotation = Quaternion.LookRotation(velocity);
+                Vector3 newPos = transform.position + direction * speed * deltaTime;
 
-                transform.Rotate(Vector3.forward * rotationSpeed * Time.deltaTime, Space.Self);
+                // Perform SphereCast only after collider delay
+                if (activationTimer >= colliderActivationDelay)
+                {
+                    float distance = Vector3.Distance(previousPos, newPos);
+                    if (Physics.SphereCast(previousPos, 0.1f, direction, out RaycastHit hit, distance, damageMask))
+                    {
+                        hitPoint = hit.point;
+                        TriggerAoE();
+                        return;
+                    }
+                }
 
-                timer += Time.deltaTime;
+                transform.position = newPos;
+                previousPos = newPos;
             }
 
             if (!hasExploded)
@@ -70,16 +93,7 @@ public class JavelinController : MonoBehaviour
         }
         catch (OperationCanceledException)
         {
-            // Safe exit
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!hasExploded)
-        {
-            hitPoint = transform.position;
-            TriggerAoE();
+            // Ignore
         }
     }
 
@@ -91,10 +105,9 @@ public class JavelinController : MonoBehaviour
             cts.Cancel();
 
         Collider[] hits = Physics.OverlapSphere(transform.position, aoeRadius, damageMask);
-
         foreach (var hit in hits)
         {
-            EnemyDamageComponent damageable = hit.GetComponent<EnemyDamageComponent>();
+            EnemyDamageComponent damageable = hit.GetComponentInParent<EnemyDamageComponent>();
             if (damageable != null)
             {
                 DamageData data = new DamageData
@@ -116,9 +129,9 @@ public class JavelinController : MonoBehaviour
             cts.Cancel();
     }
 
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(1f, 1f, 0f, 0.4f);
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
         Gizmos.DrawSphere(hitPoint == Vector3.zero ? transform.position : hitPoint, aoeRadius);
     }
 }
