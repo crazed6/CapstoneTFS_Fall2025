@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
@@ -132,7 +132,7 @@ public class HeavyEnemyAI : MonoBehaviour
 
     public async void StartTracking()
     {
-        if (this == null || gameObject == null || !this || !gameObject.activeInHierarchy)
+        if (this == null || gameObject == null || !gameObject.activeInHierarchy)
             return;
 
         if (isTracking) return;
@@ -148,7 +148,8 @@ public class HeavyEnemyAI : MonoBehaviour
         {
             while (timer < trackDuration)
             {
-                if (token.IsCancellationRequested) return;
+                if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
+                    return;
 
                 if (player != null && CanSeePlayer())
                 {
@@ -157,22 +158,32 @@ public class HeavyEnemyAI : MonoBehaviour
                 }
 
                 timer += Time.deltaTime;
-                await UniTask.Yield(PlayerLoopTiming.Update, token); //  Catch this
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+
+                // Check again after yield
+                if (this == null || gameObject == null || !gameObject.activeInHierarchy)
+                    return;
             }
 
-            if (token.IsCancellationRequested) return;
-            trajectoryLine.colorGradient = lockedColor;
+            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
+                return;
 
-            await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token); //  Catch this
+            if (trajectoryLine != null && trajectoryLine.gameObject.activeInHierarchy)
+                trajectoryLine.colorGradient = lockedColor;
 
-            if (token.IsCancellationRequested) return;
+            await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token);
+
+            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
+                return;
 
             ThrowRockAtLockedPosition(lockedTarget);
+
             isTracking = false;
 
-            await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token); //  Catch this
+            await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token);
 
-            if (token.IsCancellationRequested) return;
+            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
+                return;
 
             if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
             {
@@ -187,7 +198,6 @@ public class HeavyEnemyAI : MonoBehaviour
         catch (OperationCanceledException)
         {
             Debug.Log("StartTracking() was safely cancelled.");
-            isTracking = false;
         }
     }
 
@@ -202,6 +212,9 @@ public class HeavyEnemyAI : MonoBehaviour
 
     private void DrawTrajectory(Vector3 target, bool isLocked)
     {
+        if (trajectoryLine == null || !trajectoryLine.gameObject.activeInHierarchy)
+            return;
+
         trajectoryLine.enabled = true;
         trajectoryLine.positionCount = trajectoryResolution;
 
