@@ -4,6 +4,7 @@ using System.IO;
 
 public class SaveLoadSystem
 {
+
     private static SaveData _saveData = new SaveData();
     [System.Serializable]
     public struct SaveData
@@ -17,7 +18,7 @@ public class SaveLoadSystem
         return SaveFile;
     }
 
-    public static void Save()
+    public static void Save(CheckpointSystem checkpointSystem) //CheckpointSystem is passed in so that it can save the checkpoint data to a file
     {
         HandleSaveData();
         string json = JsonUtility.ToJson(_saveData, true);
@@ -25,6 +26,10 @@ public class SaveLoadSystem
 
         File.WriteAllText(SaveFileName(), JsonUtility.ToJson(_saveData, true)); //Replaces what is in the SaveFile and so overwrites it.
         Debug.Log("Saved Data: " + json); //Logging data to verify that saving is working
+        Debug.Log("Save file path: " + Application.persistentDataPath);
+
+        checkpointSystem.SaveCheckpointToFile(); //Saves the checkpoint data to a file, so that it can be loaded later
+
     }
 
     private static void HandleSaveData()

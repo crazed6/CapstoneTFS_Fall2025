@@ -27,6 +27,7 @@ public class PlayerSave : MonoBehaviour
         }
 
         data.SceneName = SceneManager.GetActiveScene().name; //Saves the current scene name
+        
 
         if (inventoryManager != null)
         {
@@ -59,17 +60,33 @@ public class PlayerSave : MonoBehaviour
 
         if (data.collectedItems != null)
         {
-            if (ItemCollectionSimulator.Instance == null)
+            //if (ItemCollectionSimulator.Instance == null)
+            //{
+            //    Debug.LogError("ItemCollectionSimulator instance is null! Ensure it exists in the scene.");
+            //    return;
+            //}
+            //else
+            //{
+            //    foreach (string itemName in data.collectedItems)
+            //    {
+            //        Debug.Log("Simulating item collection for: " + itemName);
+            //        ItemCollectionSimulator.Instance.SimulateItemCollection(gameObject, itemName);
+            //    }
+            //}
+
+            foreach (string itemName in data.collectedItems)
             {
-                Debug.LogError("ItemCollectionSimulator instance is null! Ensure it exists in the scene.");
-                return;
-            }
-            else
-            {
-                foreach (string itemName in data.collectedItems)
+               Item item = GameObject.Find(itemName)?.GetComponent<Item>(); 
+                if (item != null)
                 {
-                    Debug.Log("Simulating item collection for: " + itemName);
-                    ItemCollectionSimulator.Instance.SimulateItemCollection(gameObject, itemName);
+                    // Simulate the collection of the item
+                    //item.CollectItem(); // Assuming CollectItem is a method that handles item collection
+                    Destroy(item.gameObject); // Destroy the item GameObject to prevent duplication
+                    Debug.Log("Collected item: " + itemName);
+                }
+                else
+                {
+                    Debug.LogWarning("Item not found: " + itemName);
                 }
             }
         }
