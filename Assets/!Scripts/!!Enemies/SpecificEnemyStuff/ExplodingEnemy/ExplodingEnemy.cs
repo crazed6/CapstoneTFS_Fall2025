@@ -17,6 +17,7 @@ public class ExplodingEnemy : MonoBehaviour
     public float middleDamage = 30f;
     public float outerDamage = 15f;
     public ParticleSystem explosionEffect;
+    public LayerMask damageableLayer; // Layer mask to filter damageable objects
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
@@ -33,8 +34,7 @@ public class ExplodingEnemy : MonoBehaviour
 
     private bool timerStarted = false;
     private float explosionTimer = 0f;
-    private bool middleRadiusReduced = false;
-    private bool explosionTimerLockedOn = false;
+
 
     private Vector3 lastKnownPlayerPosition;
 
@@ -159,7 +159,7 @@ public class ExplodingEnemy : MonoBehaviour
         Collider hitCollider = null;
         DamageProfile selectedProfile = null;
 
-        Collider[] hits = Physics.OverlapSphere(position, outerRadius); 
+        Collider[] hits = Physics.OverlapSphere(position, outerRadius, damageableLayer); 
         /* checks the over lap sphere compare to the outer radius, and check how man collider are in the overlap, 
             then checks the damage and knockback variable for one collider relating to it */
         foreach (Collider hit in hits)

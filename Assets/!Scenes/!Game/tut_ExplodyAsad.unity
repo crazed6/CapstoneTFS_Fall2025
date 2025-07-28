@@ -8476,6 +8476,18 @@ PrefabInstance:
       value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: innerDamage
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: outerDamage
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: middleDamage
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
       propertyPath: KnockbackForce
       value: 30
       objectReference: {fileID: 0}
@@ -8490,6 +8502,10 @@ PrefabInstance:
     - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
       propertyPath: knockbackForceY
       value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: damageableLayer.m_Bits
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
       propertyPath: 'patrolPoints.Array.data[0]'
@@ -8579,9 +8595,9 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 3.5
-  m_Acceleration: 8
+  m_Acceleration: 100
   avoidancePriority: 50
-  m_AngularSpeed: 120
+  m_AngularSpeed: 500
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
@@ -24309,6 +24325,14 @@ PrefabInstance:
     - target: {fileID: 7648052900323614605, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
       propertyPath: orthographic size
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062703719057241321, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
+      propertyPath: regenerationDelay
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9062703719057241321, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
+      propertyPath: regenerationAmount
+      value: 30
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
