@@ -20,7 +20,7 @@ public class ExplodingEnemy : MonoBehaviour
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
-    public float middleRadiusTimeReduction = 0.5f;
+    public float middleRadiusTimeReduction = 2f;
 
     [Header("Knockback Settings")]
     public float knockbackForceX = 10f;
@@ -83,9 +83,9 @@ public class ExplodingEnemy : MonoBehaviour
             Patrol();
         }
 
-        if (timerStarted && explosionTimer > 0f)
+        if (timerStarted)
         {
-            explosionTimer -= Time.deltaTime;
+            explosionTimer -= Time.deltaTime * (distanceToPlayer < middleRadius ? middleRadiusTimeReduction : 1); // Speed up timer if inside middle radius
             if (explosionTimer <= 0f)
             {
                 Explode();
@@ -108,31 +108,20 @@ public class ExplodingEnemy : MonoBehaviour
 
     void HandleRadiusExplosion(float distance)
     {
-        // 🔒 Start explosion timer permanently when player enters outer radius
-        if (!explosionTimerLockedOn && distance <= outerRadius)
+        // 💥 Immediate explosion if inside inner radius
+        if (distance <= innerRadius)
         {
-            explosionTimerLockedOn = true;
+            explosionTimer = 0f;
+ 
+        }
+
+        // 🔒 Start explosion timer permanently when player enters outer radius
+        if (!timerStarted && distance <= outerRadius)
+        {
             explosionTimer = outerRadiusTimerStart;
             timerStarted = true;
         }
 
-        // If not locked on yet, don't do anything further
-        if (!explosionTimerLockedOn) return;
-
-        // 🔥 Reduce timer if inside middle radius
-        if (distance <= middleRadius && !middleRadiusReduced)
-        {
-            explosionTimer -= middleRadiusTimeReduction;
-            middleRadiusReduced = true;
-        }
-
-        // 💥 Immediate explosion if inside inner radius
-        if (distance <= innerRadius) 
-        {
-            explosionTimer = 0f;
-            timerStarted = false;
-            Explode();
-        }
     }
 
     //Javilin exploding and it works YAY
