@@ -83,6 +83,11 @@ public class CharacterController : MonoBehaviour
     public LayerMask enemyLayer;
 
     [Header("Wall Running")]
+    // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
+    public float wallRunLookAwayAngle = 20f; // ADD THIS: Sets the fixed camera angle away from the wall.
+    private bool isRotationLocked = false;  // Add this line: Tracks if rotation is locked
+
+
     public bool fallWhileWallRunning; // Slowly fall character while wall running
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
     public Transform playerCameraZRotator; // To be able to rotate the camera on the Z axis without affecting other rotations
@@ -321,8 +326,36 @@ public class CharacterController : MonoBehaviour
 
 
 
+    // ---- Jaxson's original code: Look Up and Down with Camera ----
+    //void RotateBodyHorizontally()
+    //{
+    //    // Get mouse input for horizontal rotation
+    //    float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+
+    //    // Rotate the player horizontally
+    //    transform.Rotate(0f, mouseX, 0f);
+
+    //    // If sliding, allow steering slightly
+    //    if (isSliding)
+    //    {
+    //        Vector3 newVelocity = rb.linearVelocity;
+    //        newVelocity = Quaternion.Euler(0, mouseX * slideSteeringPower, 0) * newVelocity;
+    //        rb.linearVelocity = newVelocity;
+    //    }
+    //}
+
+
+    // Aiden & Kaylani's code: Rotate body horizontally with mouse input
     void RotateBodyHorizontally()
     {
+        // --- Aiden & Kaylani's : Check if the player is currently wall running ---
+        // If rotation is locked (during a wall run), exit the function immediately.
+        if (isRotationLocked)
+        {
+            return;
+        }
+
+        // --- Jaxson's : Normal Rotation Logic ---
         // Get mouse input for horizontal rotation
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
 
@@ -539,10 +572,37 @@ public class CharacterController : MonoBehaviour
     // initiate our wallrun movement
     void StartWallRunning(bool rightWall)
     {
+        isRotationLocked = true; //lock mouse input (Aiden & Kaylani's code)
         SetIsWallRunning(true);
-        
+
+       
         if (!fallWhileWallRunning)
             rb.useGravity = false;
+
+        // --- NEW FIXED ROTATION LOGIC (Aiden & Kaylani's code addition) ---
+
+        // 1. Get the wall's normal vector from the correct collider
+        Vector3 wallNormal = rightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
+
+        // 2. Calculate the direction parallel to the wall
+        Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
+        if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
+        {
+            wallForward = -wallForward;
+        }
+
+        // 3. Create a rotation that looks parallel to the wall
+        Quaternion wallRunRotation = Quaternion.LookRotation(wallForward);
+
+        // 4. Add the "look away" angle based on which side the wall is on
+        float lookAngle = rightWall ? wallRunLookAwayAngle : -wallRunLookAwayAngle;
+        Quaternion lookAwayRotation = Quaternion.Euler(0, lookAngle, 0);
+
+        // 5. Set the player's rotation to the final combined rotation
+        transform.rotation = wallRunRotation * lookAwayRotation;
+
+
+        // --- VISUALS AND STATE MANAGEMENT (Jaxson's original code) ---
 
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
@@ -562,6 +622,7 @@ public class CharacterController : MonoBehaviour
     // stop our wallrun movement
     void StopWallRunning()
     {
+        isRotationLocked = false; // Unlock the rotation (Aiden & Kaylani's code)
         SetIsWallRunning(false);
 
         if (!fallWhileWallRunning)
