@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class ExplodingEnemy : MonoBehaviour
 {
@@ -26,37 +26,43 @@ public class ExplodingEnemy : MonoBehaviour
     public float knockbackForceX = 10f;
     public float knockbackForceY = 10f;
 
-    [Header("Avoidance Settings")]
-    public float avoidanceRadius = 2f;
-    public LayerMask obstacleMask;
-    public float avoidanceStrength = 5f;
-
-    [Header("Lift Settings")]
-    public float liftRadius = 3f;
-    public float liftForce = 5f;
-
     private Transform player;
-    private Rigidbody rb;
+    private NavMeshAgent agent;
     private int currentPointIndex = 0;
     private bool hasExploded = false;
 
     private bool timerStarted = false;
     private float explosionTimer = 0f;
     private bool middleRadiusReduced = false;
+    private bool explosionTimerLockedOn = false;
 
     private Vector3 lastKnownPlayerPosition;
 
-    //public DamageProfile GeneralExplosion; // Josh's damage profile reference
-    public DamageProfile InnerExplosionDamage; // Josh's damage profile reference
-    public DamageProfile MiddleExplosionDamage; // Josh's damage profile reference
-    public DamageProfile OuterExplosionDamage; // Josh's damage profile reference
+    public DamageProfile InnerExplosionDamage;
+    public DamageProfile MiddleExplosionDamage;
+    public DamageProfile OuterExplosionDamage;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
             player = playerObj.transform;
+
+        agent = GetComponent<NavMeshAgent>();
+        if (agent == null)
+        {
+            Debug.LogError("NavMeshAgent missing on ExplodingEnemy.");
+            enabled = false;
+            return;
+        }
+
+        agent.speed = patrolSpeed;
+        agent.autoBraking = true;
+
+        if (patrolPoints.Length > 0)
+        {
+            agent.SetDestination(patrolPoints[0].position);
+        }
     }
 
     void Update()
@@ -69,21 +75,14 @@ public class ExplodingEnemy : MonoBehaviour
         if (distanceToPlayer <= detectionRadius)
         {
             lastKnownPlayerPosition = player.position;
-
-            // Chase player with avoidance logic
-            Vector3 dirToPlayer = (player.position - transform.position).normalized;
-            Vector3 avoidanceDir = GetAvoidanceDirection(dirToPlayer);
-            Vector3 finalDir = (dirToPlayer + avoidanceDir * avoidanceStrength).normalized;
-
-            rb.linearVelocity = finalDir * chaseSpeed;
-            FaceDirection(finalDir);
+            agent.speed = chaseSpeed;
+            agent.SetDestination(player.position);
         }
         else
         {
             Patrol();
         }
 
-        // Countdown explosion timer
         if (timerStarted && explosionTimer > 0f)
         {
             explosionTimer -= Time.deltaTime;
@@ -98,61 +97,52 @@ public class ExplodingEnemy : MonoBehaviour
     {
         if (patrolPoints.Length == 0) return;
 
-        Transform targetPoint = patrolPoints[currentPointIndex];
-        Vector3 direction = (targetPoint.position - transform.position).normalized;
+        agent.speed = patrolSpeed;
 
-        rb.linearVelocity = direction * patrolSpeed;
-        FaceDirection(direction);
-
-        if (Vector3.Distance(transform.position, targetPoint.position) < 0.3f)
+        if (!agent.pathPending && agent.remainingDistance < 0.3f)
         {
             currentPointIndex = (currentPointIndex + 1) % patrolPoints.Length;
-        }
-    }
-
-    void FaceDirection(Vector3 direction)
-    {
-        if (direction != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+            agent.SetDestination(patrolPoints[currentPointIndex].position);
         }
     }
 
     void HandleRadiusExplosion(float distance)
     {
-        if (distance <= innerRadius)
+        // 🔒 Start explosion timer permanently when player enters outer radius
+        if (!explosionTimerLockedOn && distance <= outerRadius)
         {
-            explosionTimer = 0f;     // Ensures timer is irrelevant
-            timerStarted = false;    // Reset the timer flag
-            Explode();               // Immediate explosion
-            return;
+            explosionTimerLockedOn = true;
+            explosionTimer = outerRadiusTimerStart;
+            timerStarted = true;
         }
 
-        if (distance <= middleRadius)
-        {
-            if (!timerStarted)
-            {
-                explosionTimer = outerRadiusTimerStart;
-                timerStarted = true;
-            }
+        // If not locked on yet, don't do anything further
+        if (!explosionTimerLockedOn) return;
 
-            if (!middleRadiusReduced)
-            {
-                explosionTimer -= middleRadiusTimeReduction; // Reduce time if closer
-                middleRadiusReduced = true;
-            }
-        }
-        else if (distance <= outerRadius)
+        // 🔥 Reduce timer if inside middle radius
+        if (distance <= middleRadius && !middleRadiusReduced)
         {
-            if (!timerStarted)
-            {
-                explosionTimer = outerRadiusTimerStart;
-                timerStarted = true;
-            }
+            explosionTimer -= middleRadiusTimeReduction;
+            middleRadiusReduced = true;
+        }
+
+        // 💥 Immediate explosion if inside inner radius
+        if (distance <= innerRadius) 
+        {
+            explosionTimer = 0f;
+            timerStarted = false;
+            Explode();
         }
     }
 
+    //Javilin exploding and it works YAY
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Javilin") && !hasExploded)
+        {
+            Explode();
+        }
+    }
 
     void Explode()
     {
@@ -161,129 +151,88 @@ public class ExplodingEnemy : MonoBehaviour
 
         Vector3 origin = transform.position;
 
-        // Lift players or javilins inside liftRadius
-        Collider[] liftHits = Physics.OverlapSphere(origin, liftRadius);
-        foreach (Collider hit in liftHits)
-        {
-            if (hit.CompareTag("Player") || hit.CompareTag("Javilin"))
-            {
-                Rigidbody rb = hit.attachedRigidbody;
-                if (rb != null && Mathf.Abs(rb.linearVelocity.y) < 0.1f)
-                {
-                    rb.linearVelocity = new Vector3(rb.linearVelocity.x, liftForce, rb.linearVelocity.z);
-                }
-            }
-        }
-
-        // Apply explosion damage and knockback only once per target
         HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
         ApplySingleExplosionDamage(origin, alreadyDamaged);
 
-        // Spawn VFX
         if (explosionEffect != null)
             Instantiate(explosionEffect, origin, Quaternion.identity);
 
         Destroy(gameObject);
     }
 
-    /// <summary>
-    /// Applies knockback and determines correct damage tier based on distance.
-    /// Ensures only one hit per target.
-    /// </summary>
-    void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged)
+    void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged) // Applies single damage and knockback loop
     {
-        Collider[] hits = Physics.OverlapSphere(position, outerRadius);
+        //Declared variables before for each so it dosnt die after the for each loop
+        float distance = 0f; 
+        float damageToApply = 0f;
+        Vector3 hitPosition = Vector3.zero;
+        Rigidbody targetRb = null;
+        Collider hitCollider = null;
+        DamageProfile selectedProfile = null;
+
+        Collider[] hits = Physics.OverlapSphere(position, outerRadius); 
+        /* checks the over lap sphere compare to the outer radius, and check how man collider are in the overlap, 
+            then checks the damage and knockback variable for one collider relating to it */
         foreach (Collider hit in hits)
         {
             if (alreadyDamaged.Contains(hit)) continue;
 
-            float distance = Vector3.Distance(position, hit.transform.position);
-            float damageToApply = 0f;
-            DamageProfile selectedProfile = null;
+            distance = Vector3.Distance(position, hit.transform.position);
+            damageToApply = 0f;
+            
 
-            // Decide damage based on tiered radii
             if (distance <= innerRadius)
             {
                 damageToApply = innerDamage;
-                selectedProfile = InnerExplosionDamage; // Use Josh's damage profile for inner explosion
-                Debug.Log("Player caught in INNER explosion radius");
-
-
+                selectedProfile = InnerExplosionDamage;
             }
-            else if (distance <= middleRadius && distance >= innerRadius)
+            else if (distance <= middleRadius)
             {
                 damageToApply = middleDamage;
-                selectedProfile = MiddleExplosionDamage; // Use Josh's damage profile for middle explosion
-                Debug.Log("Player caught in MIDDLE explosion radius");
+                selectedProfile = MiddleExplosionDamage;
             }
-            else if (distance <= outerRadius && distance >= middleRadius)
+            else if (distance <= outerRadius)
             {
                 damageToApply = outerDamage;
-                selectedProfile = OuterExplosionDamage; // Use Josh's damage profile for outer explosion
-                Debug.Log("Player caught in OUTER explosion radius");
-            }
-            else
-            {
-                continue; // Shouldn't happen, but for safety
+                selectedProfile = OuterExplosionDamage;
             }
 
-            // Knockback force direction and magnitude
-            Vector3 knockbackDir = (hit.transform.position - position).normalized;
-            float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
+            else continue;
 
-            Rigidbody targetRb = hit.attachedRigidbody;
-            if (targetRb != null)
-            {
-                targetRb.WakeUp();
-                targetRb.linearVelocity = Vector3.zero;
-
-                Vector3 adjustedKnockback = new Vector3(
-                    knockbackDir.x * knockbackForceX * distanceFactor,
-                    knockbackForceY * distanceFactor,
-                    knockbackDir.z * knockbackForceX * distanceFactor
-                );
-
-                targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
-                Debug.DrawRay(targetRb.position, adjustedKnockback.normalized * 10f, Color.red, 5f);
-                Debug.Log("Adjusted knockback applied: " + adjustedKnockback);
-            }
-
-            if (hit.CompareTag("Player"))
-            {
-                // Apply damage through Josh's custom damage system
-                Health playerHealth = hit.GetComponent<Health>();
-                if (playerHealth != null && selectedProfile!= null)
-                {
-                    DamageData damageData = new DamageData(gameObject, selectedProfile);
-                    playerHealth.PlayerTakeDamage(damageData);
-                }
-            }
-
-            alreadyDamaged.Add(hit);
+            hitPosition = hit.transform.position;
+            targetRb = hit.attachedRigidbody;
+            hitCollider = hit; // Store the hit enemy collider for later use
         }
-    }
 
-    /// <summary>
-    /// Used for future vertical lift delay if needed (currently unused)
-    /// </summary>
-    private IEnumerator ApplyStaggeredKnockback(Rigidbody targetRb, Vector3 knockbackDir, float finalForce)
-    {
-        Vector3 liftVector = Vector3.up * liftForce;
-        targetRb.AddForce(liftVector, ForceMode.VelocityChange);
-        Debug.Log("Vertical lift applied: " + liftVector);
-
-        yield return new WaitForSeconds(0.2f);
-    }
-
-    Vector3 GetAvoidanceDirection(Vector3 moveDir)
-    {
-        Ray ray = new Ray(transform.position, moveDir);
-        if (Physics.SphereCast(ray, avoidanceRadius, out RaycastHit hit, avoidanceRadius * 2f, obstacleMask))
+        Vector3 knockbackDir = (hitPosition - position).normalized;
+        float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
+        Debug.Log($"distance factor is {distanceFactor}");
+            
+        if (targetRb != null)
         {
-            Vector3 awayFromObstacle = Vector3.Reflect(moveDir, hit.normal);
-            return awayFromObstacle.normalized;
+            targetRb.WakeUp();
+            targetRb.linearVelocity = Vector3.zero;
+
+            Vector3 adjustedKnockback = new Vector3(
+                knockbackDir.x * knockbackForceX * distanceFactor,
+                knockbackForceY * distanceFactor,
+                knockbackDir.z * knockbackForceX * distanceFactor
+            );
+
+            targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
         }
-        return Vector3.zero;
+
+        if (hitCollider.CompareTag("Player"))
+        {
+            Health playerHealth = hitCollider.GetComponent<Health>();
+            if (playerHealth != null && selectedProfile != null)
+            {
+                DamageData damageData = new DamageData(gameObject, selectedProfile);
+                playerHealth.PlayerTakeDamage(damageData);
+            }
+        }
+
+        alreadyDamaged.Add(hitCollider);
     }
 
     void OnDrawGizmosSelected()
@@ -299,11 +248,5 @@ public class ExplodingEnemy : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, outerRadius);
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, avoidanceRadius);
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, liftRadius);
     }
 }
