@@ -180,8 +180,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -705,8 +704,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -5789,8 +5787,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -6346,20 +6343,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f3f05b7a13f4a7438c3da47840e3e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dashDamageProfile: {fileID: 0}
   rb: {fileID: 0}
   baseSpeed: 20
   maxSpeed: 50
-  dashCooldown: 1.5
-  cameraController: {fileID: 0}
   bottomCollider: {fileID: 1246779828}
   rightCollider: {fileID: 1611631297}
   leftCollider: {fileID: 200551410}
   jumpForce: 10
   downwardGravityForce: 0
   downwardForceLerpSpeed: 0
-  jumpBufferTime: 0.15
-  coyoteTime: 0.1
   cameraHolder: {fileID: 121110534}
   mouseSensitivity: 300
   verticalClampAngle: 90
@@ -6370,16 +6362,10 @@ MonoBehaviour:
   keepSlidingSpeedThreshold: 15
   slideSteeringPower: 0.4
   slideCooldownTime: 1.5
-  coneAngle: 30
-  coneRange: 10
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 0
   fallWhileWallRunning: 0
   keepWallRunningSpeedThreshold: 0
   playerCameraZRotator: {fileID: 146494926}
   wallrunJumpSpeedBoost: 1.15
-  wallrunJumpforce: 0
   upForce: 20
   forwardForce: 15
   displacement: {x: 0, y: 0, z: 0}
@@ -6388,12 +6374,7 @@ MonoBehaviour:
   maxDistance: 0
   dashSpeed: 0
   enemyExitForce: 0
-  dashForce: 25
-  dashDuration: 0.2
   playerVisual: {fileID: 124295117}
-  thirdPersonCamera: {fileID: 0}
-  cutSceneCamera: {fileID: 0}
-  cutScenePlayerCamera: {fileID: 0}
 --- !u!1 &1777284365
 GameObject:
   m_ObjectHideFlags: 0
@@ -6720,8 +6701,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -7785,8 +7765,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -8188,8 +8167,7 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:

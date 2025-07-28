@@ -330,6 +330,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &207088678 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6275156323265495567, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 818582676}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &368346051 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2624744066193918935, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 818582676}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e653bab7fb20e499bda25e1b646fea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &405388539 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
@@ -408,15 +424,15 @@ PrefabInstance:
     - target: {fileID: 3187017217538679972, guid: c1fce6bd800fdc74aa41a95a2702c8a6, type: 3}
       propertyPath: leftShoulderAnchor
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 207088678}
     - target: {fileID: 3187017217538679972, guid: c1fce6bd800fdc74aa41a95a2702c8a6, type: 3}
       propertyPath: rightShoulderAnchor
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1494026016}
     - target: {fileID: 3187017217538679972, guid: c1fce6bd800fdc74aa41a95a2702c8a6, type: 3}
       propertyPath: defaultShoulderAnchor
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 2145505763}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -518,7 +534,7 @@ PrefabInstance:
     - target: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: mainVirtualCam
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 368346051}
     - target: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: aimingVirtualCam
       value: 
@@ -721,6 +737,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0733456b55a5984593ba59c0a688c96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!4 &1494026016 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6409781158562854443, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 818582676}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1571141516
 GameObject:
   m_ObjectHideFlags: 0
@@ -953,6 +974,11 @@ Camera:
 GameObject:
   m_CorrespondingSourceObject: {fileID: 274766748694175801, guid: a8cb25fb744143b4c9006ac52e12d019, type: 3}
   m_PrefabInstance: {fileID: 1624699099}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &2145505763 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 431623547732869184, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 818582676}
   m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

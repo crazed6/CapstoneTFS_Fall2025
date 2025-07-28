@@ -7672,6 +7672,17 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!114 &917724873 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2624744066193918935, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 1268776458}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e653bab7fb20e499bda25e1b646fea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!43 &920573414
 Mesh:
   m_ObjectHideFlags: 0
@@ -11153,7 +11164,7 @@ PrefabInstance:
     - target: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: mainVirtualCam
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 917724873}
     - target: {fileID: 7875578958239139660, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
       propertyPath: aimingVirtualCam
       value: 
@@ -13691,6 +13702,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1550092150}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1447394493 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8588867914941767975, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
+  m_PrefabInstance: {fileID: 1268776458}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1474941365
 GameObject:
   m_ObjectHideFlags: 0
@@ -19348,7 +19364,7 @@ PrefabInstance:
     - target: {fileID: 3187017217538679972, guid: c1fce6bd800fdc74aa41a95a2702c8a6, type: 3}
       propertyPath: defaultShoulderAnchor
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1447394493}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
