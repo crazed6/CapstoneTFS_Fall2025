@@ -74,6 +74,11 @@ public class ChaserDroneRework : MonoBehaviour
 
         lineRenderer.enabled = true;
 
+        // ---- Kaylani's addition ----
+        // Get all renderers on the drone and its children at the start.
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        // --------------------------
+
         float elapsed = 0f;
 
         // Charge-up visual: flashing line that turns solid red in the last 0.5s
@@ -87,6 +92,17 @@ public class ChaserDroneRework : MonoBehaviour
             if (elapsed >= chargeUpTime - 0.5f)
             {
                 flashColor = Color.red;
+
+                // ---- Kaylani's addition ----
+                // turn the drone's body red as a final warning.
+                foreach (Renderer rend in renderers)
+                {
+                    if (rend != null) // Safety check
+                    {
+                        rend.material.color = Color.red;
+                    }
+                }
+                // --------------------------
             }
             else
             {
