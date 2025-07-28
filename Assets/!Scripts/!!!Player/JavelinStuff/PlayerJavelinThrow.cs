@@ -106,6 +106,9 @@ public class PlayerJavelinThrow : MonoBehaviour
             currentJavelin.transform.SetParent(currentThrowPoint);
             isAiming = true;
 
+            // Disable colliders while aiming
+            currentJavelin.GetComponent<JavelinController>()?.SetAimingMode(true);
+
             SwitchToAimingCamera();
             await UniTask.Delay(System.TimeSpan.FromSeconds(0.3f), ignoreTimeScale: true);
 
@@ -123,8 +126,12 @@ public class PlayerJavelinThrow : MonoBehaviour
         if (currentJavelin)
         {
             currentJavelin.transform.SetParent(null);
+
+            // Get throw direction and re-enable colliders
             Vector3 throwDirection = GetThrowDirection();
-            currentJavelin.GetComponent<JavelinController>().SetDirection(throwDirection);
+            var javelin = currentJavelin.GetComponent<JavelinController>();
+            javelin?.SetAimingMode(false);
+            javelin?.SetDirection(throwDirection);
 
             currentJavelin = null;
             isAiming = false;
@@ -200,7 +207,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     bool IsEligibleForSlowMotion()
     {
         var cc = CharacterController.instance;
-        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding;
+        return (!cc.IsGrounded || cc.IsWallRunning) && !cc.IsDashing && !cc.IsSliding && currentJavelin != null;
     }
 
     void SwitchToAimingCamera()
