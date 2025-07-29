@@ -12,15 +12,18 @@ public class PlayerSave : MonoBehaviour
     private void Start()
     {
         // Find the InventoryManager in the scene and store a reference to it
-        inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+        //inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
     }
 
     public void Save(ref PlayerSaveData data)
     {
-        data.Position = transform.position;
+        //data.Position = transform.position; //Replace with CharacterController.instance.transform.position if using CharacterController
+        data.Position = CharacterController.instance.transform.position; //Ensures the position is saved from the CharacterController
+        
+        Health health = CharacterController.instance.GetComponent<Health>(); //Replace with GetComponent<Health>() if not using CharacterController
         //Saving Health as well, saved to same object
 
-        Health health = GetComponent<Health>();
+        //Health health = GetComponent<Health>(); //Replace with CharacterController.instance.GetComponent<Health>() if using CharacterController
         if (health != null)
         {
             data.Health = health.health; //Saves the current health
@@ -48,11 +51,15 @@ public class PlayerSave : MonoBehaviour
         Debug.Log("Setting player position to:" + data.Position);
         GetComponent<CharacterController>().enabled = false;
 
-        transform.position = data.Position; //Used to convert the Data position into the current Transform
+        //transform.position = data.Position; //Used to convert the Data position into the current Transform. Change to CharacterController.instance.transform.position if using CharacterController
+        CharacterController.instance.transform.position = data.Position; //Ensures the position is loaded from the CharacterController
+
 
         GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
 
-        Health health = GetComponent<Health>();
+        //Health health = GetComponent<Health>();
+
+        Health health = CharacterController.instance.GetComponent<Health>(); //Replace with GetComponent<Health>() if not using CharacterController
         if (health != null)
         {
             health.health = (int)data.Health; //Loading the health value from the file

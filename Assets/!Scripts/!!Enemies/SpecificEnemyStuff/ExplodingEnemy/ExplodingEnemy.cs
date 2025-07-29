@@ -17,10 +17,11 @@ public class ExplodingEnemy : MonoBehaviour
     public float middleDamage = 30f;
     public float outerDamage = 15f;
     public ParticleSystem explosionEffect;
+    public LayerMask damageableLayer; // Layer mask to filter damageable objects
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
-    public float middleRadiusTimeReduction = 0.5f;
+    public float middleRadiusTimeReduction = 2f;
 
     [Header("Knockback Settings")]
     public float knockbackForceX = 10f;
@@ -33,8 +34,7 @@ public class ExplodingEnemy : MonoBehaviour
 
     private bool timerStarted = false;
     private float explosionTimer = 0f;
-    private bool middleRadiusReduced = false;
-    private bool explosionTimerLockedOn = false;
+
 
     private Vector3 lastKnownPlayerPosition;
 
@@ -83,9 +83,9 @@ public class ExplodingEnemy : MonoBehaviour
             Patrol();
         }
 
-        if (timerStarted && explosionTimer > 0f)
+        if (timerStarted)
         {
-            explosionTimer -= Time.deltaTime;
+            explosionTimer -= Time.deltaTime * (distanceToPlayer < middleRadius ? middleRadiusTimeReduction : 1); // Speed up timer if inside middle radius
             if (explosionTimer <= 0f)
             {
                 Explode();
@@ -108,31 +108,20 @@ public class ExplodingEnemy : MonoBehaviour
 
     void HandleRadiusExplosion(float distance)
     {
-        // 🔒 Start explosion timer permanently when player enters outer radius
-        if (!explosionTimerLockedOn && distance <= outerRadius)
+        // 💥 Immediate explosion if inside inner radius
+        if (distance <= innerRadius)
         {
-            explosionTimerLockedOn = true;
+            explosionTimer = 0f;
+ 
+        }
+
+        // 🔒 Start explosion timer permanently when player enters outer radius
+        if (!timerStarted && distance <= outerRadius)
+        {
             explosionTimer = outerRadiusTimerStart;
             timerStarted = true;
         }
 
-        // If not locked on yet, don't do anything further
-        if (!explosionTimerLockedOn) return;
-
-        // 🔥 Reduce timer if inside middle radius
-        if (distance <= middleRadius && !middleRadiusReduced)
-        {
-            explosionTimer -= middleRadiusTimeReduction;
-            middleRadiusReduced = true;
-        }
-
-        // 💥 Immediate explosion if inside inner radius
-        if (distance <= innerRadius) 
-        {
-            explosionTimer = 0f;
-            timerStarted = false;
-            Explode();
-        }
     }
 
     //Javilin exploding and it works YAY
@@ -170,7 +159,7 @@ public class ExplodingEnemy : MonoBehaviour
         Collider hitCollider = null;
         DamageProfile selectedProfile = null;
 
-        Collider[] hits = Physics.OverlapSphere(position, outerRadius); 
+        Collider[] hits = Physics.OverlapSphere(position, outerRadius, damageableLayer); 
         /* checks the over lap sphere compare to the outer radius, and check how man collider are in the overlap, 
             then checks the damage and knockback variable for one collider relating to it */
         foreach (Collider hit in hits)
@@ -204,23 +193,41 @@ public class ExplodingEnemy : MonoBehaviour
             hitCollider = hit; // Store the hit enemy collider for later use
         }
 
-        Vector3 knockbackDir = (hitPosition - position).normalized;
+        //Vector3 knockbackDir = (hitPosition - position).normalized;
         float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
         Debug.Log($"distance factor is {distanceFactor}");
-            
-        if (targetRb != null)
+
+        //if (targetRb != null)
+        //{
+        //    targetRb.WakeUp();
+        //    targetRb.linearVelocity = Vector3.zero;
+
+        //    Vector3 adjustedKnockback = new Vector3(
+        //        knockbackDir.x * knockbackForceX * distanceFactor,
+        //        knockbackForceY * distanceFactor,
+        //        knockbackDir.z * knockbackForceX * distanceFactor
+        //    );
+
+        //    targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
+        //}
+        // Knockback
+
+        // Knockback
+       
+        KnockbackReceiver kb = hitCollider.GetComponent<KnockbackReceiver>();
+        if (kb != null)
         {
-            targetRb.WakeUp();
-            targetRb.linearVelocity = Vector3.zero;
+            KnockbackData kbData = new KnockbackData(
+                source: transform.position,
+                force: knockbackForceX * distanceFactor, // Adjust force based on distance
+                duration: 1f,
+                upwardForce: knockbackForceY * distanceFactor,
+                overrideVel: true
+            ); 
 
-            Vector3 adjustedKnockback = new Vector3(
-                knockbackDir.x * knockbackForceX * distanceFactor,
-                knockbackForceY * distanceFactor,
-                knockbackDir.z * knockbackForceX * distanceFactor
-            );
-
-            targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
+            kb.ApplyKnockback(kbData);
         }
+
 
         if (hitCollider.CompareTag("Player"))
         {
