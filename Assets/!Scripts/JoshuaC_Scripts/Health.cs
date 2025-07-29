@@ -102,7 +102,7 @@ public class Health : MonoBehaviour
             CheckpointSystem.ShowGameOverPanel(); // Show the game over panel
 
             //Respawn All Enemies after death
-            FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
+           // FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
             //CheckpointSystem.Respawn();
             //health = 100;
             //isDead = false;

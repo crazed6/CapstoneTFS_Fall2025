@@ -8484,7 +8484,15 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: outerRadius
+      value: 16
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
       propertyPath: middleDamage
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
+      propertyPath: middleRadius
       value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 3585553087705081475, guid: f94003300fd0182459d077788eb36297, type: 3}
@@ -20454,6 +20462,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1550092150}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &1786190349 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4116472083982260651, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
+  m_PrefabInstance: {fileID: 6125182461252770392}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1794589048
 GameObject:
   m_ObjectHideFlags: 0
@@ -22010,7 +22023,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4328093772265745455, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
   m_PrefabInstance: {fileID: 6125182461252770392}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1786190349}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
@@ -23437,7 +23450,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 200.2291, y: 2.885744, z: 173.05388}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.8219582, y: 1, z: 1.2409}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 987984786}
@@ -24192,7 +24205,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1650372508689203179, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.03622351
+      value: 0.036223534
       objectReference: {fileID: 0}
     - target: {fileID: 1650372508689203179, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
       propertyPath: m_LocalRotation.y
@@ -24200,7 +24213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1650372508689203179, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.002712799
+      value: -0.0027128006
       objectReference: {fileID: 0}
     - target: {fileID: 4100763938126373900, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
       propertyPath: m_LocalPosition.x
@@ -24337,7 +24350,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4116472083982260651, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7830118814174106177}
   m_SourcePrefab: {fileID: 100100000, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
 --- !u!1001 &6632235539329674557
 PrefabInstance:
@@ -24446,12 +24462,25 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9062703719057241321, guid: 7de74a35dcd942d419e45d2490e24923, type: 3}
   m_PrefabInstance: {fileID: 6125182461252770392}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1786190349}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b207c8cddc7ddfa43a23b8f9154c4f70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7830118814174106177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786190349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d823cd775df0a594595c757fc552d627, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showDirection: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

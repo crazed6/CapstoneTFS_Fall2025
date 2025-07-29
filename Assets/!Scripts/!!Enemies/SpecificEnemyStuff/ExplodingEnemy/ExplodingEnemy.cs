@@ -193,23 +193,41 @@ public class ExplodingEnemy : MonoBehaviour
             hitCollider = hit; // Store the hit enemy collider for later use
         }
 
-        Vector3 knockbackDir = (hitPosition - position).normalized;
+        //Vector3 knockbackDir = (hitPosition - position).normalized;
         float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
         Debug.Log($"distance factor is {distanceFactor}");
-            
-        if (targetRb != null)
+
+        //if (targetRb != null)
+        //{
+        //    targetRb.WakeUp();
+        //    targetRb.linearVelocity = Vector3.zero;
+
+        //    Vector3 adjustedKnockback = new Vector3(
+        //        knockbackDir.x * knockbackForceX * distanceFactor,
+        //        knockbackForceY * distanceFactor,
+        //        knockbackDir.z * knockbackForceX * distanceFactor
+        //    );
+
+        //    targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
+        //}
+        // Knockback
+
+        // Knockback
+       
+        KnockbackReceiver kb = hitCollider.GetComponent<KnockbackReceiver>();
+        if (kb != null)
         {
-            targetRb.WakeUp();
-            targetRb.linearVelocity = Vector3.zero;
+            KnockbackData kbData = new KnockbackData(
+                source: transform.position,
+                force: knockbackForceX * distanceFactor, // Adjust force based on distance
+                duration: 1f,
+                upwardForce: knockbackForceY * distanceFactor,
+                overrideVel: true
+            ); 
 
-            Vector3 adjustedKnockback = new Vector3(
-                knockbackDir.x * knockbackForceX * distanceFactor,
-                knockbackForceY * distanceFactor,
-                knockbackDir.z * knockbackForceX * distanceFactor
-            );
-
-            targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
+            kb.ApplyKnockback(kbData);
         }
+
 
         if (hitCollider.CompareTag("Player"))
         {
