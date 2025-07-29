@@ -1,4 +1,4 @@
-//Ritwik
+﻿//Ritwik
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
@@ -17,13 +17,16 @@ public class JavelinController : MonoBehaviour
     [Header("Collider Delay")]
     public float colliderActivationDelay = 0.1f;
 
+    [Header("VFX")]
+    public GameObject aoeVFXPrefab;
+    public float aoeVFXLifetime = 3f;
+
     private CancellationTokenSource cts;
     private bool hasExploded = false;
     private float timer = 0f;
     private float activationTimer = 0f;
     private Vector3 direction;
     private Vector3 hitPoint = Vector3.zero;
-
     private bool isAiming = false;
 
     public void SetDirection(Vector3 dir)
@@ -69,7 +72,6 @@ public class JavelinController : MonoBehaviour
 
                 Vector3 newPos = transform.position + direction * speed * deltaTime;
 
-                // Perform SphereCast only after collider delay
                 if (activationTimer >= colliderActivationDelay)
                 {
                     float distance = Vector3.Distance(previousPos, newPos);
@@ -104,7 +106,14 @@ public class JavelinController : MonoBehaviour
         if (cts != null && !cts.IsCancellationRequested)
             cts.Cancel();
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, aoeRadius, damageMask);
+        // AoE VFX spawn
+        if (aoeVFXPrefab != null)
+        {
+            GameObject vfx = Instantiate(aoeVFXPrefab, hitPoint, Quaternion.identity);
+            Destroy(vfx, aoeVFXLifetime);
+        }
+
+        Collider[] hits = Physics.OverlapSphere(hitPoint, aoeRadius, damageMask);
         foreach (var hit in hits)
         {
             EnemyDamageComponent damageable = hit.GetComponentInParent<EnemyDamageComponent>();
