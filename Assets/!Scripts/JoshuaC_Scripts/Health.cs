@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 
@@ -102,8 +103,8 @@ public class Health : MonoBehaviour
             CheckpointSystem.ShowGameOverPanel(); // Show the game over panel
 
             //Respawn All Enemies after death
-           // FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
-            //CheckpointSystem.Respawn();
+            //FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
+            
             //health = 100;
             //isDead = false;
         }
@@ -119,7 +120,7 @@ public class Health : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        ResetHealth(); // Initialize health to max health
     }
 
     // Update is called once per frame

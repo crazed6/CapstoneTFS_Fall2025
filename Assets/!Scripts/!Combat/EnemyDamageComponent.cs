@@ -97,7 +97,20 @@ public class EnemyDamageComponent : MonoBehaviour
 
         //trigger death animation
         //if (anim != null) anim.SetTrigger("Die");
-        
+
+
+        // Kaylani's addition : Change the material color to red when the enemy dies
+        // Get the Renderer component and change the material's color to red.
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+
+        // Loop through each renderer that was found.
+        foreach (Renderer rend in renderers)
+        {
+            rend.material.color = Color.red;
+        }
+        // ---------------------
+
+
         if (healthBar != null) healthBar.gameObject.SetActive(false);
 
         //Add cleanup logic here - disable AI movement, pool object, etc.
