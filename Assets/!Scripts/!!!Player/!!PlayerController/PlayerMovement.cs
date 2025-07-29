@@ -119,6 +119,7 @@ public class CharacterController : MonoBehaviour
     [Header("Pole Vault")]
     public float upForce;
     public float forwardForce;
+    public bool isOnPoleVaultPad;
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -168,6 +169,7 @@ public class CharacterController : MonoBehaviour
 
     void Start()
     {
+        isOnPoleVaultPad = false;
         rb = GetComponent<Rigidbody>();
         lastPosition = transform.position;
         wallrunJumpforce = jumpForce * 1.25f;
@@ -660,7 +662,7 @@ public class CharacterController : MonoBehaviour
 
     void poleVault()
     {
-        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad == true)
         {
             // Apply initial vault forces
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // Preserve some horizontal momentum
@@ -819,5 +821,21 @@ public class CharacterController : MonoBehaviour
             Gizmos.DrawLine(origin + dir1 * coneRange, origin + dir2 * coneRange);
         }
     }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("CanPoleVault"))
+        {
+            isOnPoleVaultPad = true;
+                
+        }
+        else
+        {
+            isOnPoleVaultPad = false;
+        }
+
+
+    }
+
 }
 
