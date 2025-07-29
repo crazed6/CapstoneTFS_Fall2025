@@ -1260,15 +1260,15 @@ PrefabInstance:
     - target: {fileID: 4061081451748967625, guid: 4c0af50fcd926514abd61b6032452f5e, type: 3}
       propertyPath: leftShoulderAnchor
       value: 
-      objectReference: {fileID: 1315634510}
+      objectReference: {fileID: 0}
     - target: {fileID: 4061081451748967625, guid: 4c0af50fcd926514abd61b6032452f5e, type: 3}
       propertyPath: rightShoulderAnchor
       value: 
-      objectReference: {fileID: 1249933640}
+      objectReference: {fileID: 0}
     - target: {fileID: 4061081451748967625, guid: 4c0af50fcd926514abd61b6032452f5e, type: 3}
       propertyPath: defaultShoulderAnchor
       value: 
-      objectReference: {fileID: 1249933640}
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3326,11 +3326,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1249933640 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6409781158562854443, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
-  m_PrefabInstance: {fileID: 1812801806}
-  m_PrefabAsset: {fileID: 0}
 --- !u!43 &1272921058
 Mesh:
   m_ObjectHideFlags: 0
@@ -3496,11 +3491,6 @@ Mesh:
     offset: 0
     size: 0
     path: 
---- !u!4 &1315634510 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6275156323265495567, guid: abde3399dee3a7b4294abdcb25c81e4e, type: 3}
-  m_PrefabInstance: {fileID: 1812801806}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1320815625
 GameObject:
   m_ObjectHideFlags: 0
