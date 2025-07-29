@@ -86,7 +86,8 @@ public class CharacterController : MonoBehaviour
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
     public float wallRunLookAwayAngle = 20f; // ADD THIS: Sets the fixed camera angle away from the wall.
     private bool isRotationLocked = false;  // Add this line: Tracks if rotation is locked
-
+    [SerializeField] private float wallRunSideJumpFactor = 1.5f;
+    [SerializeField] private float wallRunUpwardBoost = 1.5f; // Multiplies the vertical jump force
 
     public bool fallWhileWallRunning; // Slowly fall character while wall running
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
@@ -480,22 +481,16 @@ public class CharacterController : MonoBehaviour
                 int directionCount = 1;
 
                 // Jump off the wall
-                Vector3 jumpDirection = Vector3.up;
+                Vector3 wallNormal = onRightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
+                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost; 
 
+                // Push away from wall
+                jumpDirection += wallNormal * wallRunSideJumpFactor;
+
+                // Optional forward movement
                 if (Input.GetAxisRaw("Vertical") > 0)
                 {
                     jumpDirection += transform.forward;
-                    directionCount++;
-                }
-
-                if (Input.GetAxisRaw("Horizontal") < 0 && onRightWall)
-                {
-                    jumpDirection += rightCollider.outHit.normal;
-                    directionCount++;
-                }
-                else if (Input.GetAxisRaw("Horizontal") > 0 && !onRightWall)
-                {
-                    jumpDirection += leftCollider.outHit.normal;
                     directionCount++;
                 }
 
@@ -570,6 +565,8 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
         }
     }
+
+
 
     // initiate our wallrun movement
     void StartWallRunning(bool rightWall)
