@@ -49,17 +49,17 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current.digit1Key.wasPressedThisFrame)
-        {
-            SaveLoadSystem.Save();
-            Debug.Log("The system was just saved.");
-        }
+        //if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        //{
+        //    SaveLoadSystem.Save();
+        //    Debug.Log("The system was just saved.");
+        //}
 
-        if (Keyboard.current.digit2Key.wasPressedThisFrame)
-        {
-            SaveLoadSystem.Load();
-            Debug.Log("The system was just loaded.");
-        }
+        //if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        //{
+        //    SaveLoadSystem.Load();
+        //    Debug.Log("The system was just loaded.");
+        //}
     }
 
     private void OnSceneLoaded(UnityEngine.SceneManagement.Scene BuildTesting, UnityEngine.SceneManagement.LoadSceneMode mode)

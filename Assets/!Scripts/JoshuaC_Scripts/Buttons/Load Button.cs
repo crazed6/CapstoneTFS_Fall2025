@@ -17,8 +17,7 @@ public class LoadButton : MonoBehaviour
 
     public void LoadGameButton() //Josh's method to load the game
     {
-        SaveLoadSystem.Load();
-        string sceneName = SaveLoadSystem.GetSaveData().PlayerSaveData.SceneName;
+        string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
 
         if (!string.IsNullOrEmpty(sceneName))
         {
@@ -30,6 +29,7 @@ public class LoadButton : MonoBehaviour
         {
             Debug.Log("No scene name found in save data.");
         }
+
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -38,22 +38,24 @@ public class LoadButton : MonoBehaviour
         Debug.Log("Scene loaded: " + scene.name);
         SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to avoid multiple calls
 
-        var player = GameObject.FindWithTag("Player");
-        if (player != null)
-        {
-            var playerSave = player.GetComponent<PlayerSave>();
-            if (playerSave != null)
-            {
-                playerSave.Load(SaveLoadSystem.GetSaveData().PlayerSaveData); // Load player data after scene load
-            }
-            else
-            {
-                Debug.LogError("PlayerSave component not found on player object.");
-            }
-        }
-        else
-        {
-          Debug.LogError("Player object not found in the scene.");
-        }
+        SaveLoadSystem.Load(); // Load the save data after the scene is loaded
+
+        //var player = GameObject.FindWithTag("Player");
+        //if (player != null)
+        //{
+        //    var playerSave = player.GetComponent<PlayerSave>();
+        //    if (playerSave != null)
+        //    {
+        //        playerSave.Load(SaveLoadSystem.GetSaveData().PlayerSaveData); // Load player data after scene load
+        //    }
+        //    else
+        //    {
+        //        Debug.LogError("PlayerSave component not found on player object.");
+        //    }
+        //}
+        //else
+        //{
+        //  Debug.LogError("Player object not found in the scene.");
+        //}
     }
 }

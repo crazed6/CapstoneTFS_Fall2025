@@ -51,7 +51,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         HideGameOverPanel(); // Hide the game over panel at the start
 
 
-        if (GameSession.IsNewSession && !File.Exists(saveFilePath))
+        if (GameSession.IsNewSession) //&& !File.Exists(saveFilePath))
         {
             DeleteCheckpointPrefs(); // Clear PlayerPrefs if no checkpoint file exists
         }
