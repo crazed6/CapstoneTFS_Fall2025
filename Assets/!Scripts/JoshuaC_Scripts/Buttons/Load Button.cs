@@ -24,11 +24,15 @@ public class LoadButton : MonoBehaviour
             Debug.LogError("Loading last scene." +sceneName);
             SceneManager.sceneLoaded += OnSceneLoaded; // Subscribe to the scene loaded event
             SceneManager.LoadScene(sceneName);
+
+            SaveLoadSystem.Load(); // Load the save data after the scene is loaded
         }
         else
         {
             Debug.Log("No scene name found in save data.");
         }
+
+
 
     }
 

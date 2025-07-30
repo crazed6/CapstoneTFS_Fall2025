@@ -11,8 +11,8 @@ public class PlayerSave : MonoBehaviour
 
     private void Start()
     {
-        // Find the InventoryManager in the scene and store a reference to it
-        //inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+
+       
     }
 
     public void Save(ref PlayerSaveData data)
@@ -30,7 +30,9 @@ public class PlayerSave : MonoBehaviour
         }
 
         data.SceneName = SceneManager.GetActiveScene().name; //Saves the current scene name
-        
+
+        inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+
 
         if (inventoryManager != null)
         {
@@ -48,14 +50,17 @@ public class PlayerSave : MonoBehaviour
 
     public void Load(PlayerSaveData data)
     {
+        //use using (Character Controller.instance.GetComponent<CharacterController>()) Saves memory by not having to use GetComponent<CharacterController>() multiple times
+
+
         Debug.Log("Setting player position to:" + data.Position);
-        GetComponent<CharacterController>().enabled = false;
+        CharacterController.instance.GetComponent<CharacterController>().enabled = false;
 
         //transform.position = data.Position; //Used to convert the Data position into the current Transform. Change to CharacterController.instance.transform.position if using CharacterController
         CharacterController.instance.transform.position = data.Position; //Ensures the position is loaded from the CharacterController
 
 
-        GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
+        CharacterController.instance.GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
 
         //Health health = GetComponent<Health>();
 
@@ -81,21 +86,46 @@ public class PlayerSave : MonoBehaviour
             //    }
             //}
 
-            foreach (string itemName in data.collectedItems)
+            if (data.collectedItems != null)
             {
-               Item item = GameObject.Find(itemName)?.GetComponent<Item>(); 
-                if (item != null)
+                GameObject[] allItems = GameObject.FindGameObjectsWithTag("Journal");
+
+                Debug.Log("Found " + allItems.Length + " collectible items in the scene.");
+
+                //New Test
+                InventoryManager inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+                //New Test End
+
+                foreach (GameObject itemObj in allItems)
                 {
-                    // Simulate the collection of the item
-                    //item.CollectItem(); // Assuming CollectItem is a method that handles item collection
-                    Destroy(item.gameObject); // Destroy the item GameObject to prevent duplication
-                    Debug.Log("Collected item: " + itemName);
-                }
-                else
-                {
-                    Debug.LogWarning("Item not found: " + itemName);
+                    Item item = itemObj.GetComponent<Item>();
+                    if (item != null && data.collectedItems.Contains(item.ItemName))
+                    {
+                        //New Test
+                        inventoryManager.AddItem(item.ItemName, item.ItemSprite, item.ItemDescription); // Assuming AddItem is a method that adds the item to the inventory
+                        //New Test End
+
+                        Destroy(item.gameObject);
+                        Debug.Log("Destroyed collected item: " + item.ItemName);
+                    }
                 }
             }
+
+            //foreach (string itemName in data.collectedItems)
+            //{
+            //   Item item = GameObject.Find(itemName)?.GetComponent<Item>(); 
+            //    if (item != null)
+            //    {
+            //        // Simulate the collection of the item
+            //        //item.CollectItem(); // Assuming CollectItem is a method that handles item collection
+            //        Destroy(item.gameObject); // Destroy the item GameObject to prevent duplication
+            //        Debug.Log("Collected item: " + itemName);
+            //    }
+            //    else
+            //    {
+            //        Debug.LogWarning("Item not found: " + itemName);
+            //    }
+            //}
         }
 
     }
