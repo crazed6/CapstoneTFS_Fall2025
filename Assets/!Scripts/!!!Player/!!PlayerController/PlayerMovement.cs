@@ -70,7 +70,7 @@ public class CharacterController : MonoBehaviour
     public float slideCooldownTime = 1.5f; // Time in seconds to wait before sliding again
     private float slideCooldownTimer = 0f; // Tracks the cooldown time
 
-
+    private KnockbackReceiver knockbackReceiver;
 
     bool isSliding = false;
     bool slideInitiated = false;
@@ -152,6 +152,8 @@ public class CharacterController : MonoBehaviour
     public bool IsDashing => isMoving; // Already tracked as isMoving -_-
     public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
 
+    public bool IsDashAttackActive => isDashing || isMoving; // Public getter for DashAttack -_-
+
     [Header("Cutscene Cameras")]
     public GameObject thirdPersonCamera;
     public GameObject cutSceneCamera;
@@ -159,6 +161,8 @@ public class CharacterController : MonoBehaviour
 
     void Awake()
     {
+        knockbackReceiver = GetComponent<KnockbackReceiver>();
+
         if (instance == null)
         {
             instance = this;
@@ -221,7 +225,12 @@ public class CharacterController : MonoBehaviour
 
     void FixedUpdate()
 {
-    SetIsGrounded(bottomCollider.IsColliding);
+        if (knockbackReceiver != null && knockbackReceiver.isBeingKnocked)
+        {
+            return; // Stop here and let the knockback take over
+        }
+
+        SetIsGrounded(bottomCollider.IsColliding);
 
     if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
     if (isGrounded) coyoteTimer = coyoteTime;
