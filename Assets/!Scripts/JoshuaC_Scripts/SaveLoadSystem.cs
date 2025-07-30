@@ -77,6 +77,8 @@ public class SaveLoadSystem
             return;
         }
 
+
+
         Debug.Log("Loading player position:" + _saveData.PlayerSaveData.Position);
         GameManager.Instance.PlayerSave.Load(_saveData.PlayerSaveData);
 
