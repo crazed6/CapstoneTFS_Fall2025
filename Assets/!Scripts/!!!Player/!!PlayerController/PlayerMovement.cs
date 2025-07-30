@@ -152,6 +152,8 @@ public class CharacterController : MonoBehaviour
     public bool IsDashing => isMoving; // Already tracked as isMoving -_-
     public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
 
+    public bool IsDashAttackActive => isDashing || isMoving; // Public getter for DashAttack -_-
+
     [Header("Cutscene Cameras")]
     public GameObject thirdPersonCamera;
     public GameObject cutSceneCamera;
