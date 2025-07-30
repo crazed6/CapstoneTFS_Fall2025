@@ -36,7 +36,6 @@ public class AimingCameraController : MonoBehaviour
     private bool wallOnRight = false;
 
     private CinemachineVirtualCamera vCam;
-    private CinemachineComponentBase vCamBody;
 
     void Awake()
     {
@@ -154,5 +153,13 @@ public class AimingCameraController : MonoBehaviour
     public Camera GetCamera()
     {
         return debugRayCamera;
+    }
+
+    //  Called before camera switch during aiming
+    public void AlignCameraBehindPlayer()
+    {
+        verticalRotation = 0f;
+        float desiredYaw = playerBody.eulerAngles.y;
+        transform.rotation = Quaternion.Euler(verticalRotation, desiredYaw, 0f);
     }
 }
