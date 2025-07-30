@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿//Asad with Help of Joshua and Ritwik
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -211,35 +212,36 @@ public class ExplodingEnemy : MonoBehaviour
         //    targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
         //}
         // Knockback
-
-        // Knockback
-       
-        KnockbackReceiver kb = hitCollider.GetComponent<KnockbackReceiver>();
-        if (kb != null)
+        if (hitCollider != null)
         {
-            KnockbackData kbData = new KnockbackData(
-                source: transform.position,
-                force: knockbackForceX * distanceFactor, // Adjust force based on distance
-                duration: 1f,
-                upwardForce: knockbackForceY * distanceFactor,
-                overrideVel: true
-            ); 
 
-            kb.ApplyKnockback(kbData);
-        }
-
-
-        if (hitCollider.CompareTag("Player"))
-        {
-            Health playerHealth = hitCollider.GetComponent<Health>();
-            if (playerHealth != null && selectedProfile != null)
+            KnockbackReceiver kb = hitCollider.GetComponent<KnockbackReceiver>();
+            if (kb != null)
             {
-                DamageData damageData = new DamageData(gameObject, selectedProfile);
-                playerHealth.PlayerTakeDamage(damageData);
-            }
-        }
+                KnockbackData kbData = new KnockbackData(
+                    source: transform.position,
+                    force: knockbackForceX, // Adjust force based on distance
+                    duration: 1f,
+                    upwardForce: knockbackForceY,
+                    overrideVel: true
+                );
 
-        alreadyDamaged.Add(hitCollider);
+                kb.ApplyKnockback(kbData);
+            }
+
+
+            if (hitCollider.CompareTag("Player"))
+            {
+                Health playerHealth = hitCollider.GetComponent<Health>();
+                if (playerHealth != null && selectedProfile != null)
+                {
+                    DamageData damageData = new DamageData(gameObject, selectedProfile);
+                    playerHealth.PlayerTakeDamage(damageData);
+                }
+            }
+
+            alreadyDamaged.Add(hitCollider);
+        }
     }
 
     void OnDrawGizmosSelected()

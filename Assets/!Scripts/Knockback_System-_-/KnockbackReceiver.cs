@@ -6,7 +6,7 @@ public class KnockbackReceiver : MonoBehaviour
 {
     private Rigidbody rb;
     private CharacterController controller;
-    private bool isBeingKnocked = false;
+    public bool isBeingKnocked = false;
 
     [Header("Debug")]
     public bool showDirection = false;
