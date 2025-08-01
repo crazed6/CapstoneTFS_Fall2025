@@ -28,6 +28,8 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
     [SerializeField] GameObject player; // Reference to the player GameObject, assign in inspector
     private CharacterController characterController; // Reference to the CharacterController component
 
+    private FadetoBlack fadetoBlack; // Reference to the FadetoBlack script for fade effects
+
     void Start()
     {
         saveFilePath = Application.persistentDataPath + "/checkpoint.json";
@@ -51,9 +53,9 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         HideGameOverPanel(); // Hide the game over panel at the start
 
 
-        if (GameSession.IsNewSession && !File.Exists(saveFilePath))
+        if (GameSession.IsNewSession) //&& !File.Exists(saveFilePath))
         {
-            DeleteCheckpointPrefs(); // Clear PlayerPrefs if no checkpoint file exists
+            DeleteCheckpointPrefs(); // Clear PlayerPrefs if new session
         }
         GameSession.IsNewSession = false; // Reset the session flag after the first run
 
@@ -73,6 +75,13 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         {
             characterController = player.GetComponent<CharacterController>();
         }
+
+        GetComponent<FadetoBlack>(); // Get the FadetoBlack component for fade effects
+        if (fadetoBlack = null)
+        {
+            Debug.LogError("FadetoBlack component is not assigned in Inspector!");
+        }
+
 
     }
 
@@ -273,14 +282,18 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
     public void ShowGameOverPanel()
     {
+        Debug.Log("Attempting to show GameOver panel...");
+
         if (gameOverPanel == null)
         {
             Debug.LogError("Game Over Panel is not assigned in Inspector!");
             return;
         }
+
+        GameOverPanelTriggered = true; // Set the trigger to true to prevent multiple activations
+
         gameOverPanel.SetActive(true); // Show the game over panel
         Time.timeScale = 0; // Pause the game
-        GameOverPanelTriggered = true; // Set the trigger to true to prevent multiple activations
 
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true;                  // Make it visible
@@ -351,7 +364,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         PlayerPrefs.DeleteKey("CheckpointX");
         PlayerPrefs.DeleteKey("CheckpointY");
         PlayerPrefs.DeleteKey("CheckpointZ");
-        Debug.Log("No checkpoint file found, PlayerPrefs cleared.");
+        Debug.Log("PlayerPrefs cleared.");
     }
 }
 

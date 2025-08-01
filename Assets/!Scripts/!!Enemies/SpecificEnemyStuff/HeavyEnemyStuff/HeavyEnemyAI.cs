@@ -47,6 +47,9 @@ public class HeavyEnemyAI : MonoBehaviour
     public float slamDamage = 25f;
     public Transform slamOrigin;
 
+    [Header("Slam Timing")]
+    public float slamHitDelay = 0.15f;
+
     [HideInInspector]
     public bool isSlamming = false;
 

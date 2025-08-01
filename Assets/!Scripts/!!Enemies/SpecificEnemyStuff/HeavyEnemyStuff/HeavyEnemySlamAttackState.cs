@@ -5,9 +5,12 @@ using System;
 
 public class HeavyEnemySlamAttackState : IHeavyEnemyState
 {
-    private HeavyEnemyAI enemy;
-    private bool slamInProgress = false;
+    private readonly HeavyEnemyAI enemy;
     private CancellationTokenSource slamTokenSource;
+
+    // Small telegraph/impact delay so we check dash at the exact moment we apply damage.
+    // Tune this to taste (0.10f–0.25f usually feels good).
+    private const float HitDelaySeconds = 0.15f;
 
     public HeavyEnemySlamAttackState(HeavyEnemyAI enemy)
     {
@@ -17,50 +20,58 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
     public void Enter()
     {
         Debug.Log("Entered Slam Attack State");
-
-        enemy.StopTracking(); // Cancel rock logic
+        enemy.StopTracking();                 // cancel rock logic
         enemy.isSlamming = true;
         slamTokenSource = new CancellationTokenSource();
-
-        SlamAttackAsync().Forget(); // Start the async slam
+        SlamAttackAsync().Forget();
     }
 
     public void Execute()
     {
-        // Nothing here – slam is async driven
+        // No per-frame logic; handled asynchronously.
     }
 
     public void Exit()
     {
         Debug.Log("Exiting Slam Attack State");
-
         enemy.isSlamming = false;
-        slamTokenSource?.Cancel(); // Cancel delay safely
+        slamTokenSource?.Cancel();
     }
 
     private async UniTaskVoid SlamAttackAsync()
     {
-        slamInProgress = true;
+        // 1) Optional: play windup animation/VFX here
 
+        try
+        {
+            // 2) Wait a small delay and THEN apply the AoE (dash flag is checked at impact time)
+            await UniTask.Delay(TimeSpan.FromSeconds(HitDelaySeconds), cancellationToken: slamTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // state changed / enemy destroyed
+        }
+
+        if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
+
+        // 3) Apply AOE at impact time (we re-check dash here)
         ApplySlamAOE();
 
-        // Start cooldown timer on enemy
+        // 4) Start cooldown
         enemy.StartSlamCooldown().Forget();
 
         try
         {
-            await UniTask.Delay((int)(enemy.slamCooldown * 1000f), cancellationToken: slamTokenSource.Token);
+            await UniTask.Delay(TimeSpan.FromSeconds(enemy.slamCooldown), cancellationToken: slamTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
-            Debug.Log("Slam Attack was cancelled early.");
+            // safely cancelled
         }
 
-        slamInProgress = false;
-
-        // Double-check enemy state before continuing
         if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
 
+        // 5) Return to next appropriate state
         if (enemy.CanSeePlayer())
             enemy.stateMachine.ChangeState(new HeavyEnemyShootingState(enemy));
         else
@@ -69,35 +80,57 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
 
     private void ApplySlamAOE()
     {
+        // Guard enemy references
+        if (enemy == null || enemy.slamOrigin == null) return;
+
         Collider[] hits = Physics.OverlapSphere(enemy.slamOrigin.position, enemy.slamRadius);
 
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Player"))
+            if (!hit.CompareTag("Player")) continue;
+
+            // --- Robustly fetch your custom CharacterController no matter where the collider lives ---
+            // Use global::CharacterController to avoid clashing with UnityEngine.CharacterController.
+            global::CharacterController controller =
+                hit.GetComponent<global::CharacterController>() ??
+                hit.GetComponentInParent<global::CharacterController>() ??
+                (hit.attachedRigidbody != null ? hit.attachedRigidbody.GetComponent<global::CharacterController>() : null);
+
+            // If the player is in ANY dash mode at impact time, skip damage & knockback.
+            if (controller != null && controller.IsDashAttackActive)
             {
-                Debug.Log("Slam hit the player!");
+                // Debug.Log("Player is dashing at impact — skipping slam damage & knockback.");
+                continue;
+            }
 
-                Health playerHealth = hit.GetComponent<Health>();
-                if (playerHealth != null && enemy.GroundSlam != null)
-                {
-                    DamageData damageData = new DamageData(enemy.gameObject, enemy.GroundSlam);
-                    playerHealth.PlayerTakeDamage(damageData);
-                }
+            // --- Damage ---
+            Health playerHealth =
+                hit.GetComponent<Health>() ??
+                hit.GetComponentInParent<Health>() ??
+                (hit.attachedRigidbody != null ? hit.attachedRigidbody.GetComponent<Health>() : null);
 
-                // Knockback
-                KnockbackReceiver kb = hit.GetComponent<KnockbackReceiver>();
-                if (kb != null)
-                {
-                    KnockbackData kbData = new KnockbackData(
-                        source: enemy.slamOrigin.position,
-                        force: enemy.slamKnockbackForce,
-                        duration: 0.35f,
-                        upwardForce: 0.6f,
-                        overrideVel: true
-                    );
+            if (playerHealth != null && enemy.GroundSlam != null)
+            {
+                DamageData damageData = new DamageData(enemy.gameObject, enemy.GroundSlam);
+                playerHealth.PlayerTakeDamage(damageData);
+            }
 
-                    kb.ApplyKnockback(kbData);
-                }
+            // --- Knockback ---
+            KnockbackReceiver kb =
+                hit.GetComponent<KnockbackReceiver>() ??
+                hit.GetComponentInParent<KnockbackReceiver>() ??
+                (hit.attachedRigidbody != null ? hit.attachedRigidbody.GetComponent<KnockbackReceiver>() : null);
+
+            if (kb != null)
+            {
+                KnockbackData kbData = new KnockbackData(
+                    source: enemy.slamOrigin.position,
+                    force: enemy.slamKnockbackForce,
+                    duration: 0.35f,
+                    upwardForce: 0.6f,
+                    overrideVel: true
+                );
+                kb.ApplyKnockback(kbData);
             }
         }
     }

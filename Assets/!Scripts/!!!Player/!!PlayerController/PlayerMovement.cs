@@ -70,7 +70,7 @@ public class CharacterController : MonoBehaviour
     public float slideCooldownTime = 1.5f; // Time in seconds to wait before sliding again
     private float slideCooldownTimer = 0f; // Tracks the cooldown time
 
-
+    private KnockbackReceiver knockbackReceiver;
 
     bool isSliding = false;
     bool slideInitiated = false;
@@ -86,7 +86,8 @@ public class CharacterController : MonoBehaviour
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
     public float wallRunLookAwayAngle = 20f; // ADD THIS: Sets the fixed camera angle away from the wall.
     private bool isRotationLocked = false;  // Add this line: Tracks if rotation is locked
-
+    [SerializeField] private float wallRunSideJumpFactor = 1.5f;
+    [SerializeField] private float wallRunUpwardBoost = 1.5f; // Multiplies the vertical jump force
 
     public bool fallWhileWallRunning; // Slowly fall character while wall running
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
@@ -119,6 +120,7 @@ public class CharacterController : MonoBehaviour
     [Header("Pole Vault")]
     public float upForce;
     public float forwardForce;
+    public bool isOnPoleVaultPad;
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -150,6 +152,8 @@ public class CharacterController : MonoBehaviour
     public bool IsDashing => isMoving; // Already tracked as isMoving -_-
     public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
 
+    public bool IsDashAttackActive => isDashing || isMoving; // Public getter for DashAttack -_-
+
     [Header("Cutscene Cameras")]
     public GameObject thirdPersonCamera;
     public GameObject cutSceneCamera;
@@ -157,6 +161,8 @@ public class CharacterController : MonoBehaviour
 
     void Awake()
     {
+        knockbackReceiver = GetComponent<KnockbackReceiver>();
+
         if (instance == null)
         {
             instance = this;
@@ -168,6 +174,7 @@ public class CharacterController : MonoBehaviour
 
     void Start()
     {
+        isOnPoleVaultPad = false;
         rb = GetComponent<Rigidbody>();
         lastPosition = transform.position;
         wallrunJumpforce = jumpForce * 1.25f;
@@ -218,7 +225,12 @@ public class CharacterController : MonoBehaviour
 
     void FixedUpdate()
 {
-    SetIsGrounded(bottomCollider.IsColliding);
+        if (knockbackReceiver != null && knockbackReceiver.isBeingKnocked)
+        {
+            return; // Stop here and let the knockback take over
+        }
+
+        SetIsGrounded(bottomCollider.IsColliding);
 
     if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
     if (isGrounded) coyoteTimer = coyoteTime;
@@ -478,22 +490,16 @@ public class CharacterController : MonoBehaviour
                 int directionCount = 1;
 
                 // Jump off the wall
-                Vector3 jumpDirection = Vector3.up;
+                Vector3 wallNormal = onRightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
+                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost; 
 
+                // Push away from wall
+                jumpDirection += wallNormal * wallRunSideJumpFactor;
+
+                // Optional forward movement
                 if (Input.GetAxisRaw("Vertical") > 0)
                 {
                     jumpDirection += transform.forward;
-                    directionCount++;
-                }
-
-                if (Input.GetAxisRaw("Horizontal") < 0 && onRightWall)
-                {
-                    jumpDirection += rightCollider.outHit.normal;
-                    directionCount++;
-                }
-                else if (Input.GetAxisRaw("Horizontal") > 0 && !onRightWall)
-                {
-                    jumpDirection += leftCollider.outHit.normal;
                     directionCount++;
                 }
 
@@ -568,6 +574,8 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(-wallNormal * 100, ForceMode.Force);
         }
     }
+
+
 
     // initiate our wallrun movement
     void StartWallRunning(bool rightWall)
@@ -660,7 +668,7 @@ public class CharacterController : MonoBehaviour
 
     void poleVault()
     {
-        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding)
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad == true)
         {
             // Apply initial vault forces
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // Preserve some horizontal momentum
@@ -819,5 +827,21 @@ public class CharacterController : MonoBehaviour
             Gizmos.DrawLine(origin + dir1 * coneRange, origin + dir2 * coneRange);
         }
     }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("CanPoleVault"))
+        {
+            isOnPoleVaultPad = true;
+                
+        }
+        else
+        {
+            isOnPoleVaultPad = false;
+        }
+
+
+    }
+
 }
 

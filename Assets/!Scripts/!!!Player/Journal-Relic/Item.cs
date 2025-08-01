@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 public class Item : MonoBehaviour
@@ -15,6 +14,12 @@ public class Item : MonoBehaviour
 
     // Find the InventoryManager in the scene and store a reference to it
     private InventoryManager inventoryManager;
+
+    //Josh test
+    public string ItemName => itemName;
+    public Sprite ItemSprite => sprite;
+    public string ItemDescription => itemDescription;
+    //Josh test end
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

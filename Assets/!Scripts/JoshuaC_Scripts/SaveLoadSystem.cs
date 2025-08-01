@@ -46,6 +46,8 @@ public class SaveLoadSystem
             return;
         }
 
+        _saveData.PlayerSaveData.Position = CharacterController.instance.transform.position; //Saves the current position of the player
+        Debug.Log("Saving player position: " + _saveData.PlayerSaveData.Position);
         GameManager.Instance.PlayerSave.Save(ref _saveData.PlayerSaveData);
         //After implementing and defining Player, then we'll be able to write various things to the file about the player.
 
@@ -74,6 +76,8 @@ public class SaveLoadSystem
             Debug.LogError("PlayerSave is null during load! Ensure PlayerSave exists in the scene.");
             return;
         }
+
+
 
         Debug.Log("Loading player position:" + _saveData.PlayerSaveData.Position);
         GameManager.Instance.PlayerSave.Load(_saveData.PlayerSaveData);

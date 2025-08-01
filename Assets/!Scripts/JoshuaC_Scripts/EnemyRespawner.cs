@@ -28,6 +28,10 @@ public class EnemyRespawner : MonoBehaviour
             var identity = enemy.GetComponent<EnemyIdentity>(); //Get the EnemyIdentity component from the enemy
             if (identity != null)
             {
+                if (identity.enemyPrefab == null)
+                {
+                    Debug.Log($"Enemy {enemy.name} does not have a prefab assigned in EnemyIdentity. Please assign a prefab to respawn correctly.", enemy);
+                }
 
                 //Save spawning information
                 spawnPoints.Add(new EnemySpawnData {
@@ -40,6 +44,11 @@ public class EnemyRespawner : MonoBehaviour
             );
 
                 currentEnemies.Add(enemy); //add the enemy to the current enemies list
+                Debug.Log($"Spawn point for enemy {enemy.name} with prefab {identity.enemyPrefab.name}");
+            }
+            else
+            {
+                Debug.Log($"Enemy{enemy.name} has NO EnemyIdentity.");
             }
 
         }
@@ -67,6 +76,8 @@ public class EnemyRespawner : MonoBehaviour
                 GameObject newEnemy = Instantiate(data.prefab, data.position, data.rotation); //instantiate the enemy prefab at the original position and rotation
                 newEnemy.tag = "enemy"; //set the tag of the new enemy to "enemy"
                 currentEnemies.Add(newEnemy); //add the new enemy to the current enemies list
+
+                Debug.Log($"Respawned enemy: {newEnemy.name} at position: {data.position} with rotation: {data.rotation}");
             }
 
     }

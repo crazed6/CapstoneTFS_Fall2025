@@ -143,16 +143,9 @@ MonoBehaviour:
   outerDamage: 25
   explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
   outerRadiusTimerStart: 2
-  middleRadiusTimeReduction: 0.5
+  middleRadiusTimeReduction: 2
   knockbackForceX: 10
   knockbackForceY: 10
-  avoidanceRadius: 1.2
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 128
-  avoidanceStrength: 1.3
-  liftRadius: 1.5
-  liftForce: 10
   InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
   MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
   OuterExplosionDamage: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
