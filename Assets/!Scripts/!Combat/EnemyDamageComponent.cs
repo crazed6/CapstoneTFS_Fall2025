@@ -145,8 +145,12 @@ public class EnemyDamageComponent : MonoBehaviour
     //Josh code here
     public void TakeDamage2(DamageData data)
     {
+        //New addition for custom damage value, used for testing Speed's custom damage value
+        float damageToApply = data.customDamage >= 0 ? data.customDamage : data.profile.damageAmount;
+
         Debug.Log($"{gameObject.name} is taking {data.profile.damageAmount} {data.profile.damageType} damage from {data.source?.name ?? "Unknown"} (via DamageData)");
-        TakeDamage(data.profile.damageAmount, data.source);
+        TakeDamage(damageToApply, data.source);
+        //TakeDamage(data.profile.damageAmount, data.source);
     }
     //Josh code ends
 }
