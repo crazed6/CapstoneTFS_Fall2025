@@ -1,4 +1,4 @@
-//Ritwik
+﻿//Ritwik
 using Cinemachine;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
@@ -110,6 +110,8 @@ public class PlayerJavelinThrow : MonoBehaviour
             currentJavelin.GetComponent<JavelinController>()?.SetAimingMode(true);
 
             SwitchToAimingCamera();
+
+
             await UniTask.Delay(System.TimeSpan.FromSeconds(0.3f), ignoreTimeScale: true);
 
             if (IsEligibleForSlowMotion())
@@ -127,11 +129,31 @@ public class PlayerJavelinThrow : MonoBehaviour
         {
             currentJavelin.transform.SetParent(null);
 
-            // Get throw direction and re-enable colliders
-            Vector3 throwDirection = GetThrowDirection();
+            // Get camera and crosshair ray
+            Camera cam = aimingCameraController.GetCamera();
+            Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2f, Screen.height / 2f));
+
+            Vector3 finalDirection;
+
+            // Try to raycast to get target point
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000f, ~0))
+            {
+                Vector3 targetPoint = hit.point;
+                finalDirection = (targetPoint - currentJavelin.transform.position).normalized;
+            }
+            else
+            {
+                finalDirection = ray.direction.normalized;
+            }
+
+            // Apply direction to javelin
             var javelin = currentJavelin.GetComponent<JavelinController>();
-            javelin?.SetAimingMode(false);
-            javelin?.SetDirection(throwDirection);
+            if (javelin != null)
+            {
+                javelin.SetAimingMode(false);
+                javelin.transform.rotation = Quaternion.LookRotation(finalDirection); // Rotate toward target
+                javelin.SetDirection(finalDirection); // Start moving
+            }
 
             currentJavelin = null;
             isAiming = false;
