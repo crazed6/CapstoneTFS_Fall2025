@@ -2,188 +2,246 @@
 using UnityEngine;
 using Cinemachine;
 using Cysharp.Threading.Tasks;
+using System;
 
 public class AimingCameraController : MonoBehaviour
 {
     [Header("Follow Targets")]
-    public Transform leftShoulderAnchor;       // Anchor when wall is on the right side -_-
-    public Transform rightShoulderAnchor;      // Anchor when wall is on the left side -_-
-    public Transform defaultShoulderAnchor;    // Default anchor when not wallrunning -_-
+    public Transform leftShoulderAnchor;   // Shoulder pivot when wall is on the RIGHT (camera sits on LEFT) -_-
+    public Transform rightShoulderAnchor;  // Shoulder pivot when wall is on the LEFT  (camera sits on RIGHT) -_-
+    public Transform defaultShoulderAnchor;// Shoulder pivot when not wallrunning -_-
 
     [Header("References")]
-    public Transform playerBody;               // Player body transform to rotate in non-wallrun aiming -_-
-    public PlayerJavelinThrow javelinThrow;    // Reference to aiming state -_-
+    public Transform playerBody;           // Player body (we rotate this when aiming off-wall) -_-
+    public PlayerJavelinThrow javelinThrow;// To query "are we aiming?" -_-
 
     [Header("Main Camera (Cinemachine Brain Host)")]
-    [SerializeField] private Camera debugRayCamera; // Camera that has CinemachineBrain for blending and raycasts -_-
+    [SerializeField] private Camera debugRayCamera; // The Camera that has a CinemachineBrain (also used for hit raycasts) -_-
 
     [Header("Rotation Settings")]
-    public float mouseSensitivity = 300f;      // Mouse sensitivity for aim camera -_-
+    public float mouseSensitivity = 300f;  // Per-second sensitivity; we multiply by unscaledDeltaTime -_-
 
     [Header("Clamp Settings")]
-    public float horizontalClamp = 45f;        // Yaw clamp while wallrunning (relative to base yaw) -_-
-    public float verticalClamp = 80f;          // Pitch clamp always -_-
+    public float horizontalClamp = 45f;    // Horizontal clamp while wallrunning (relative to baseYaw) -_-
+    public float verticalClamp = 80f;      // Vertical pitch clamp at all times -_-
 
     [Header("FOV Settings")]
-    public float normalFOV = 60f;              // FOV when not aiming -_-
-    public float aimingFOV = 40f;              // FOV when aiming -_-
-    public float fovLerpSpeed = 10f;           // Lerp speed for FOV (uses unscaled time) -_-
+    public float normalFOV = 60f;          // Default FOV when not aiming -_-
+    public float aimingFOV = 40f;          // Narrow FOV when aiming -_-
+    public float fovLerpSpeed = 10f;       // FOV lerp speed (uses unscaled time) -_-
 
-    private Transform currentAnchor;           // Current shoulder anchor -_-
-    private float cameraYaw = 0f;              // Independent camera yaw used only during wallrun+aim -_-
-    private float cameraPitch = 0f;            // Independent camera pitch -_-
-    private float baseYaw = 0f;                // Player yaw captured when wallrun begins (for clamp) -_-
-    private bool wallrunLocked = false;        // If true, we clamp yaw while aiming -_-
-    private bool wallOnRight = false;          // Wall side information -_-
+    // --- Runtime state (camera space) -_-
+    private Transform currentAnchor;       // Which shoulder we’re currently snapped to -_-
+    private float cameraYaw = 0f;          // Independent camera yaw (used during wallrun aim) -_-
+    private float cameraPitch = 0f;        // Independent camera pitch -_-
+    private float baseYaw = 0f;            // Player yaw captured at wallrun start (clamp around this) -_-
+    private bool wallrunLocked = false;    // True: we clamp camera yaw; we don't rotate the player -_-
+    private bool wallOnRight = false;      // True if current wall is on player’s right -_-
 
-    private CinemachineVirtualCamera vCam;     // Aiming virtual camera reference -_-
+    // --- Cinemachine refs & saved brain state -_-
+    private CinemachineVirtualCamera vCam; // This Aiming vCam (we drive its transform manually) -_-
+    private CinemachineBrain brain;        // The Brain on debugRayCamera -_-
+
+    // Saved brain blend state so we can do an UN-SCALED default blend during wall-aim and restore after -_-
+    private CinemachineBlendDefinition savedDefaultBlend;
+    private bool savedValid = false;
+    private bool savedIgnoreTimeScale = false;
 
     void Awake()
     {
-        vCam = GetComponent<CinemachineVirtualCamera>(); // Cache virtual camera -_-
-        if (!vCam) Debug.LogError("AimingCameraController: No CinemachineVirtualCamera found!"); // Warn if missing -_-
+        vCam = GetComponent<CinemachineVirtualCamera>();
+        if (!vCam) Debug.LogError("AimingCameraController: No CinemachineVirtualCamera found!");
+
+        // Keep the vCam “hot” even when inactive so the first activation doesn’t start from a stale pose -_-
+        vCam.m_StandbyUpdate = CinemachineVirtualCameraBase.StandbyUpdateMode.Always;
+
+        // Cache the CinemachineBrain from the camera we use for rendering & raycasts -_-
+        if (debugRayCamera) brain = debugRayCamera.GetComponent<CinemachineBrain>();
     }
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;  // Lock cursor -_-
-        Cursor.visible = false;                    // Hide cursor -_-
-        currentAnchor = defaultShoulderAnchor;     // Set default anchor -_-
+        // Standard input capture setup -_-
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-        // We position & rotate this Transform directly for tight control -_-
-        vCam.Follow = null;                        // Not using Cinemachine body for follow -_-
-        vCam.LookAt = null;                        // Not using Cinemachine aim for look -_-
+        // Default shoulder until wallrun says otherwise -_-
+        currentAnchor = defaultShoulderAnchor;
 
-        // Start aligned with player to avoid a pop the first time -_-
-        cameraYaw = playerBody.eulerAngles.y;      // Initialize yaw -_-
-        cameraPitch = 0f;                          // Initialize pitch -_-
-        transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f); // Apply initial rotation -_-
+        // We control the vCam transform manually; ensure Body/Aim are not driving it via Follow/LookAt -_-
+        vCam.Follow = null;
+        vCam.LookAt = null;
+
+        // Initialize camera orientation to player so there is no pop on first frame -_-
+        cameraYaw = playerBody.eulerAngles.y;
+        cameraPitch = 0f;
+        transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
     }
 
     void LateUpdate()
     {
-        if (playerBody == null || javelinThrow == null) return; // Guard missing refs -_-
+        if (!playerBody || !javelinThrow) return; // Safety guards -_-
 
-        HandleWallrunState(); // Update anchor and lock state -_-
-        HandleRotation();     // Apply either free-look (wallrun+aim) or normal rotation -_-
-        SnapToAnchor();       // Place camera at shoulder anchor -_-
-        HandleFOV();          // Lerp FOV in unscaled time -_-
+        HandleWallrunState(); // Choose shoulder & set lock/clamp state -_-
+        HandleRotation();     // Apply yaw/pitch either to camera (wallrun aim) or player (grounded aim) -_-
+        SnapToAnchor();       // Keep camera position welded to chosen shoulder -_-
+        HandleFOV();          // Lerp vCam FOV using unscaled time -_-
     }
 
+    // --- Decide anchor & clamp mode based on wallrun state -_-
     void HandleWallrunState()
     {
-        var cc = CharacterController.instance; // Access your player controller singleton -_-
-
-        bool wasWallrunLocked = wallrunLocked; // Remember previous frame lock state -_-
+        var cc = CharacterController.instance;
+        bool wasWallrunLocked = wallrunLocked;
 
         if (cc.IsWallRunning)
         {
-            wallOnRight = cc.IsWallOnRight; // Cache wall side -_-
+            wallOnRight = cc.IsWallOnRight;
 
-            // Choose shoulder opposite the wall so camera looks into open space -_-
-            Transform desiredAnchor = defaultShoulderAnchor; // Fallback -_-
-            bool canLock = false; // Whether we can lock/clamp yaw this frame -_-
+            // Pick the shoulder opposite the wall so camera looks out into open space -_-
+            Transform desiredAnchor = defaultShoulderAnchor;
+            bool canLock = false;
 
-            if (wallOnRight && leftShoulderAnchor != null)
-            {
-                desiredAnchor = leftShoulderAnchor; // Right wall => left shoulder -_-
-                canLock = true;                     // We have a valid shoulder, allow clamp -_-
-            }
-            else if (!wallOnRight && rightShoulderAnchor != null)
-            {
-                desiredAnchor = rightShoulderAnchor; // Left wall => right shoulder -_-
-                canLock = true;                      // Valid shoulder -_-
-            }
+            if (wallOnRight && leftShoulderAnchor) { desiredAnchor = leftShoulderAnchor; canLock = true; }
+            else if (!wallOnRight && rightShoulderAnchor) { desiredAnchor = rightShoulderAnchor; canLock = true; }
 
-            currentAnchor = desiredAnchor; // Apply anchor -_-
+            currentAnchor = desiredAnchor;
 
-            // Transition detect: we just entered the "locked" state this frame -_-
+            // Just entered the lock state: capture baseYaw so our clamp is stable -_-
             if (canLock && !wasWallrunLocked)
             {
-                baseYaw = playerBody.eulerAngles.y; // Capture base yaw once on enter -_-
-                cameraYaw = baseYaw;                // Start free‑look from base yaw -_-
+                baseYaw = playerBody.eulerAngles.y;
+                cameraYaw = baseYaw; // start camera yaw from player yaw -_-
             }
 
-            wallrunLocked = canLock; // Commit lock state -_-
+            wallrunLocked = canLock;
         }
         else
         {
-            // Leaving wallrun: if we were locked last frame, gently realign camera yaw to player to avoid a pop -_-
-            if (wasWallrunLocked)
-            {
-                cameraYaw = playerBody.eulerAngles.y; // Sync camera yaw back to player yaw -_-
-            }
+            // Leaving wallrun: snap camera yaw back to player yaw to avoid a pop -_-
+            if (wasWallrunLocked) cameraYaw = playerBody.eulerAngles.y;
 
-            wallrunLocked = false;                 // Unlock when not wallrunning -_-
-            currentAnchor = defaultShoulderAnchor; // Back to default anchor -_-
+            wallrunLocked = false;
+            currentAnchor = defaultShoulderAnchor;
         }
     }
 
+    // --- Read mouse & apply rotation. Uses UN-SCALED delta so slow-mo doesn’t affect sensitivity -_-
     void HandleRotation()
     {
-        // Mouse input in unscaled time so slow‑mo doesn’t affect responsiveness -_-
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime; // Horizontal mouse -_-
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime; // Vertical mouse -_-
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
 
-        // Always clamp pitch from camera perspective -_-
-        cameraPitch = Mathf.Clamp(cameraPitch - mouseY, -verticalClamp, verticalClamp); // Update pitch -_-
+        // Pitch: clamp straight from camera perspective -_-
+        cameraPitch = Mathf.Clamp(cameraPitch - mouseY, -verticalClamp, verticalClamp);
 
         if (javelinThrow.IsAiming())
         {
             if (wallrunLocked)
             {
-                // --- AIMING + WALLRUNNING => FREE‑LOOK: rotate only the camera, clamp around baseYaw -_-
-                float nextYaw = cameraYaw + mouseX;                        // Proposed camera yaw -_-
-                float deltaFromBase = Mathf.DeltaAngle(baseYaw, nextYaw);  // Offset from base yaw -_-
-                deltaFromBase = wallOnRight
-                    ? Mathf.Clamp(deltaFromBase, -horizontalClamp, 0f)     // Right wall: allow look left only -_-
-                    : Mathf.Clamp(deltaFromBase, 0f, horizontalClamp);     // Left wall: allow look right only -_-
-                cameraYaw = baseYaw + deltaFromBase;                        // Commit clamped yaw -_-
+                // Wallrun + Aiming => camera-only free look clamped around baseYaw -_-
+                float nextYaw = cameraYaw + mouseX;
+                float deltaFromBase = Mathf.DeltaAngle(baseYaw, nextYaw);
 
-                // Apply to camera only — DO NOT rotate the player -_-
-                transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f); // Camera free‑look -_-
+                // If wall on RIGHT: allow left look (negative), else allow right look (positive) -_-
+                deltaFromBase = wallOnRight
+                    ? Mathf.Clamp(deltaFromBase, -horizontalClamp, 0f)
+                    : Mathf.Clamp(deltaFromBase, 0f, horizontalClamp);
+
+                cameraYaw = baseYaw + deltaFromBase;
+                transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
             }
             else
             {
-                // --- AIMING but NOT wallrunning => rotate player normally and align camera to player -_-
-                float nextPlayerYaw = playerBody.eulerAngles.y + mouseX;   // Player yaw change -_-
-                playerBody.rotation = Quaternion.Euler(0f, nextPlayerYaw, 0f); // Apply to player -_-
+                // Grounded (or not locked): rotate the PLAYER yaw and keep camera aligned -_-
+                float nextPlayerYaw = playerBody.eulerAngles.y + mouseX;
+                playerBody.rotation = Quaternion.Euler(0f, nextPlayerYaw, 0f);
 
-                cameraYaw = playerBody.eulerAngles.y;                      // Keep camera yaw synced to player -_-
-                transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f); // Apply camera rot -_-
+                cameraYaw = playerBody.eulerAngles.y;
+                transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
             }
         }
         else
         {
-            // --- NOT AIMING => camera follows player yaw (standard third‑person feel) -_-
-            cameraYaw = playerBody.eulerAngles.y;                          // Match player yaw -_-
-            transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f); // Apply rotation -_-
+            // Not aiming: treat camera as following the player's yaw -_-
+            cameraYaw = playerBody.eulerAngles.y;
+            transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
         }
     }
 
+    // --- Keep camera position glued to current shoulder anchor -_-
     void SnapToAnchor()
     {
-        if (currentAnchor == null) return;           // Guard -_-
-        transform.position = currentAnchor.position; // Place camera at shoulder -_-
+        if (!currentAnchor) return;
+        transform.position = currentAnchor.position;
     }
 
+    // --- FOV animation: UN-SCALED so slow-mo doesn’t slow the zoom -_-
     void HandleFOV()
     {
-        if (vCam == null) return; // Guard -_-
-        float targetFOV = javelinThrow.IsAiming() ? aimingFOV : normalFOV; // Choose target FOV -_-
-        vCam.m_Lens.FieldOfView = Mathf.Lerp(vCam.m_Lens.FieldOfView, targetFOV, Time.unscaledDeltaTime * fovLerpSpeed); // Lerp FOV -_-
+        if (!vCam) return;
+        float targetFOV = javelinThrow.IsAiming() ? aimingFOV : normalFOV;
+        vCam.m_Lens.FieldOfView =
+            Mathf.Lerp(vCam.m_Lens.FieldOfView, targetFOV, Time.unscaledDeltaTime * fovLerpSpeed);
     }
 
-    public Camera GetCamera()
-    {
-        return debugRayCamera; // Use this for raycasts (has CinemachineBrain) -_-
-    }
+    public Camera GetCamera() => debugRayCamera; // Provide the camera that hosts CinemachineBrain for raycasts -_-
 
     public void AlignCameraBehindPlayer()
     {
-        // Optional helper to quickly align camera to player before switching, if you want -_-
-        cameraPitch = 0f;                                     // Reset pitch -_-
-        cameraYaw = playerBody.eulerAngles.y;                 // Match player yaw -_-
-        transform.rotation = Quaternion.Euler(0f, cameraYaw, 0f); // Apply rotation -_-
+        // Utility to zero pitch and align yaw with the player -_-
+        cameraPitch = 0f;
+        cameraYaw = playerBody.eulerAngles.y;
+        transform.rotation = Quaternion.Euler(0f, cameraYaw, 0f);
+    }
+
+    // ================= UN-SCALED DEFAULT BLEND (reliable for any vCam pair) =================
+
+    /// <summary>
+    /// During the next activation (e.g., main -> aim while wallrunning), force the Brain to use an
+    /// unscaled Default Blend (so slow-mo cannot stretch it). Automatically restores after 'duration' seconds (unscaled). -_-
+    /// </summary>
+    public void BeginUnscaledDefaultBlend(float duration = 0.15f,
+                                          CinemachineBlendDefinition.Style style = CinemachineBlendDefinition.Style.EaseInOut)
+    {
+        BeginUnscaledDefaultBlendAsync(duration, style).Forget(); // Fire-and-forget; uses GetCancellationTokenOnDestroy -_-
+    }
+
+    private async UniTaskVoid BeginUnscaledDefaultBlendAsync(float duration,
+                                                             CinemachineBlendDefinition.Style style)
+    {
+        if (!brain) return;
+
+        // Save current Brain state once, so we can restore after the short window -_-
+        if (!savedValid)
+        {
+            savedDefaultBlend = brain.m_DefaultBlend;
+            savedIgnoreTimeScale = brain.m_IgnoreTimeScale;
+            savedValid = true;
+        }
+
+        // Critical: ignore Time.timeScale during the blend so slow-mo doesn’t slow the transition -_-
+        brain.m_IgnoreTimeScale = true;
+
+        // Apply our unscaled default blend (affects any from->to pair, so it’s robust with FreeLook children) -_-
+        brain.m_DefaultBlend = new CinemachineBlendDefinition(style, Mathf.Max(0f, duration));
+
+        // Wait in UN-SCALED time for the exact duration, then restore defaults -_-
+        var token = this.GetCancellationTokenOnDestroy();
+        await UniTask.Delay(TimeSpan.FromSeconds(Mathf.Max(0f, duration)), ignoreTimeScale: true, cancellationToken: token);
+
+        RestoreBlendDefaults();
+    }
+
+    /// <summary>
+    /// Restore CinemachineBrain default blend & timescale behavior immediately (also auto-called after duration). -_-
+    /// </summary>
+    public void RestoreBlendDefaults()
+    {
+        if (!brain || !savedValid) return;
+
+        brain.m_DefaultBlend = savedDefaultBlend;
+        brain.m_IgnoreTimeScale = savedIgnoreTimeScale;
+        savedValid = false;
     }
 }
