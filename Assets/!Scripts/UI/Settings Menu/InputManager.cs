@@ -1,10 +1,9 @@
+using TMPro;
 using UnityEngine;
+using System.IO;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
-
-/// IDEA:
-/// Central access to all input actions and rebind management.
-/// Uses Unity's generated input wrapper class for more modularity.
+using UnityEngine.SceneManagement;
 
 public class InputManager : MonoBehaviour
 {
@@ -13,13 +12,16 @@ public class InputManager : MonoBehaviour
     public static InputManager Instance { get; private set; }
     // get the generated class InputSystem and assign my callback variable to access them.
     private InputSystem_Actions playerControls; // Generated input actions class
-    // Key used for rebinding
-    private const string RebindingSaveKey = "RebindingKey";
     private string currntCntrlScheme;
-
+    private const string RebindingFileName = "input_rebinds.json";
     public string CurrntCntrlScheme => currntCntrlScheme;
     public bool IsUsingKeyboard => currntCntrlScheme == "Keyboard";
     public bool IsUsingGamepad => currntCntrlScheme == "Gamepad";
+
+    private string FilePath => Path.Combine(Application.persistentDataPath, RebindingFileName);
+
+    // Public reference to show the current binding scheme in the UI
+    public TextMeshProUGUI debugJumpBindingText; // Optional: UI text to show current jump binding
 
     private void Awake()
     {
@@ -32,14 +34,14 @@ public class InputManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Delay asset access slightly after reloads
-        if (!Application.isPlaying) return;
-
         playerControls = new InputSystem_Actions();
         playerControls.Enable();
 
         DetectInputScheme();
         LoadRebinds();
+
+        // Optional: Show the current jump binding in the UI for debugging
+           UpdateJumpBindingText();
     }
 
     private void Start()
@@ -52,48 +54,76 @@ public class InputManager : MonoBehaviour
         InputSystem.onAnyButtonPress.CallOnce(control =>
         {
             if (control.device is Gamepad)
-            {
                 currntCntrlScheme = "Gamepad";
-                Debug.Log("Switched to Gamepad");
-            }
             else if (control.device is Keyboard || control.device is Mouse)
-            {
                 currntCntrlScheme = "Keyboard";
-                Debug.Log("Switched to Keyboard & Mouse");
-            }
 
-            DetectInputScheme(); // Continue listening
+            DetectInputScheme(); // Keep listening
         });
     }
 
-    public InputAction FindAction(string actionName)
-    {
-        return playerControls.asset.FindAction(actionName, throwIfNotFound: false);
-    }
+    public InputAction FindAction(string actionName) =>
+        playerControls.asset.FindAction(actionName, throwIfNotFound: false);
 
     public void SaveRebinds()
     {
         string json = playerControls.asset.SaveBindingOverridesAsJson();
-        PlayerPrefs.SetString(RebindingSaveKey, json);
+        File.WriteAllText(FilePath, json);
+        Debug.Log($"[InputManager] Rebindings saved to {FilePath}");
     }
 
     public void LoadRebinds()
     {
-        string json = PlayerPrefs.GetString(RebindingSaveKey, string.Empty);
-        if (!string.IsNullOrEmpty(json))
+        if (File.Exists(FilePath))
         {
+            string json = File.ReadAllText(FilePath);
             playerControls.asset.LoadBindingOverridesFromJson(json);
+            Debug.Log("[InputManager] Loaded input bindings from file.");
         }
+        else
+        {
+            Debug.Log("[InputManager] No binding file found. Using default bindings.");
+        }
+
+        // Updates UI after loading rebinds
+           UpdateJumpBindingText();
     }
 
     public void ResetRebinds()
     {
         playerControls.asset.RemoveAllBindingOverrides();
-        PlayerPrefs.DeleteKey(RebindingSaveKey);
+        if (File.Exists(FilePath))
+            File.Delete(FilePath);
+
+        Debug.Log("[InputManager] Rebinds reset to defaults and file deleted.");
+
+        // Updates UI after resetting rebinds
+           UpdateJumpBindingText();
     }
 
-    public InputActionAsset GetAsset()
+    // Manual method to call from UI button to reload rebinds
+    public void ReloadBindings()
     {
-        return playerControls.asset;
+        LoadRebinds();
     }
+
+    // Method to update jump key display in UI
+    public void UpdateJumpBindingText()
+    {
+        if (debugJumpBindingText != null)
+        {
+            var action = FindAction("Jump");
+            if (action != null)
+            {
+                string display = action.GetBindingDisplayString();
+                debugJumpBindingText.text = $"Jump: {display}";
+            }
+            else
+            {
+                debugJumpBindingText.text = "Jump: [Action Missing]";
+            }
+        }
+    }
+
+    public InputActionAsset GetAsset() => playerControls.asset;
 }
