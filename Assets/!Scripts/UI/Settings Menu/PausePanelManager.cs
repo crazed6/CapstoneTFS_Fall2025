@@ -19,6 +19,11 @@ public class PausePanelManager : MonoBehaviour
     [Header("External UI Panels - In Game CheckPoints")]
     [SerializeField] private GameObject inGameCheckPointsPanel;
 
+    [Header("Checkpoint Proximity Control")]
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private Transform[] checkpointTransform; // Current checkpoint to check distance from
+    [SerializeField] private float checkpointActivationDistance = 2.45f; // Range to consider 'close'
+
     private bool isPaused = false;
 
     private void Awake()
@@ -49,8 +54,19 @@ public class PausePanelManager : MonoBehaviour
             // Prevent pause toggle if in settings menu or in-game checkpoints panel is active
             if (inGameCheckPointsPanel != null && inGameCheckPointsPanel.activeSelf)
             {
-                Debug.Log("In-Game Checkpoints Panel is active - cannot toggle pause menu disabled.");
-                return;
+                if (playerTransform != null && checkpointTransform != null)
+                {
+                    foreach (Transform checkpoint in checkpointTransform)
+                    {
+                        float distanceToCheckpoint = Vector3.Distance(playerTransform.position, checkpoint.position);
+                        if (distanceToCheckpoint <= checkpointActivationDistance)
+                        {
+                            Debug.Log("In-Game Checkpoints Panel is active - cannot toggle pause menu disabled.");
+                            Debug.Log($"[Blocked] Checkpoint panel active & player within {checkpointActivationDistance} units – pause disabled.");
+                            return;
+                        }
+                    }
+                }
             }
             Debug.Log("V key [Detected] pressed - toggling pause menu");
             TogglePause();

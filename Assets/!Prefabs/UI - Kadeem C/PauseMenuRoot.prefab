@@ -6903,6 +6903,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4549470199805963557}
   - component: {fileID: 6399251514552751389}
+  - component: {fileID: 6761383864741887394}
   m_Layer: 0
   m_Name: PausePanelManager
   m_TagString: Untagged
@@ -6944,6 +6945,18 @@ MonoBehaviour:
   volumePanel: {fileID: 3133213135248979462}
   volumeBtn: {fileID: 1596503427611959451}
   inGameCheckPointsPanel: {fileID: 0}
+--- !u!114 &6761383864741887394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3904969511292522533}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3973568d85008e4e82dc86af59e7deb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4093863086963289841
 GameObject:
   m_ObjectHideFlags: 0
@@ -8004,10 +8017,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6399251514552751389}
-        m_TargetAssemblyTypeName: PausePanelManager, Assembly-CSharp
-        m_MethodName: LoadScene
-        m_Mode: 5
+      - m_Target: {fileID: 6761383864741887394}
+        m_TargetAssemblyTypeName: LoadButton, Assembly-CSharp
+        m_MethodName: LoadGameButton
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -13284,7 +13297,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &3767040506614318115
 RectTransform:
   m_ObjectHideFlags: 0
