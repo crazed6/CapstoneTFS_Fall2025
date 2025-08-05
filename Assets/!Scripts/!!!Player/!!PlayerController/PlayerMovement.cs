@@ -668,16 +668,39 @@ public class CharacterController : MonoBehaviour
 
     void poleVault()
     {
-        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad == true)
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad)
         {
-            // Apply initial vault forces
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z); // Preserve some horizontal momentum
-            rb.AddForce(transform.up * upForce, ForceMode.Impulse);
+            // Reset vertical velocity
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+
+            // Apply forward force immediately
             rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
 
-            // Allow air control after vaulting
-            isGrounded = false; // Mark the player as airborne
+            // Start the upward force gradually
+            StartCoroutine(SmoothPoleVault());
+
+            // Mark player as airborne
+            isGrounded = false;
         }
+    }
+
+    IEnumerator SmoothPoleVault()
+    {
+        float duration = 0.3f; // Duration of upward force
+        float timer = 0f;
+
+        // Disable gravity temporarily if needed
+        rb.useGravity = false;
+
+        while (timer < duration)
+        {
+            float t = timer / duration;
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, upForce * (1 - t), rb.linearVelocity.z); // Decrease upward force over time
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        rb.useGravity = true;
     }
 
     void DashForward()
