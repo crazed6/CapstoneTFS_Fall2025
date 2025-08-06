@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7736435892723284340}
   - component: {fileID: 4649114934342007372}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Line
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148,7 +148,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4377774556078140105}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: ThrowPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -181,9 +181,11 @@ GameObject:
   - component: {fileID: 3997257567609320635}
   - component: {fileID: 2859571752054603554}
   - component: {fileID: 4517110919677585875}
-  m_Layer: 0
+  - component: {fileID: 4430218223943388612}
+  - component: {fileID: 1351656738806242253}
+  m_Layer: 8
   m_Name: HeavyEnemy
-  m_TagString: Untagged
+  m_TagString: enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -302,9 +304,10 @@ MonoBehaviour:
   slamCooldown: 0
   slamDamage: 25
   slamOrigin: {fileID: 8858379574510983048}
+  slamHitDelay: 0.15
   isSlamming: 0
   slamOnCooldown: 0
-  GroundSlam: {fileID: 0}
+  GroundSlam: {fileID: 11400000, guid: 8ec53be9547db32429f271c976f28fbb, type: 2}
 --- !u!114 &4517110919677585875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -321,6 +324,56 @@ MonoBehaviour:
   healthBar: {fileID: 3436023277613476726}
   hideDelay: 15
   timeSinceLastDamage: 0
+--- !u!54 &4430218223943388612
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5626978083835023484}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 1
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!136 &1351656738806242253
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5626978083835023484}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.0099374
+  m_Height: 4.064999
+  m_Direction: 1
+  m_Center: {x: 0.0072573028, y: 2.0021615, z: 0}
 --- !u!1 &7320193640410222833
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,7 +386,7 @@ GameObject:
   - component: {fileID: 5133358840694727844}
   - component: {fileID: 4924618526773052399}
   - component: {fileID: 8887972183523605783}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -440,7 +493,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8858379574510983048}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SlamPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -470,9 +523,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3997257567609320635}
     m_Modifications:
+    - target: {fileID: 3048958891178811386, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272106356228450232, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3450912526529898833, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3917568098767144769, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 6830983645058266509, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
       propertyPath: m_Name
       value: HealthBarPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830983645058266509, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7278491698309973395, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
       propertyPath: m_AnchorMax.y

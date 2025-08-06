@@ -763,10 +763,24 @@ public class CharacterController : MonoBehaviour
 
                             //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
                             EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
-                            if (dmg != null && dashDamageProfile != null)
+                            
+                            //New addition: Scale with speed
+                            float speed = rb.linearVelocity.magnitude;
+                            float scaledDamage = dashDamageProfile.damageAmount * speed;
+                            //New addition ends here
+
+                        if (dmg != null && dashDamageProfile != null)
                             {
-                                DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                                dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+                            //DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
+                            //dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
+
+                            DamageData dashDamage = new DamageData
+                            {
+                                source = gameObject,
+                                profile = dashDamageProfile,
+                                customDamage = scaledDamage // Custom damage value
+                            };
+                                dmg.TakeDamage2(dashDamage);
                             }
                             else
                             {
