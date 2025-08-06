@@ -34,6 +34,8 @@ public class Health : MonoBehaviour
     private bool isInvincible = false;
     public float invincibilityDuration = 10f;
 
+    private FadetoBlack fadetoBlack; // Reference to the fade effect script
+
 
     public int health
     {
@@ -100,21 +102,23 @@ public class Health : MonoBehaviour
         if (isDead == true)
         {
             Debug.Log("Player has died!");
-            CheckpointSystem.ShowGameOverPanel(); // Show the game over panel
 
-            //Respawn All Enemies after death
-            //FindFirstObjectByType<EnemyRespawner>().RespawnAllEnemies(); // Assuming you have an EnemyRespawner script to handle enemy respawning
-            
-            //health = 100;
-            //isDead = false;
+            // Trigger fade to black effect
+            FadetoBlack fadeEffect = FindFirstObjectByType<FadetoBlack>(FindObjectsInactive.Include);
+            if (fadeEffect != null)
+            {
+                fadeEffect.gameObject.SetActive(true); // Ensure the fade effect object is active
+                fadeEffect.StartFadeToBlack();
+            }
+            else
+            {
+                Debug.LogWarning("FadetoBlack component not found in the scene.");
+            }
+
+            //CheckpointSystem.ShowGameOverPanel(); // Show the game over panel
+
         }
 
-
-        // Mark player as dead
-
-        // Optionally, disable players movement or play a death animation here
-
-        // Allow player to die again
     }
 
     // Start is called before the first frame update

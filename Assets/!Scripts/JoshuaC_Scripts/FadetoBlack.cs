@@ -9,38 +9,56 @@ public class FadetoBlack : MonoBehaviour
 
     private bool isFading = false; // Flag to check if a fade is already in progress
 
-    public void TriggerFadeToBlack(System.Action onFadeComplete = null)
+    public GameObject gameOverPanel; // Reference to the CheckpointSystem
+
+
+    private void Awake()
     {
-        if (!isFading && fadeImage != null)
+        if (fadeImage != null)
         {
-            StartCoroutine(FadeToBlackCoroutine(onFadeComplete)); // Start the coroutine to handle the fade effect
+            Color color = fadeImage.color;
+            color.a = 0f; // Start fully transparent
+            fadeImage.color = color;
+            //fadeImage.gameObject.SetActive(false); // Ensure the image is disabled at start
         }
     }
 
-    private IEnumerator FadeToBlackCoroutine(System.Action onFadeComplete)
+    public void StartFadeToBlack()
     {
-        isFading = true; // Set the flag to indicate that a fade is in progress
-
-        float elapsed = 0f; // Initialize a timer to track the fade duration
-        Color color = fadeImage.color; // Get the current color of the fade image
-        color.a = 0f;
-        fadeImage.color = color;
-        fadeImage.gameObject.SetActive(true); // Make sure the image is enabled
-
-        while (elapsed < fadeDuration)
+        if (!isFading && fadeImage != null)
         {
-            elapsed += Time.unscaledDeltaTime; // Use unscaled time for fade
-            color.a = Mathf.Clamp01(elapsed / fadeDuration);
-            fadeImage.color = color;
+            StartCoroutine(FadeToBlackCoroutine());
+        }
+    }
+
+    private IEnumerator FadeToBlackCoroutine()
+    {
+        isFading = true;
+        // Ensure the fade image starts transparent
+        Color fadeColor = fadeImage.color;
+        fadeColor.a = 0f;
+        fadeImage.color = fadeColor;
+        fadeImage.gameObject.SetActive(true);
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.unscaledDeltaTime; // This works even when timeScale = 0
+            float alpha = Mathf.Clamp01(elapsedTime / fadeDuration);
+
+            fadeColor.a = alpha;
+            fadeImage.color = fadeColor;
+
             yield return null;
         }
 
-        color.a = 1f;
-        fadeImage.color = color;
+        // Ensure fully black
+        fadeColor.a = 1f;
+        fadeImage.color = fadeColor;
 
-        Debug.Log("Fade completed.");
-        onFadeComplete?.Invoke();
-
-        isFading = false;
+        // Show game over panel
+        gameOverPanel.SetActive(true);
+        //checkpointSystem.ShowGameOverPanel();
     }
 }
