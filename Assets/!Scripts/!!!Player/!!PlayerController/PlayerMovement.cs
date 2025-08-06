@@ -745,8 +745,11 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            
-                Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
+            var javelinThrow = GetComponentInChildren<PlayerJavelinThrow>();
+            if (javelinThrow != null && javelinThrow.IsAiming())
+                return;
+
+            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
 
                 foreach (var hit in hits)
                 {
@@ -760,9 +763,14 @@ public class CharacterController : MonoBehaviour
                             Debug.Log("Moving to enemy: " + hit.name);
                             targetPosition = hit.transform.position;
                             isMoving = true;
+                            HeavyEnemyAI heavy = hit.GetComponent<HeavyEnemyAI>(); // ITS me -_-
+                            if (heavy != null)
+                            {
+                                heavy.OnPlayerDashThrough(gameObject);
+                            }                                                      // me again -_-
 
-                            //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
-                            EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
+                        //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
+                        EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
                             
                             //New addition: Scale with speed
                             float speed = rb.linearVelocity.magnitude;
