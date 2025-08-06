@@ -97,9 +97,9 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
                 (hit.attachedRigidbody != null ? hit.attachedRigidbody.GetComponent<global::CharacterController>() : null);
 
             // If the player is in ANY dash mode at impact time, skip damage & knockback.
-            if (controller != null && controller.IsDashAttackActive)
+            if (enemy.LastDashedPlayer == hit.gameObject)
             {
-                // Debug.Log("Player is dashing at impact — skipping slam damage & knockback.");
+                
                 continue;
             }
 
