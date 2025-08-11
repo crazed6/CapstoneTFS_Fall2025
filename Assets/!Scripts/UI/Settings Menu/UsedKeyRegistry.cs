@@ -8,7 +8,20 @@ public class UsedKeyRegistry : MonoBehaviour
     public static void RefreshUsedKeys()
     {
         usedKeys.Clear();
+
+        if (InputManager.Instance == null || !InputManager.Instance.IsInitialized)
+        {
+            Debug.LogWarning("[UsedKeyRegistry] InputManager is not ready. Skipping RefreshUsedKeys.");
+            return;
+        }
+
         var asset = InputManager.Instance.GetAsset();
+
+        if (asset == null)
+        {
+            Debug.LogWarning("[UsedKeyRegistry] InputManager asset is null.");
+            return;
+        }
 
         foreach (var actionMap in asset.actionMaps)
         {

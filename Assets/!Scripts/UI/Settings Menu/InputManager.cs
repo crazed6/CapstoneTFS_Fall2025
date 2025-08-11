@@ -20,8 +20,7 @@ public class InputManager : MonoBehaviour
 
     private string FilePath => Path.Combine(Application.persistentDataPath, RebindingFileName);
 
-    // Public reference to show the current binding scheme in the UI
-    public TextMeshProUGUI debugJumpBindingText; // Optional: UI text to show current jump binding
+    public bool IsInitialized { get; private set; } = false;
 
     private void Awake()
     {
@@ -40,8 +39,7 @@ public class InputManager : MonoBehaviour
         DetectInputScheme();
         LoadRebinds();
 
-        // Optional: Show the current jump binding in the UI for debugging
-           UpdateJumpBindingText();
+        IsInitialized = true;
     }
 
     private void Start()
@@ -84,9 +82,6 @@ public class InputManager : MonoBehaviour
         {
             Debug.Log("[InputManager] No binding file found. Using default bindings.");
         }
-
-        // Updates UI after loading rebinds
-           UpdateJumpBindingText();
     }
 
     public void ResetRebinds()
@@ -96,34 +91,15 @@ public class InputManager : MonoBehaviour
             File.Delete(FilePath);
 
         Debug.Log("[InputManager] Rebinds reset to defaults and file deleted.");
-
-        // Updates UI after resetting rebinds
-           UpdateJumpBindingText();
     }
 
     // Manual method to call from UI button to reload rebinds
     public void ReloadBindings()
     {
-        LoadRebinds();
+        LoadRebinds(); // Reload from file
+        Debug.Log("[InputManager] Reloaded bindings from file.");     
     }
 
-    // Method to update jump key display in UI
-    public void UpdateJumpBindingText()
-    {
-        if (debugJumpBindingText != null)
-        {
-            var action = FindAction("Jump");
-            if (action != null)
-            {
-                string display = action.GetBindingDisplayString();
-                debugJumpBindingText.text = $"Jump: {display}";
-            }
-            else
-            {
-                debugJumpBindingText.text = "Jump: [Action Missing]";
-            }
-        }
-    }
 
     public InputActionAsset GetAsset() => playerControls.asset;
 }

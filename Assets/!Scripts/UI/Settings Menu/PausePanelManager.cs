@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
@@ -45,6 +46,7 @@ public class PausePanelManager : MonoBehaviour
             gamepadPanel?.SetActive(false);
             volumePanel?.SetActive(false);
         }
+
     }
 
     private void Update()
@@ -54,18 +56,25 @@ public class PausePanelManager : MonoBehaviour
             // Prevent pause toggle if in settings menu or in-game checkpoints panel is active
             if (inGameCheckPointsPanel != null && inGameCheckPointsPanel.activeSelf)
             {
-                if (playerTransform != null && checkpointTransform != null)
+                Debug.Log("[Check] Checkpoint Panel is Active");
+
+                if (playerTransform != null && checkpointTransform != null && checkpointTransform.Length > 0)
                 {
                     foreach (Transform checkpoint in checkpointTransform)
                     {
                         float distanceToCheckpoint = Vector3.Distance(playerTransform.position, checkpoint.position);
+                        Debug.Log($"Distance to checkpoint '{checkpoint.name}': {distanceToCheckpoint:F2}");
+
                         if (distanceToCheckpoint <= checkpointActivationDistance)
                         {
-                            Debug.Log("In-Game Checkpoints Panel is active - cannot toggle pause menu disabled.");
                             Debug.Log($"[Blocked] Checkpoint panel active & player within {checkpointActivationDistance} units – pause disabled.");
-                            return;
+                            return; // Exit early if player is near a checkpoint
                         }
                     }
+                }
+                else
+                {
+                    Debug.LogWarning("PlayerTransform or CheckpointTransform not assigned properly.");
                 }
             }
             Debug.Log("V key [Detected] pressed - toggling pause menu");
@@ -103,6 +112,8 @@ public class PausePanelManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Show the cursor
 
+        // Delay refresh until UI is active
+        StartCoroutine(RefreshBindingsNextFrame());
         Debug.Log("Entered Settings Menu - Defaulted to keyboard panel visible.");
     }
 
@@ -147,8 +158,19 @@ public class PausePanelManager : MonoBehaviour
         keyboardPanel?.SetActive(true);
         gamepadPanel?.SetActive(false);
         volumePanel?.SetActive(false);
-        volumeBtn?.SetActive(true); 
-        Debug.Log("Keyboard Panel Opened");
+        volumeBtn?.SetActive(true);
+
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.ReloadBindings();
+            // Call UI refresh explicitly after enabling the panel
+            var rebindUpdaters = keyboardPanel.GetComponentsInChildren<RebindDisplayUpdater>(true);
+            foreach (var updater in rebindUpdaters)
+            {
+                updater.UpdateKeyDisplay();
+            }
+            Debug.Log("Keyboard Panel Opened & keybinds refreshed.");
+        }
     }
 
     public void OnGamepadPanelBtnClicked()
@@ -156,7 +178,6 @@ public class PausePanelManager : MonoBehaviour
         keyboardPanel?.SetActive(false);
         gamepadPanel?.SetActive(true);
         volumePanel?.SetActive(false);
-        Debug.Log("Gamepad Panel Opened");
     }
 
     public void OnVolumePanelBtnClicked()
@@ -187,4 +208,17 @@ public class PausePanelManager : MonoBehaviour
         SceneManager.LoadScene("Kadeem_MainMenu"); // Replace with your main menu scene name
         Debug.Log("Returning to Main Menu");
     }
-}
+
+    private IEnumerator RefreshBindingsNextFrame()
+    {
+        yield return null; // wait one frame
+        if (InputManager.Instance != null)
+        {
+            var rebindUpdaters = keyboardPanel.GetComponentsInChildren<RebindDisplayUpdater>(true);
+            foreach (var updater in rebindUpdaters)
+            {
+                updater.UpdateKeyDisplay();
+            }
+        }
+    }
+ }
