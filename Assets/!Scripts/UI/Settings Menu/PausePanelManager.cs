@@ -112,8 +112,11 @@ public class PausePanelManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Show the cursor
 
-        // Delay refresh until UI is active
-        StartCoroutine(RefreshBindingsNextFrame());
+        //// Delay refresh until UI is active
+        //StartCoroutine(RefreshBindingsNextFrame());
+
+        //// Delay refresh until UI is active
+        //RefreshBindingsNow(); // Refresh bindings immediately
         Debug.Log("Entered Settings Menu - Defaulted to keyboard panel visible.");
     }
 
@@ -221,4 +224,34 @@ public class PausePanelManager : MonoBehaviour
             }
         }
     }
- }
+
+    //private void OnEnable()
+    //{
+    //    if (InputManager.Instance != null)
+    //    {
+    //        InputManager.Instance.OnBindingsLoaded += RefreshBindingsNow;
+    //        Debug.Log("InputManager Reloaded Bindings on Enable.");
+    //    }
+    //    else
+    //    {
+    //        Debug.LogWarning("InputManager Instance is null on PausePanelManager OnEnable.");
+    //    }
+    //}
+
+    //private void OnDisable()
+    //{
+    //    if (InputManager.Instance != null)
+    //    {
+    //        InputManager.Instance.OnBindingsLoaded -= RefreshBindingsNow;
+    //    }
+    //}
+
+    //private void RefreshBindingsNow()
+    //{
+    //    var rebindUpdaters = keyboardPanel.GetComponentsInChildren<RebindDisplayUpdater>(true);
+    //    foreach (var updater in rebindUpdaters)
+    //    {
+    //        updater.UpdateKeyDisplay();
+    //    }
+    //}
+}

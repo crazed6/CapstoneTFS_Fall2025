@@ -22,6 +22,8 @@ public class InputManager : MonoBehaviour
 
     public bool IsInitialized { get; private set; } = false;
 
+    public event System.Action OnBindingsLoaded; // Event to notify when bindings are loaded
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -40,6 +42,7 @@ public class InputManager : MonoBehaviour
         LoadRebinds();
 
         IsInitialized = true;
+        OnBindingsLoaded?.Invoke(); // Notify listeners that bindings are loaded and ready 
     }
 
     private void Start()
@@ -82,6 +85,7 @@ public class InputManager : MonoBehaviour
         {
             Debug.Log("[InputManager] No binding file found. Using default bindings.");
         }
+        OnBindingsLoaded?.Invoke(); // Notify listeners that bindings are loaded
     }
 
     public void ResetRebinds()
