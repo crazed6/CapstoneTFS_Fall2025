@@ -59,6 +59,10 @@ public class HeavyEnemyAI : MonoBehaviour
     private bool isTracking = false;
     private Vector3 lockedTarget;
     private CancellationTokenSource trackingTokenSource;
+    private GameObject lastDashedPlayer = null;
+    private float dashImmunityDuration = 0.25f;
+    private float dashImmunityTimer = 0f;
+    public GameObject LastDashedPlayer => lastDashedPlayer;
 
     /*[Header("Health Settings")]
     public int maxHealth = 75;
@@ -87,14 +91,23 @@ public class HeavyEnemyAI : MonoBehaviour
     {
         stateMachine.Execute();
 
+        if (lastDashedPlayer != null)
+        {
+            dashImmunityTimer -= Time.deltaTime;
+            if (dashImmunityTimer <= 0f)
+            {
+                lastDashedPlayer = null;
+            }
+        }
+
         //if (Input.GetMouseButtonDown(0))
         //{
-            //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            //if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("Enemy"))
-            //{
-                //var enemy = hit.collider.GetComponent<HeavyEnemyAI>();
-                //enemy?.TakeDamage((int)damageAmount);
-            //}
+        //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        //if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("Enemy"))
+        //{
+        //var enemy = hit.collider.GetComponent<HeavyEnemyAI>();
+        //enemy?.TakeDamage((int)damageAmount);
+        //}
         //}
     }
 
@@ -211,6 +224,12 @@ public class HeavyEnemyAI : MonoBehaviour
 
         trajectoryLine.enabled = false;
         isTracking = false;
+    }
+
+    public void OnPlayerDashThrough(GameObject player)
+    {
+        lastDashedPlayer = player;
+        dashImmunityTimer = dashImmunityDuration;
     }
 
     private void DrawTrajectory(Vector3 target, bool isLocked)
