@@ -76,7 +76,9 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
             characterController = player.GetComponent<CharacterController>();
         }
 
-        GetComponent<FadetoBlack>(); // Get the FadetoBlack component for fade effects
+        //fadetoBlack = gameOverPanel.GetComponentInChildren<FadetoBlack>(true); // Get the FadetoBlack component from the GameOver panel, even if inactive
+        fadetoBlack = FindFirstObjectByType<FadetoBlack>(FindObjectsInactive.Include); // Find the FadetoBlack component in the scene, even if inactive
+
         if (fadetoBlack = null)
         {
             Debug.LogError("FadetoBlack component is not assigned in Inspector!");
