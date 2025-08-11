@@ -199,6 +199,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
             hasCheckpoint = true;
             checkpointLoaded = true; // Set the flag to true since a checkpoint was loaded from file
             Debug.Log("Loaded checkpoint from file: " + lastCheckpoint);
+            Debug.Log("Checkpoint loaded from file: " + saveFilePath); //Just added
             return; // Exit early if checkpoint loaded from file
         }
 
