@@ -28,14 +28,20 @@ public class ExplodingEnemy : MonoBehaviour
     public float knockbackForceX = 10f;
     public float knockbackForceY = 10f;
 
+    [Header("Bobbing Settings")]
+    public float bobAmplitude = 0.1f; // How high the bobbing goes
+    public float bobFrequency = 4f;   // How fast it bobs
+
+    private float bobTimer = 0f;
+    private float baseYPos;
+
     private Transform player;
     private NavMeshAgent agent;
     private int currentPointIndex = 0;
     private bool hasExploded = false;
 
-    private bool timerStarted = false;
-    private float explosionTimer = 0f;
-
+    public bool timerStarted = false;
+    public float explosionTimer = 0f;
 
     private Vector3 lastKnownPlayerPosition;
 
@@ -64,6 +70,9 @@ public class ExplodingEnemy : MonoBehaviour
         {
             agent.SetDestination(patrolPoints[0].position);
         }
+
+        // Store original Y position for bobbing
+        baseYPos = transform.position.y;
     }
 
     void Update()
@@ -92,7 +101,23 @@ public class ExplodingEnemy : MonoBehaviour
                 Explode();
             }
         }
+
+        // 🌀 Bobbing effect only if moving
+        if (agent.velocity.magnitude > 0.1f)
+        {
+            bobTimer += Time.deltaTime * bobFrequency; // increase timer based on frequency
+            Vector3 pos = transform.position;
+
+            // Y bob (up/down)
+            pos.y = baseYPos + Mathf.Sin(bobTimer) * bobAmplitude;
+
+            // X sway (side-to-side) with smaller amplitude
+            pos.x += Mathf.Sin(bobTimer) * (bobAmplitude * 0.2f); // 20% of Y's amplitude
+
+            transform.position = pos;
+        }
     }
+
 
     void Patrol()
     {
@@ -113,7 +138,6 @@ public class ExplodingEnemy : MonoBehaviour
         if (distance <= innerRadius)
         {
             explosionTimer = 0f;
- 
         }
 
         // 🔒 Start explosion timer permanently when player enters outer radius
@@ -122,7 +146,6 @@ public class ExplodingEnemy : MonoBehaviour
             explosionTimer = outerRadiusTimerStart;
             timerStarted = true;
         }
-
     }
 
     //Javilin exploding and it works YAY
@@ -153,14 +176,14 @@ public class ExplodingEnemy : MonoBehaviour
     void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged) // Applies single damage and knockback loop
     {
         //Declared variables before for each so it dosnt die after the for each loop
-        float distance = 0f; 
+        float distance = 0f;
         float damageToApply = 0f;
         Vector3 hitPosition = Vector3.zero;
         Rigidbody targetRb = null;
         Collider hitCollider = null;
         DamageProfile selectedProfile = null;
 
-        Collider[] hits = Physics.OverlapSphere(position, outerRadius, damageableLayer); 
+        Collider[] hits = Physics.OverlapSphere(position, outerRadius, damageableLayer);
         /* checks the over lap sphere compare to the outer radius, and check how man collider are in the overlap, 
             then checks the damage and knockback variable for one collider relating to it */
         foreach (Collider hit in hits)
@@ -169,7 +192,6 @@ public class ExplodingEnemy : MonoBehaviour
 
             distance = Vector3.Distance(position, hit.transform.position);
             damageToApply = 0f;
-            
 
             if (distance <= innerRadius)
             {
@@ -186,7 +208,6 @@ public class ExplodingEnemy : MonoBehaviour
                 damageToApply = outerDamage;
                 selectedProfile = OuterExplosionDamage;
             }
-
             else continue;
 
             hitPosition = hit.transform.position;
@@ -198,19 +219,6 @@ public class ExplodingEnemy : MonoBehaviour
         float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
         Debug.Log($"distance factor is {distanceFactor}");
 
-        //if (targetRb != null)
-        //{
-        //    targetRb.WakeUp();
-        //    targetRb.linearVelocity = Vector3.zero;
-
-        //    Vector3 adjustedKnockback = new Vector3(
-        //        knockbackDir.x * knockbackForceX * distanceFactor,
-        //        knockbackForceY * distanceFactor,
-        //        knockbackDir.z * knockbackForceX * distanceFactor
-        //    );
-
-        //    targetRb.AddForce(adjustedKnockback, ForceMode.Impulse);
-        //}
         // Knockback
         if (hitCollider != null)
         {
