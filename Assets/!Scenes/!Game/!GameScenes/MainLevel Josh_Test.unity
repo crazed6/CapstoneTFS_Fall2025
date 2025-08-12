@@ -6887,10 +6887,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1741903769}
-    - target: {fileID: 1859948599853302895, guid: 5f821e4b736856649b02c0796f19d80c, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: HideCheckpointPanel
-      objectReference: {fileID: 0}
     - target: {fileID: 2921629950419448285, guid: 5f821e4b736856649b02c0796f19d80c, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -6987,9 +6983,13 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1741903769}
-    - target: {fileID: 6851082815193841513, guid: 5f821e4b736856649b02c0796f19d80c, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ReloadScene
+    - target: {fileID: 7493012423328294008, guid: 5f821e4b736856649b02c0796f19d80c, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7546361864930019874, guid: 5f821e4b736856649b02c0796f19d80c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
