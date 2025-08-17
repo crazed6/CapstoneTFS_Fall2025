@@ -783,7 +783,7 @@ public class CharacterController : MonoBehaviour
 
                 // --- Compute dash-through end point ---
                 Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
-                float dashOvershoot = 3f; // how far past the enemy to go
+                float dashOvershoot = 5f; // how far past the enemy to go
                 targetPosition = bestTarget.position + dashDirection * dashOvershoot;
                 isMoving = true;
 
