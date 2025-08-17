@@ -86,6 +86,7 @@ public class CharacterController : MonoBehaviour
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
     public float wallRunLookAwayAngle = 20f; // ADD THIS: Sets the fixed camera angle away from the wall.
     private bool isRotationLocked = false;  // Add this line: Tracks if rotation is locked
+    [SerializeField] private float wallRunCamRotationSpeed = 8.0f;
     [SerializeField] private float wallRunSideJumpFactor = 1.5f;
     [SerializeField] private float wallRunUpwardBoost = 1.5f; // Multiplies the vertical jump force
 
@@ -491,7 +492,7 @@ public class CharacterController : MonoBehaviour
 
                 // Jump off the wall
                 Vector3 wallNormal = onRightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
-                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost; 
+                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost;
 
                 // Push away from wall
                 jumpDirection += wallNormal * wallRunSideJumpFactor;
@@ -551,6 +552,9 @@ public class CharacterController : MonoBehaviour
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
+            // NEW: Continuously update rotation based on current wall normal
+            UpdateWallRunRotation(wallNormal, onRightWall);
+
             Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
 
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
@@ -575,43 +579,43 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-
-
-    // initiate our wallrun movement
-    void StartWallRunning(bool rightWall)
+    // NEW METHOD (Aiden) for continuous rotation updates
+    private void UpdateWallRunRotation(Vector3 wallNormal, bool rightWall)
     {
-        isRotationLocked = true; //lock mouse input (Aiden & Kaylani's code)
-        SetIsWallRunning(true);
-
-       
-        if (!fallWhileWallRunning)
-            rb.useGravity = false;
-
-        // --- NEW FIXED ROTATION LOGIC (Aiden & Kaylani's code addition) ---
-
-        // 1. Get the wall's normal vector from the correct collider
-        Vector3 wallNormal = rightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
-
-        // 2. Calculate the direction parallel to the wall
+        // Calculate the direction parallel to the wall
         Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
         if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
         {
             wallForward = -wallForward;
         }
 
-        // 3. Create a rotation that looks parallel to the wall
+        // Create a rotation that looks parallel to the wall
         Quaternion wallRunRotation = Quaternion.LookRotation(wallForward);
 
-        // 4. Add the "look away" angle based on which side the wall is on
+        // Add the "look away" angle based on which side the wall is on
         float lookAngle = rightWall ? wallRunLookAwayAngle : -wallRunLookAwayAngle;
         Quaternion lookAwayRotation = Quaternion.Euler(0, lookAngle, 0);
 
-        // 5. Set the player's rotation to the final combined rotation
-        transform.rotation = wallRunRotation * lookAwayRotation;
+        // Smoothly rotate to the new orientation to avoid jarring transitions
+        Quaternion targetRotation = wallRunRotation * lookAwayRotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * wallRunCamRotationSpeed);
+    }
 
+
+
+    // initiate our wallrun movement (rotation logic moved to continuous handling in the above method)
+    void StartWallRunning(bool rightWall)
+    {
+        isRotationLocked = true; //lock mouse input (Aiden & Kaylani's code)
+        SetIsWallRunning(true);
+
+        if (!fallWhileWallRunning)
+            rb.useGravity = false;
+
+        // NOTE: Rotation logic moved to UpdateWallRunRotation() which is called continuously during wall running
+        // The initial rotation will be set on the first frame of wall running
 
         // --- VISUALS AND STATE MANAGEMENT (Jaxson's original code) ---
-
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
