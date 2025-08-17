@@ -745,67 +745,90 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            
-                Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
+            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
 
-                foreach (var hit in hits)
+            Transform bestTarget = null;
+            float bestDistance = Mathf.Infinity;
+
+            foreach (var hit in hits)
+            {
+                if (hit.CompareTag("enemy"))
                 {
-                    if (hit.CompareTag("enemy"))
+                    Vector3 toTarget = hit.transform.position - transform.position;
+                    Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z).normalized;
+
+                    // Horizontal angle (XZ only)
+                    float horizontalAngle = Vector3.Angle(transform.forward, toTargetXZ);
+
+                    // Vertical tolerance (absolute Y difference relative to distance)
+                    float verticalDifference = Mathf.Abs(toTarget.y);
+                    float verticalTolerance = coneRange * 0.75f;
+
+                    if (horizontalAngle <= coneAngle * 0.5f && verticalDifference <= verticalTolerance)
                     {
-                        Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-                        float angle = Vector3.Angle(transform.forward, directionToTarget);
+                        float distance = toTarget.magnitude;
 
-                        if (angle < coneAngle / 2f)
+                        if (distance < bestDistance)
                         {
-                            Debug.Log("Moving to enemy: " + hit.name);
-                            targetPosition = hit.transform.position;
-                            isMoving = true;
-
-                            //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
-                            EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
-                            
-                            //New addition: Scale with speed
-                            float speed = rb.linearVelocity.magnitude;
-                            float scaledDamage = dashDamageProfile.damageAmount * speed;
-                            //New addition ends here
-
-                        if (dmg != null && dashDamageProfile != null)
-                            {
-                            //DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                            //dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
-
-                            DamageData dashDamage = new DamageData
-                            {
-                                source = gameObject,
-                                profile = dashDamageProfile,
-                                customDamage = scaledDamage // Custom damage value
-                            };
-                                dmg.TakeDamage2(dashDamage);
-                            }
-                            else
-                            {
-                                Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on:" + hit.name);
-                            }
-                            //This is where Josh's part ends again! :3, nice seeing ya!
-
-                            break;
+                            bestDistance = distance;
+                            bestTarget = hit.transform;
                         }
                     }
                 }
-            
+            }
+
+            if (bestTarget != null)
+            {
+                Debug.Log("Dashing through enemy: " + bestTarget.name);
+
+                // --- Compute dash-through end point ---
+                Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
+                float dashOvershoot = 3f; // how far past the enemy to go
+                targetPosition = bestTarget.position + dashDirection * dashOvershoot;
+                isMoving = true;
+
+                // --- Josh’s damage part ---
+                EnemyDamageComponent dmg = bestTarget.GetComponent<EnemyDamageComponent>();
+
+                float speed = rb.linearVelocity.magnitude;
+                float scaledDamage = dashDamageProfile.damageAmount * speed;
+
+                if (dmg != null && dashDamageProfile != null)
+                {
+                    DamageData dashDamage = new DamageData
+                    {
+                        source = gameObject,
+                        profile = dashDamageProfile,
+                        customDamage = scaledDamage
+                    };
+                    dmg.TakeDamage2(dashDamage);
+                }
+                else
+                {
+                    Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on: " + bestTarget.name);
+                }
+            }
         }
 
         if (isMoving)
         {
+            // Dash toward the end point
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
+            if (Vector3.Distance(transform.position, targetPosition) < 0.2f) // reached past enemy
             {
                 isMoving = false;
-                rb.linearVelocity = lastSpeed * 1.2f;
+
+                // Carry momentum forward
+                Vector3 dashDirection = (targetPosition - transform.position).normalized;
+                rb.linearVelocity = dashDirection * rb.linearVelocity.magnitude * 1.2f;
             }
         }
     }
+
+
+
+
 
 
 
