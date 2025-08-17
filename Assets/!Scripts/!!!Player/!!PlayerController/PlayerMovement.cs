@@ -86,6 +86,7 @@ public class CharacterController : MonoBehaviour
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
     public float wallRunLookAwayAngle = 20f; // ADD THIS: Sets the fixed camera angle away from the wall.
     private bool isRotationLocked = false;  // Add this line: Tracks if rotation is locked
+    [SerializeField] private float wallRunCamRotationSpeed = 8.0f;
     [SerializeField] private float wallRunSideJumpFactor = 1.5f;
     [SerializeField] private float wallRunUpwardBoost = 1.5f; // Multiplies the vertical jump force
 
@@ -491,7 +492,7 @@ public class CharacterController : MonoBehaviour
 
                 // Jump off the wall
                 Vector3 wallNormal = onRightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
-                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost; 
+                Vector3 jumpDirection = Vector3.up * wallRunUpwardBoost;
 
                 // Push away from wall
                 jumpDirection += wallNormal * wallRunSideJumpFactor;
@@ -551,6 +552,9 @@ public class CharacterController : MonoBehaviour
             var col = onRightWall ? rightCollider : leftCollider;
             Vector3 wallNormal = col.outHit.normal;
 
+            // NEW: Continuously update rotation based on current wall normal
+            UpdateWallRunRotation(wallNormal, onRightWall);
+
             Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
 
             if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
@@ -575,43 +579,43 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-
-
-    // initiate our wallrun movement
-    void StartWallRunning(bool rightWall)
+    // NEW METHOD (Aiden) for continuous rotation updates
+    private void UpdateWallRunRotation(Vector3 wallNormal, bool rightWall)
     {
-        isRotationLocked = true; //lock mouse input (Aiden & Kaylani's code)
-        SetIsWallRunning(true);
-
-       
-        if (!fallWhileWallRunning)
-            rb.useGravity = false;
-
-        // --- NEW FIXED ROTATION LOGIC (Aiden & Kaylani's code addition) ---
-
-        // 1. Get the wall's normal vector from the correct collider
-        Vector3 wallNormal = rightWall ? rightCollider.outHit.normal : leftCollider.outHit.normal;
-
-        // 2. Calculate the direction parallel to the wall
+        // Calculate the direction parallel to the wall
         Vector3 wallForward = Vector3.Cross(wallNormal, transform.up);
         if ((transform.forward - wallForward).magnitude > (transform.forward - -wallForward).magnitude)
         {
             wallForward = -wallForward;
         }
 
-        // 3. Create a rotation that looks parallel to the wall
+        // Create a rotation that looks parallel to the wall
         Quaternion wallRunRotation = Quaternion.LookRotation(wallForward);
 
-        // 4. Add the "look away" angle based on which side the wall is on
+        // Add the "look away" angle based on which side the wall is on
         float lookAngle = rightWall ? wallRunLookAwayAngle : -wallRunLookAwayAngle;
         Quaternion lookAwayRotation = Quaternion.Euler(0, lookAngle, 0);
 
-        // 5. Set the player's rotation to the final combined rotation
-        transform.rotation = wallRunRotation * lookAwayRotation;
+        // Smoothly rotate to the new orientation to avoid jarring transitions
+        Quaternion targetRotation = wallRunRotation * lookAwayRotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * wallRunCamRotationSpeed);
+    }
 
+
+
+    // initiate our wallrun movement (rotation logic moved to continuous handling in the above method)
+    void StartWallRunning(bool rightWall)
+    {
+        isRotationLocked = true; //lock mouse input (Aiden & Kaylani's code)
+        SetIsWallRunning(true);
+
+        if (!fallWhileWallRunning)
+            rb.useGravity = false;
+
+        // NOTE: Rotation logic moved to UpdateWallRunRotation() which is called continuously during wall running
+        // The initial rotation will be set on the first frame of wall running
 
         // --- VISUALS AND STATE MANAGEMENT (Jaxson's original code) ---
-
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
@@ -745,75 +749,90 @@ public class CharacterController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            var javelinThrow = GetComponentInChildren<PlayerJavelinThrow>();
-            if (javelinThrow != null && javelinThrow.IsAiming())
-                return;
-
             Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
 
-                foreach (var hit in hits)
+            Transform bestTarget = null;
+            float bestDistance = Mathf.Infinity;
+
+            foreach (var hit in hits)
+            {
+                if (hit.CompareTag("enemy"))
                 {
-                    if (hit.CompareTag("enemy"))
+                    Vector3 toTarget = hit.transform.position - transform.position;
+                    Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z).normalized;
+
+                    // Horizontal angle (XZ only)
+                    float horizontalAngle = Vector3.Angle(transform.forward, toTargetXZ);
+
+                    // Vertical tolerance (absolute Y difference relative to distance)
+                    float verticalDifference = Mathf.Abs(toTarget.y);
+                    float verticalTolerance = coneRange * 0.75f;
+
+                    if (horizontalAngle <= coneAngle * 0.5f && verticalDifference <= verticalTolerance)
                     {
-                        Vector3 directionToTarget = (hit.transform.position - transform.position).normalized;
-                        float angle = Vector3.Angle(transform.forward, directionToTarget);
+                        float distance = toTarget.magnitude;
 
-                        if (angle < coneAngle / 2f)
+                        if (distance < bestDistance)
                         {
-                            Debug.Log("Moving to enemy: " + hit.name);
-                            targetPosition = hit.transform.position;
-                            isMoving = true;
-                            HeavyEnemyAI heavy = hit.GetComponent<HeavyEnemyAI>(); // ITS me -_-
-                            if (heavy != null)
-                            {
-                                heavy.OnPlayerDashThrough(gameObject);
-                            }                                                      // me again -_-
-
-                        //Josh here again! Don't mind me, just adding the damage profile to the dash (name included to easily find my stuff!)
-                        EnemyDamageComponent dmg = hit.GetComponent<EnemyDamageComponent>();
-                            
-                            //New addition: Scale with speed
-                            float speed = rb.linearVelocity.magnitude;
-                            float scaledDamage = dashDamageProfile.damageAmount * speed;
-                            //New addition ends here
-
-                        if (dmg != null && dashDamageProfile != null)
-                            {
-                            //DamageData dashDamage = new DamageData(gameObject, dashDamageProfile);
-                            //dmg.TakeDamage(dashDamage.profile.damageAmount, gameObject);
-
-                            DamageData dashDamage = new DamageData
-                            {
-                                source = gameObject,
-                                profile = dashDamageProfile,
-                                customDamage = scaledDamage // Custom damage value
-                            };
-                                dmg.TakeDamage2(dashDamage);
-                            }
-                            else
-                            {
-                                Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on:" + hit.name);
-                            }
-                            //This is where Josh's part ends again! :3, nice seeing ya!
-
-                            break;
+                            bestDistance = distance;
+                            bestTarget = hit.transform;
                         }
                     }
                 }
-            
+            }
+
+            if (bestTarget != null)
+            {
+                Debug.Log("Dashing through enemy: " + bestTarget.name);
+
+                // --- Compute dash-through end point ---
+                Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
+                float dashOvershoot = 5f; // how far past the enemy to go
+                targetPosition = bestTarget.position + dashDirection * dashOvershoot;
+                isMoving = true;
+
+                // --- Josh’s damage part ---
+                EnemyDamageComponent dmg = bestTarget.GetComponent<EnemyDamageComponent>();
+
+                float speed = rb.linearVelocity.magnitude;
+                float scaledDamage = dashDamageProfile.damageAmount * speed;
+
+                if (dmg != null && dashDamageProfile != null)
+                {
+                    DamageData dashDamage = new DamageData
+                    {
+                        source = gameObject,
+                        profile = dashDamageProfile,
+                        customDamage = scaledDamage
+                    };
+                    dmg.TakeDamage2(dashDamage);
+                }
+                else
+                {
+                    Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on: " + bestTarget.name);
+                }
+            }
         }
 
         if (isMoving)
         {
+            // Dash toward the end point
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.5f)
+            if (Vector3.Distance(transform.position, targetPosition) < 0.2f) // reached past enemy
             {
                 isMoving = false;
-                rb.linearVelocity = lastSpeed * 1.2f;
+
+                // Carry momentum forward
+                Vector3 dashDirection = (targetPosition - transform.position).normalized;
+                rb.linearVelocity = dashDirection * rb.linearVelocity.magnitude * 1.2f;
             }
         }
     }
+
+
+
+
 
 
 
