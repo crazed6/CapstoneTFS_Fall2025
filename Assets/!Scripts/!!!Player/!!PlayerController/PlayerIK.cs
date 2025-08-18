@@ -1,48 +1,58 @@
+
 using UnityEngine;
 
-public class PlayerIK : MonoBehaviour
+[RequireComponent(typeof(Animator))]
+public class FootIKController : MonoBehaviour
 {
+    private Animator animator;
 
-    Animator anim;
+    [Header("IK Settings")]
+    public bool enableIK = true;
+    public float footRaycastDistance = 1.2f;
+    public LayerMask groundLayer;
 
-    public LayerMask layerMask;
+    // Optional: offsets
+    public float footHeightOffset = 0.1f;
 
-    [Range(0, 1f)]
-    public float DistanceToGround;
-    void Start()
+    private void Start()
     {
-        anim = GetComponent<Animator>();
-    }
-
-   
-    void Update()
-    {
-        
+        animator = GetComponent<Animator>();
     }
 
     private void OnAnimatorIK(int layerIndex)
     {
-        if (anim)
+        if (animator == null || !enableIK) return;
+
+        AdjustFootIK(AvatarIKGoal.LeftFoot);
+        AdjustFootIK(AvatarIKGoal.RightFoot);
+    }
+
+    private void AdjustFootIK(AvatarIKGoal foot)
+    {
+        Vector3 footPosition;
+        Quaternion footRotation;
+
+        // get current foot position from animator
+        footPosition = animator.GetIKPosition(foot);
+        footRotation = animator.GetIKRotation(foot);
+
+        // cast ray downward to find the ground
+        RaycastHit hit;
+        if (Physics.Raycast(footPosition + Vector3.up, Vector3.down, out hit, footRaycastDistance, groundLayer))
         {
-            anim.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1f);
-            anim.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1f);
+            Vector3 hitPoint = hit.point;
+            hitPoint.y += footHeightOffset;
 
-            //Left Foot
-            RaycastHit hit;
-            Ray ray = new Ray(anim.GetIKPosition(AvatarIKGoal.LeftFoot) + Vector3.up, Vector3.down);
-            if (Physics.Raycast(ray, out hit, DistanceToGround + 1f, layerMask))
-            {
-                if(hit.transform.tag == "Ground")
-                {
-                    Vector3 footPosition = hit.point;
-                    footPosition.y += DistanceToGround; // Adjust the foot position to be above the ground
-                    anim.SetIKPosition(AvatarIKGoal.LeftFoot, footPosition);
-                }
-            }
-
-
-            anim.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1f);
-            anim.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1f);
+            animator.SetIKPositionWeight(foot, 1f);
+            animator.SetIKRotationWeight(foot, 1f);
+            animator.SetIKPosition(foot, hitPoint);
+            animator.SetIKRotation(foot, Quaternion.LookRotation(transform.forward, hit.normal));
+        }
+        else
+        {
+            // No ground found – lower weights
+            animator.SetIKPositionWeight(foot, 0);
+            animator.SetIKRotationWeight(foot, 0);
         }
     }
 }
