@@ -211,7 +211,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: MainLevel
+          m_StringArgument: Asad_LevelDesignMesh
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &180732012
@@ -651,12 +651,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 794348033}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -16.075735, y: -81.06168, z: -35.09925}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1240996469}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &794348037
 MonoBehaviour:
@@ -1091,7 +1091,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1234759148}
   m_OnClick:
     m_PersistentCalls:
@@ -1146,6 +1146,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1234759145}
   m_CullTransparentMesh: 1
+--- !u!4 &1240996469 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7514099225821340508, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
+  m_PrefabInstance: {fileID: 2038395902}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1453670143
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1725,7 +1730,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 7514099225821340508, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 794348036}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
 --- !u!1 &2095475992
@@ -1989,5 +1997,4 @@ SceneRoots:
   - {fileID: 2095475995}
   - {fileID: 1666721417}
   - {fileID: 2143954803}
-  - {fileID: 794348036}
   - {fileID: 2038395902}
