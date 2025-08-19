@@ -40,7 +40,8 @@ public class ExplodingEnemy : MonoBehaviour
     private int currentPointIndex = 0;
     private bool hasExploded = false;
 
-    public bool timerStarted = false;
+    public bool TimerStarted { get { return timerStarted; }  }
+    private bool timerStarted = false;
     public float explosionTimer = 0f;
 
     private Vector3 lastKnownPlayerPosition;

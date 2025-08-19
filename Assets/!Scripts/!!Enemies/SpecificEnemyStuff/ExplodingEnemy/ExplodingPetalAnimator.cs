@@ -46,7 +46,7 @@ public class ExplodingPetalAnimator : MonoBehaviour
     void Update()
     {
         if (explodingEnemy == null || petals.Length == 0) return;
-        if (!explodingEnemy.timerStarted) return;
+        if (!explodingEnemy.TimerStarted) return;
 
         float timerPercent = Mathf.Clamp01(explodingEnemy.explosionTimer / explosionDuration);
 
