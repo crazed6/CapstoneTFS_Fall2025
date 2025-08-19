@@ -16,9 +16,8 @@ GameObject:
   - component: {fileID: 2545284013006564628}
   - component: {fileID: 4499357826501556569}
   - component: {fileID: 5796778046388986020}
-  - component: {fileID: 1294023591292575119}
-  - component: {fileID: 7754986666667650014}
   - component: {fileID: 1949924324059314012}
+  - component: {fileID: 7859198709452178594}
   m_Layer: 0
   m_Name: ExplodingEnemyFixed
   m_TagString: enemy
@@ -275,54 +274,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.7
   m_Center: {x: 0, y: 0.6, z: 0.15}
---- !u!114 &1294023591292575119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7050838999477027297}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26dbcc5dc3e1d2741af1ea31844d3db2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  detectionRadius: 30
-  patrolSpeed: 10
-  chaseSpeed: 15
---- !u!114 &7754986666667650014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7050838999477027297}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9048bda16af46ab478b30cef86c8df8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  innerRadius: 3
-  middleRadius: 7
-  outerRadius: 12
-  innerDamage: 100
-  middleDamage: 50
-  outerDamage: 25
-  explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
-  damageableLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  outerRadiusTimerStart: 3
-  middleRadiusTimeReduction: 2
-  knockbackForceX: 100
-  knockbackForceY: 100
-  InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
-  MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
-  OuterExplosionDamage: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
 --- !u!114 &1949924324059314012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -348,7 +299,7 @@ MonoBehaviour:
   innerDamage: 100
   middleDamage: 50
   outerDamage: 25
-  explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
+  explosionEffect: {fileID: 2555728658033373695, guid: f9a5031bb087fe84a80a36130aedb763, type: 3}
   damageableLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -356,9 +307,35 @@ MonoBehaviour:
   middleRadiusTimeReduction: 2
   knockbackForceX: 5
   knockbackForceY: 5
+  bobAmplitude: 0.3
+  bobFrequency: 1.5
+  timerStarted: 0
+  explosionTimer: 0
   InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
   MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
   OuterExplosionDamage: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
+--- !u!114 &7859198709452178594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050838999477027297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 890c4fe33afa060438dd2b68ac4a9277, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  petals:
+  - {fileID: 456696095661895953}
+  - {fileID: 6397107001585525224}
+  - {fileID: 5202825849700136782}
+  baseSpinSpeed: 180
+  maxSpinSpeed: 850
+  startDistanceFromCenter: 1
+  minDistanceFromCenter: 0.2
+  spinCenter: {fileID: 8112192311236114310}
+  explodingEnemy: {fileID: 1949924324059314012}
 --- !u!1001 &7199082218304031049
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -419,9 +396,45 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4958654718810478431, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.03
+      objectReference: {fileID: 0}
+    - target: {fileID: -4958654718810478431, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: -4958654718810478431, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1891857573549967272, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.03
+      objectReference: {fileID: 0}
+    - target: {fileID: -1891857573549967272, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: -1891857573549967272, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
       propertyPath: m_Name
       value: light enemy_low
+      objectReference: {fileID: 0}
+    - target: {fileID: 3160508421234458119, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 3160508421234458119, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: 3160508421234458119, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -437,6 +450,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 6950007139065900859}
   m_SourcePrefab: {fileID: 100100000, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+--- !u!4 &456696095661895953 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -1891857573549967272, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+  m_PrefabInstance: {fileID: 7199082218304031049}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &4566569774033212844 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6681072598322699493, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
@@ -463,6 +481,16 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5565451
   m_Center: {x: 1.030116, y: 1.1364247, z: -1.1103327}
+--- !u!4 &5202825849700136782 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3160508421234458119, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+  m_PrefabInstance: {fileID: 7199082218304031049}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6397107001585525224 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -4958654718810478431, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+  m_PrefabInstance: {fileID: 7199082218304031049}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7233623639317982882 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
@@ -494,6 +522,11 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5557093
   m_Center: {x: 1.0316038, y: -1.4234836, z: -1.1063318}
+--- !u!4 &8112192311236114310 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7819360766096179505, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}
+  m_PrefabInstance: {fileID: 7199082218304031049}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8608805645673434057 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1481922034050646656, guid: 34d91e51093b2604d958f9f44ea6cc70, type: 3}

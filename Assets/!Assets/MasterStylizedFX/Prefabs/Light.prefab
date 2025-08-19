@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4835419628095576962}
   - component: {fileID: 2118990241733091598}
-  - component: {fileID: 7592287137163321807}
+  - component: {fileID: -314131531317519480}
   m_Layer: 0
   m_Name: Light
   m_TagString: Untagged
@@ -41,8 +41,9 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4913463977836507599}
   m_Enabled: 0
-  serializedVersion: 11
+  serializedVersion: 10
   m_Type: 2
+  m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2.33
   m_Range: 20
@@ -92,13 +93,9 @@ Light:
   m_BoundingSphereOverride: {x: 0.0234375, y: 99, z: 4, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
---- !u!114 &7592287137163321807
+--- !u!114 &-314131531317519480
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
