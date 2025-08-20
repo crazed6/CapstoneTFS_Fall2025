@@ -119,7 +119,7 @@ public class JavelinController : MonoBehaviour
             EnemyDamageComponent damageable = hit.GetComponentInParent<EnemyDamageComponent>();
             if (damageable != null)
             {
-                DamageData data = new DamageData
+                DamageData data = new DamageData(gameObject, damageProfile)
                 {
                     source = gameObject,
                     profile = damageProfile

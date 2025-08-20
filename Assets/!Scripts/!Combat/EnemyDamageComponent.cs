@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class EnemyDamageComponent : MonoBehaviour
@@ -95,27 +95,31 @@ public class EnemyDamageComponent : MonoBehaviour
 
         Debug.Log($"{gameObject.name} is dead.");
 
-        //trigger death animation
-        //if (anim != null) anim.SetTrigger("Die");
-
+        // trigger death animation
+        // if (anim != null) anim.SetTrigger("Die");
 
         // Kaylani's addition : Change the material color to red when the enemy dies
-        // Get the Renderer component and change the material's color to red.
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
-
-        // Loop through each renderer that was found.
         foreach (Renderer rend in renderers)
         {
             rend.material.color = Color.red;
         }
-        // ---------------------
 
+        if (healthBar != null)
+            healthBar.gameObject.SetActive(false);
 
-        if (healthBar != null) healthBar.gameObject.SetActive(false);
+        // ✅ Disable WorkerAI script so it stops patrolling/shooting
+        WorkerAI ai = GetComponent<WorkerAI>();
+        if (ai != null)
+            ai.enabled = false;
 
-        //Add cleanup logic here - disable AI movement, pool object, etc.
+        // ✅ Also stop the NavMeshAgent so it doesn’t keep sliding around
+        UnityEngine.AI.NavMeshAgent agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null)
+            agent.isStopped = true;
 
-        Destroy(gameObject, 2.0f); //Delay if anims are ~2seconds
+        // Cleanup logic - destroy after delay (allows color/animation to play)
+        Destroy(gameObject, 2.0f);
         OnDeath?.Invoke();
     }
 
