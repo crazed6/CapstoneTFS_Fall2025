@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5949989182157603498}
   - component: {fileID: 2347481630574665849}
   - component: {fileID: 4981452036957718688}
+  - component: {fileID: -4010533238068816086}
   m_Layer: 0
   m_Name: Projectile
   m_TagString: Untagged
@@ -103,7 +104,7 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -127,3 +128,30 @@ MonoBehaviour:
   lifeTime: 5
   damage: 1
   WorkerProjectile: {fileID: 11400000, guid: 9b81154c868c42b4c9d9d24f0aff6b09, type: 2}
+--- !u!54 &-4010533238068816086
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2260380547152609138}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
