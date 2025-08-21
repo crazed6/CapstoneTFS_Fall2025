@@ -125,8 +125,51 @@ public class AimingCameraController : MonoBehaviour
             currentAnchor = defaultShoulderAnchor;
         }
     }
+    //=========================RITWIK'S CODE==========================
+    //// --- Read mouse & apply rotation. Uses UN-SCALED delta so slow-mo doesn’t affect sensitivity -_-
+    //void HandleRotation()
+    //{
+    //    float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
+    //    float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
 
-    // --- Read mouse & apply rotation. Uses UN-SCALED delta so slow-mo doesn’t affect sensitivity -_-
+    //    // Pitch: clamp straight from camera perspective -_-
+    //    cameraPitch = Mathf.Clamp(cameraPitch - mouseY, -verticalClamp, verticalClamp);
+
+    //    if (javelinThrow.IsAiming())
+    //    {
+    //        if (wallrunLocked)
+    //        {
+    //            // Wallrun + Aiming => camera-only free look clamped around baseYaw -_-
+    //            float nextYaw = cameraYaw + mouseX;
+    //            float deltaFromBase = Mathf.DeltaAngle(baseYaw, nextYaw);
+
+    //            // If wall on RIGHT: allow left look (negative), else allow right look (positive) -_-
+    //            deltaFromBase = wallOnRight
+    //                ? Mathf.Clamp(deltaFromBase, -horizontalClamp, 0f)
+    //                : Mathf.Clamp(deltaFromBase, 0f, horizontalClamp);
+
+    //            cameraYaw = baseYaw + deltaFromBase;
+    //            transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
+    //        }
+    //        else
+    //        {
+    //            // Grounded (or not locked): rotate the PLAYER yaw and keep camera aligned -_-
+    //            float nextPlayerYaw = playerBody.eulerAngles.y + mouseX;
+    //            playerBody.rotation = Quaternion.Euler(0f, nextPlayerYaw, 0f);
+
+    //            cameraYaw = playerBody.eulerAngles.y;
+    //            transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        // Not aiming: treat camera as following the player's yaw -_-
+    //        cameraYaw = playerBody.eulerAngles.y;
+    //        transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
+    //    }
+    //}
+
+    //==================================== KAYLANI'S CODE - UPDATES CLAMPS BASED ON PLAYERS ROTATION ON CURVED WALLS ====================================
     void HandleRotation()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
@@ -139,16 +182,24 @@ public class AimingCameraController : MonoBehaviour
         {
             if (wallrunLocked)
             {
-                // Wallrun + Aiming => camera-only free look clamped around baseYaw -_-
+                // Wallrun + Aiming => camera-only free look clamped around the PLAYER'S CURRENT YAW -_-
+
+                // 1. Get the player's yaw on this frame. This is our new dynamic "base".
+                float currentPlayerYaw = playerBody.eulerAngles.y;
+
+                // 2. Calculate the camera's potential next yaw based on mouse input.
                 float nextYaw = cameraYaw + mouseX;
-                float deltaFromBase = Mathf.DeltaAngle(baseYaw, nextYaw);
 
-                // If wall on RIGHT: allow left look (negative), else allow right look (positive) -_-
-                deltaFromBase = wallOnRight
-                    ? Mathf.Clamp(deltaFromBase, -horizontalClamp, 0f)
-                    : Mathf.Clamp(deltaFromBase, 0f, horizontalClamp);
+                // 3. Find the angle between the player's current forward and the camera's next position.
+                float deltaFromPlayer = Mathf.DeltaAngle(currentPlayerYaw, nextYaw);
 
-                cameraYaw = baseYaw + deltaFromBase;
+                // 4. Clamp this angle. If the wall is on the right, you can only look left (negative angle), and vice-versa.
+                deltaFromPlayer = wallOnRight
+                    ? Mathf.Clamp(deltaFromPlayer, -horizontalClamp, 0f)
+                    : Mathf.Clamp(deltaFromPlayer, 0f, horizontalClamp);
+
+                // 5. The final camera yaw is the player's current yaw plus the allowed (clamped) offset.
+                cameraYaw = currentPlayerYaw + deltaFromPlayer;
                 transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
             }
             else
@@ -168,7 +219,6 @@ public class AimingCameraController : MonoBehaviour
             transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0f);
         }
     }
-
     // --- Keep camera position glued to current shoulder anchor -_-
     void SnapToAnchor()
     {
