@@ -50,9 +50,7 @@ public class HeavyEnemyAI : MonoBehaviour
     [Header("Slam Timing")]
     public float slamHitDelay = 0.15f;
 
-    [HideInInspector]
-    public bool isSlamming = false;
-
+    [HideInInspector] public bool isSlamming = false;
     [HideInInspector] public bool slamOnCooldown = false;
 
     public HeavyEnemyStateMachine stateMachine;
@@ -64,27 +62,24 @@ public class HeavyEnemyAI : MonoBehaviour
     private float dashImmunityTimer = 0f;
     public GameObject LastDashedPlayer => lastDashedPlayer;
 
-    /*[Header("Health Settings")]
-    public int maxHealth = 75;
-    private int currentHealth;
-    public HealthBar healthBar;
+    // === New Dash Cancel System ===
+    [Header("Dash Cancel Detection")]
+    public SphereCollider dashDetectionCollider; // Adjustable collider
+    public LayerMask playerLayer;
+    public ParticleSystem dashAttackEffect;
 
-    [Header("Temp Damage Debug")]
-    public float damageAmount = 10f;*/
+    [HideInInspector] public bool cantDashAttack = false;
+    private ParticleSystem activeEffectInstance;
+    // ===============================
 
-    //Declared Variable
-    //Josh testing
-    public DamageProfile GroundSlam; // Reference to the damage profile for explosion damage
-    //Josh testing end
+    // Damage Profile Reference
+    public DamageProfile GroundSlam;
 
     private void Start()
     {
         stateMachine = new HeavyEnemyStateMachine();
         stateMachine.ChangeState(new HeavyEnemyIdleState(this));
         originalRotation = transform.rotation;
-
-        //currentHealth = maxHealth;
-        //healthBar.SetHealth(1f);
     }
 
     private void Update()
@@ -100,15 +95,55 @@ public class HeavyEnemyAI : MonoBehaviour
             }
         }
 
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //if (Physics.Raycast(ray, out RaycastHit hit) && hit.collider.CompareTag("Enemy"))
-        //{
-        //var enemy = hit.collider.GetComponent<HeavyEnemyAI>();
-        //enemy?.TakeDamage((int)damageAmount);
-        //}
-        //}
+        // 🔴 Dash Cancel Sphere Check
+        CheckDashAttack();
+    }
+
+    private void CheckDashAttack()
+    {
+        if (dashDetectionCollider == null) return;
+
+        // Sphere position/scale
+        Vector3 center = dashDetectionCollider.transform.TransformPoint(dashDetectionCollider.center);
+        float radius = dashDetectionCollider.radius * Mathf.Max(
+            dashDetectionCollider.transform.lossyScale.x,
+            dashDetectionCollider.transform.lossyScale.y,
+            dashDetectionCollider.transform.lossyScale.z
+        );
+
+        Collider[] hits = Physics.OverlapSphere(center, radius, playerLayer);
+
+        bool playerInside = false;
+        foreach (var hit in hits)
+        {
+            if (hit.CompareTag("Player"))
+            {
+                playerInside = true;
+                break;
+            }
+        }
+
+        if (playerInside && !cantDashAttack)
+        {
+            cantDashAttack = true;
+
+            if (dashAttackEffect != null && activeEffectInstance == null)
+            {
+                activeEffectInstance = Instantiate(dashAttackEffect, transform.position, Quaternion.identity, transform);
+                activeEffectInstance.Play();
+            }
+        }
+        else if (!playerInside && cantDashAttack)
+        {
+            cantDashAttack = false;
+
+            if (activeEffectInstance != null)
+            {
+                activeEffectInstance.Stop();
+                Destroy(activeEffectInstance.gameObject, 2f);
+                activeEffectInstance = null;
+            }
+        }
     }
 
     public bool CanSeePlayer()
@@ -176,7 +211,6 @@ public class HeavyEnemyAI : MonoBehaviour
                 timer += Time.deltaTime;
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                // Check again after yield
                 if (this == null || gameObject == null || !gameObject.activeInHierarchy)
                     return;
             }
@@ -268,32 +302,26 @@ public class HeavyEnemyAI : MonoBehaviour
         rockScript.Launch(target, shootSpeed, trajectoryHeight);
     }
 
-    /*public void TakeDamage(int damageAmount)
-    {
-        currentHealth -= damageAmount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-
-        if (healthBar != null)
-        {
-            healthBar.SetHealth((float)currentHealth / maxHealth);
-        }
-
-        if (currentHealth <= 0)
-        {
-            Invoke(nameof(DestroyObject), 0.5f);
-            Debug.Log($"{gameObject.name} is dead!");
-        }
-    }
-
-    private void DestroyObject()
-    {
-        Destroy(gameObject);
-    }*/
-
     public async UniTaskVoid StartSlamCooldown()
     {
         slamOnCooldown = true;
         await UniTask.Delay(TimeSpan.FromSeconds(slamCooldown));
         slamOnCooldown = false;
+    }
+
+    // Debug Gizmo for Dash Cancel
+    private void OnDrawGizmosSelected()
+    {
+        if (dashDetectionCollider != null)
+        {
+            Gizmos.color = cantDashAttack ? Color.red : Color.green;
+            Vector3 center = dashDetectionCollider.transform.TransformPoint(dashDetectionCollider.center);
+            float radius = dashDetectionCollider.radius * Mathf.Max(
+                dashDetectionCollider.transform.lossyScale.x,
+                dashDetectionCollider.transform.lossyScale.y,
+                dashDetectionCollider.transform.lossyScale.z
+            );
+            Gizmos.DrawWireSphere(center, radius);
+        }
     }
 }
