@@ -75,4 +75,9 @@ public class GameManager : MonoBehaviour
             Debug.Log("PlayerSave assigned successfully!");
         }
     }
+
+    public void StartNew()
+    {
+
+    }
 }
