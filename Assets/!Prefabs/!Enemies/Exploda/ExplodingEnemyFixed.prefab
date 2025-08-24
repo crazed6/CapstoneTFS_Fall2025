@@ -16,8 +16,6 @@ GameObject:
   - component: {fileID: 2545284013006564628}
   - component: {fileID: 4499357826501556569}
   - component: {fileID: 5796778046388986020}
-  - component: {fileID: 1294023591292575119}
-  - component: {fileID: 7754986666667650014}
   - component: {fileID: 1949924324059314012}
   - component: {fileID: 7859198709452178594}
   m_Layer: 0
@@ -276,54 +274,6 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.7
   m_Center: {x: 0, y: 0.6, z: 0.15}
---- !u!114 &1294023591292575119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7050838999477027297}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26dbcc5dc3e1d2741af1ea31844d3db2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  detectionRadius: 30
-  patrolSpeed: 10
-  chaseSpeed: 15
---- !u!114 &7754986666667650014
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7050838999477027297}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9048bda16af46ab478b30cef86c8df8f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  innerRadius: 3
-  middleRadius: 7
-  outerRadius: 12
-  innerDamage: 100
-  middleDamage: 50
-  outerDamage: 25
-  explosionEffect: {fileID: 417761080263594739, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}
-  damageableLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  outerRadiusTimerStart: 3
-  middleRadiusTimeReduction: 2
-  knockbackForceX: 100
-  knockbackForceY: 100
-  InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
-  MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
-  OuterExplosionDamage: {fileID: 11400000, guid: 7fb3287cb648093428eedc0152f8de90, type: 2}
 --- !u!114 &1949924324059314012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -359,7 +309,7 @@ MonoBehaviour:
   knockbackForceY: 5
   bobAmplitude: 0.3
   bobFrequency: 1.5
-  timerStarted: 1
+  timerStarted: 0
   explosionTimer: 0
   InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
   MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
