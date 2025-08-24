@@ -967,6 +967,11 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
+--- !u!1 &1114150828 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4741848408487607711, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
+  m_PrefabInstance: {fileID: 2038395902}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1013507189
 GameObject:
   m_ObjectHideFlags: 0
@@ -1807,9 +1812,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Settings
-
-'
+  m_text: Delete Save
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c904b524fec8f0c4a8fbefb4dbc88f54, type: 2}
   m_sharedMaterial: {fileID: -6619735398590779375, guid: c904b524fec8f0c4a8fbefb4dbc88f54, type: 2}
@@ -2108,9 +2111,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1164181397}
-        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
-        m_MethodName: Settings
+      - m_Target: {fileID: 1240996470}
+        m_TargetAssemblyTypeName: SaveFileManager, Assembly-CSharp
+        m_MethodName: DeleteAllSaveFiles
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2163,6 +2166,18 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7514099225821340508, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
   m_PrefabInstance: {fileID: 2038395902}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1240996470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1114150828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 503f59fea15b70a47b85999de6c0dccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1274754547
 GameObject:
   m_ObjectHideFlags: 0
@@ -3507,7 +3522,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7514099225821340508, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
       insertIndex: -1
       addedObject: {fileID: 794348036}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4741848408487607711, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1240996470}
   m_SourcePrefab: {fileID: 100100000, guid: 1e95c4d2662d7c64b8dc3b760f16d254, type: 3}
 --- !u!1 &2092726500
 GameObject:
