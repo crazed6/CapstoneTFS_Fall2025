@@ -75,6 +75,13 @@ public class HeavyEnemyAI : MonoBehaviour
     // Damage Profile Reference
     public DamageProfile GroundSlam;
 
+    public Action OnSlam; //audio hook
+    public event Action OnThrowRock; //audio hook
+    public event Action OnLockOn; //audio hook
+    public event Action OnStopTracking; //audio hook
+
+
+
     private void Start()
     {
         stateMachine = new HeavyEnemyStateMachine();
@@ -189,6 +196,8 @@ public class HeavyEnemyAI : MonoBehaviour
         if (isTracking) return;
         isTracking = true;
 
+        OnLockOn?.Invoke(); //audio hook
+
         trackingTokenSource?.Cancel();
         trackingTokenSource = new CancellationTokenSource();
         CancellationToken token = trackingTokenSource.Token;
@@ -258,6 +267,9 @@ public class HeavyEnemyAI : MonoBehaviour
 
         trajectoryLine.enabled = false;
         isTracking = false;
+
+        // AUDIO: notify listeners to stop lock-on sound
+        OnStopTracking?.Invoke();
     }
 
     public void OnPlayerDashThrough(GameObject player)
@@ -300,6 +312,8 @@ public class HeavyEnemyAI : MonoBehaviour
         HeavyEnemyRock rockScript = rock.GetComponent<HeavyEnemyRock>();
 
         rockScript.Launch(target, shootSpeed, trajectoryHeight);
+
+        OnThrowRock?.Invoke();//audio hook
     }
 
     public async UniTaskVoid StartSlamCooldown()

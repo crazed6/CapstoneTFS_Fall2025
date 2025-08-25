@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1745335498603642442}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: CentrePoint
   m_TagString: Untagged
   m_Icon: {fileID: 3936346786652291628, guid: 0000000000000000d000000000000000, type: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4723785078990151216}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: FirePoint
   m_TagString: Untagged
   m_Icon: {fileID: 5132851093641282708, guid: 0000000000000000d000000000000000, type: 0}
@@ -78,7 +78,8 @@ GameObject:
   - component: {fileID: 8255192604355087130}
   - component: {fileID: 1352194678892887443}
   - component: {fileID: 7529910566515809391}
-  m_Layer: 0
+  - component: {fileID: 3461965476541140552}
+  m_Layer: 8
   m_Name: Worker
   m_TagString: enemy
   m_Icon: {fileID: 0}
@@ -252,6 +253,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.627884, y: 3.4274101, z: 1.6736488}
   m_Center: {x: -0.023796082, y: 0.8126087, z: 0.0019893646}
+--- !u!114 &3461965476541140552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9170661566845972035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d42ffb84a3d1caf4f9a0aef2af2e040f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6120708899105584375
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -312,10 +325,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: KF_Kayan_Worker
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 32edf4157e29cc0478d480d0ce0c83d2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4048762119607475411, guid: 32edf4157e29cc0478d480d0ce0c83d2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 4487611220353998864, guid: 32edf4157e29cc0478d480d0ce0c83d2, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: c8ebcc1b77f27ed4db268838fc37f977, type: 2}
+    - target: {fileID: 7224045962526583035, guid: 32edf4157e29cc0478d480d0ce0c83d2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8210404590337620019, guid: 32edf4157e29cc0478d480d0ce0c83d2, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -334,9 +363,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7288475620919881347}
     m_Modifications:
+    - target: {fileID: 3048958891178811386, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3272106356228450232, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3450912526529898833, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3917568098767144769, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 6830983645058266509, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
       propertyPath: m_Name
       value: HealthBarPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 6830983645058266509, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
+      propertyPath: m_Layer
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 7278491698309973395, guid: 073804ef5d90fa6459bdd2f2bc254f04, type: 3}
       propertyPath: m_AnchorMax.y
