@@ -83,6 +83,8 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
         // Guard enemy references
         if (enemy == null || enemy.slamOrigin == null) return;
 
+        enemy.OnSlam?.Invoke(); // <-- Audio triggers here
+
         Collider[] hits = Physics.OverlapSphere(enemy.slamOrigin.position, enemy.slamRadius);
 
         foreach (var hit in hits)

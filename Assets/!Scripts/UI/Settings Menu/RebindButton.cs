@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using UnityEngine.InputSystem;
 
 // Attach to a Keybind row (e.g., Move Forward).  
@@ -42,6 +43,7 @@ public class RebindButton : MonoBehaviour
         if (action == null || bindingIndex >= action.bindings.Count) return;
 
         string path = action.bindings[bindingIndex].effectivePath;
+
         if (!string.IsNullOrEmpty(path) && UsedKeyRegistry.IsKeyUsed(path))
         {
             // Allow this one (it's this button's binding)
@@ -61,7 +63,7 @@ public class RebindButton : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator WaitForInputManager()
+    private IEnumerator WaitForInputManager()
     {
         yield return new WaitUntil(() => InputManager.Instance != null);
         UpdateDisplay();
@@ -73,7 +75,7 @@ public class RebindButton : MonoBehaviour
         var action = InputManager.Instance.FindAction(actionName);
         if (action == null || bindingIndex >= action.bindings.Count) return;
 
-        bindingDisplay.text = InputControlPath.ToHumanReadableString(
+            bindingDisplay.text = InputControlPath.ToHumanReadableString(
             action.bindings[bindingIndex].effectivePath,
             InputControlPath.HumanReadableStringOptions.OmitDevice
         );

@@ -4,9 +4,14 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
+
+    [Header("UI Panels")]
+    public GameObject savedGameFilesPanel; // Reference to the panel for saved game files
+
+
     public void Start()
     {
-        SoundManager.Instance.PlayBGM(0);
+        //SoundManager.Instance.PlayBGM(0);
 
         // Ensure input bindings are loaded (once)
         if (InputManager.Instance != null)
@@ -23,6 +28,7 @@ public class MainMenu : MonoBehaviour
     {
         SceneManager.LoadSceneAsync("Kadeem_SettingsMenu"); //Replace SampleScene with the name of the first game scene 
         SoundManager.Instance.PlayBGM(1);
+        Debug.Log("Settings button clicked");
     }
 
     public void ChangeScene(string SceneName)
@@ -39,33 +45,24 @@ public class MainMenu : MonoBehaviour
 #endif
 
     }
+    // Opens the panel that shows saved game files.
+    public void ShowSavedGameFilesPanel()
+    {
+        if(savedGameFilesPanel == null)
+        {
+          Debug.LogError("LoadGameMenuController is not assigned in UIManager."); 
+        }
+        else
+        {
+          savedGameFilesPanel.SetActive(true);
+        } 
+    }
 
-
-    //Load Code Below
-
-    //!!!!!!!    SAVE AND LOAD SYSTEM BEING REDONE DELETE THIS CODE OR CHANGE LATER   !!!!!!!
-
-    //public void LoadGameButton()       
-    //{
-    //    string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
-
-    //    if (string.IsNullOrEmpty(sceneName))
-    //    {
-    //        Debug.LogError("Scene name is empty or null. Cannot load saved scene.");
-    //        return;
-    //    }
-
-    //    // Subscribe to sceneLoaded event before loading
-    //    SceneManager.sceneLoaded += OnSceneLoaded;
-    //    SceneManager.LoadScene(sceneName);
-    //}
-
-    //private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    //{
-    //    SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to prevent multiple triggers
-
-    //    SaveLoadSystem.Load(); // 
-    //}
-
+    public void ReturnToMainMenu()
+    {
+        SceneManager.LoadScene("Kadeem_MainMenu");
+        savedGameFilesPanel.SetActive(false);
+        //SoundManager.Instance.PlayBGM(1);
+    }
 
 }
