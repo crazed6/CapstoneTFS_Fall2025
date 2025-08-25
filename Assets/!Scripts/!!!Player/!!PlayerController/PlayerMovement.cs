@@ -16,7 +16,7 @@ public class CharacterController : MonoBehaviour
 
     [Header("Combat")]
     public DamageProfile dashDamageProfile; // Reference to the DashDamage ScriptableObject
-
+    [SerializeField, Tooltip("Multiplier to apply additional dash damage based on speed")] private float dashDamageMultiplier = 5.0f;
     //My part ends here :3, nice to see you Jaxson!
 
     [HideInInspector] public Rigidbody rb;
@@ -795,7 +795,7 @@ public class CharacterController : MonoBehaviour
                 EnemyDamageComponent dmg = bestTarget.GetComponent<EnemyDamageComponent>();
 
                 float speed = rb.linearVelocity.magnitude;
-                float scaledDamage = dashDamageProfile.damageAmount * speed;
+                float scaledDamage = dashDamageProfile.damageAmount + (speed * dashDamageMultiplier);
 
                 if (dmg != null && dashDamageProfile != null)
                 {

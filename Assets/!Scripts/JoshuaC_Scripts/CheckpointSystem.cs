@@ -99,23 +99,18 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X) && hasCheckpoint)
-        {
-            Debug.Log("Respawning at: " + lastCheckpoint);
-            ResetRespawn();
-        }
 
-        if (Input.GetKeyDown(KeyCode.P) && isInCheckpointZone)
-        {
-            if (!CheckpointPanelTriggered)
-            {
-                ShowCheckpointPanel();
-            }
-            else
-            {
-                HideCheckpointPanel();
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.P) && isInCheckpointZone)
+        //{
+        //    if (!CheckpointPanelTriggered)
+        //    {
+        //        ShowCheckpointPanel();
+        //    }
+        //    else
+        //    {
+        //        HideCheckpointPanel();
+        //    }
+        //}
     }
 
     public void ResetRespawn()
@@ -125,15 +120,34 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         controller.enabled = true;
     }
 
-    private void OnTriggerEnter(Collider other) //this works when attached to the player object the rigiddbody, and not when attached to the parent.
+    //private void OnTriggerEnter(Collider other) //this works when attached to the player object the rigiddbody, and not when attached to the parent.
+    //{
+    //    if (other.CompareTag("Checkpoint")) //removing "&& !panelTriggered" to facilitate new functionality.
+    //    {
+    //        lastCheckpoint = other.transform.position;
+    //        SaveCheckpoint();
+    //        hasCheckpoint = true;
+    //        isInCheckpointZone = true; // Set the flag to true when entering the checkpoint zone
+    //        //ShowCheckpointPanel();
+    //        Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+    //    }
+    //}
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Checkpoint")) //removing "&& !panelTriggered" to facilitate new functionality.
+        if (other.CompareTag("Checkpoint"))
         {
             lastCheckpoint = other.transform.position;
             SaveCheckpoint();
             hasCheckpoint = true;
-            isInCheckpointZone = true; // Set the flag to true when entering the checkpoint zone
-            //ShowCheckpointPanel();
+            isInCheckpointZone = true; // Player is inside checkpoint zone
+
+            // Only show the panel if it hasn’t been triggered yet
+            if (!CheckpointPanelTriggered)
+            {
+                ShowCheckpointPanel();
+            }
+
             Debug.Log("Checkpoint activated at: " + lastCheckpoint);
         }
     }

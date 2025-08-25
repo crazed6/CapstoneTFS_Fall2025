@@ -19,7 +19,8 @@ public class PlayerSave : MonoBehaviour
     {
         //data.Position = transform.position; //Replace with CharacterController.instance.transform.position if using CharacterController
         data.Position = CharacterController.instance.transform.position; //Ensures the position is saved from the CharacterController
-        
+        data.Rotation = CharacterController.instance.transform.rotation; //Saves the rotation of the player as well
+
         Health health = CharacterController.instance.GetComponent<Health>(); //Replace with GetComponent<Health>() if not using CharacterController
         //Saving Health as well, saved to same object
 
@@ -58,7 +59,7 @@ public class PlayerSave : MonoBehaviour
 
         //transform.position = data.Position; //Used to convert the Data position into the current Transform. Change to CharacterController.instance.transform.position if using CharacterController
         CharacterController.instance.transform.position = data.Position; //Ensures the position is loaded from the CharacterController
-
+        CharacterController.instance.transform.rotation = data.Rotation; //Loads the rotation of the player as well
 
         CharacterController.instance.GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
 
@@ -149,9 +150,11 @@ public class PlayerSave : MonoBehaviour
 public struct PlayerSaveData
 {
     public Vector3 Position;
+    public Quaternion Rotation;
     public Vector3 lastCheckpoint;
     public int Health;
     public string SceneName; // This stores the last scene
+
 
     public List<string> collectedItems; // List to store inventory items
 
