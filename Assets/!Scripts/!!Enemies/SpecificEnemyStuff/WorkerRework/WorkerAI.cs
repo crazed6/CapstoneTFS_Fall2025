@@ -82,6 +82,13 @@ public class WorkerAI : MonoBehaviour
 
         // Tell the projectile which direction to go
         proj.GetComponent<ProjectileScript>().Initialize(direction);
+
+        //Notify WorkerAudio
+        WorkerAudio workerAudio = GetComponent<WorkerAudio>();
+        if (workerAudio != null)
+        {
+            workerAudio.PlayShootSFX();
+        }
     }
 
     void ShootPlayer()
