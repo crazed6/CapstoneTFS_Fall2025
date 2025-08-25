@@ -59,7 +59,6 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
         GameSession.IsNewSession = false; // Reset the session flag after the first run
 
-        LoadCheckpoint(); // Load the last checkpoint position
 
         if (hasCheckpoint)
         {
@@ -133,22 +132,40 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
     //    }
     //}
 
+    //private void OnTriggerEnter(Collider other) //For when the player just walks into the checkpoint zone.
+    //{
+    //    if (other.CompareTag("Checkpoint"))
+    //    {
+    //        lastCheckpoint = other.transform.position;
+    //        SaveCheckpoint();
+    //        hasCheckpoint = true;
+    //        isInCheckpointZone = true; // Player is inside checkpoint zone
+
+    //        // Only show the panel if it hasn’t been triggered yet
+    //        if (!CheckpointPanelTriggered)
+    //        {
+    //            ShowCheckpointPanel();
+    //        }
+
+    //        Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+    //    }
+    //}
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Checkpoint"))
         {
             lastCheckpoint = other.transform.position;
-            SaveCheckpoint();
             hasCheckpoint = true;
-            isInCheckpointZone = true; // Player is inside checkpoint zone
-
-            // Only show the panel if it hasn’t been triggered yet
-            if (!CheckpointPanelTriggered)
-            {
-                ShowCheckpointPanel();
-            }
+            isInCheckpointZone = true;
 
             Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+
+            // --- TEMP SAVE (for death respawn in current session only) ---
+            SaveCheckpoint(); // PlayerPrefs-based
+
+            // --- FULL SAVE (persistent to file) ---
+            SaveLoadSystem.Save(this);
         }
     }
 
