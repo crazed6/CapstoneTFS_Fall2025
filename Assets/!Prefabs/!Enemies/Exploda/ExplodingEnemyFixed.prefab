@@ -268,7 +268,7 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -309,7 +309,6 @@ MonoBehaviour:
   knockbackForceY: 5
   bobAmplitude: 0.3
   bobFrequency: 1.5
-  timerStarted: 0
   explosionTimer: 0
   InnerExplosionDamage: {fileID: 11400000, guid: cf0cd12102958824b9fd826046dfc403, type: 2}
   MiddleExplosionDamage: {fileID: 11400000, guid: bec325c21da096a4a8495606d8fd160a, type: 2}
