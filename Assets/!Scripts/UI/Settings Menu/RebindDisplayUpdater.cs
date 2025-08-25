@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.InputSystem;
 
 public class RebindDisplayUpdater : MonoBehaviour
@@ -13,6 +14,12 @@ public class RebindDisplayUpdater : MonoBehaviour
         if (displayText == null)
         {
             displayText = GetComponent<TMP_Text>();
+
+            if (displayText == null)
+            {
+                Debug.LogError("TMP_Text component not found or assigned.");
+                return;
+            }
         }
 
         if (string.IsNullOrEmpty(actionName) || bindingIndex < 0)
@@ -33,6 +40,12 @@ public class RebindDisplayUpdater : MonoBehaviour
                 InputControlPath.HumanReadableStringOptions.OmitDevice
             );
         }
+        else
+        {
+            Debug.LogWarning("Action not found or bindingIndex out of range.");
+            Debug.LogError($"Action '{actionName}' not found or binding index {bindingIndex} is out of range.");
+            displayText.text = "Not Bound";
+        }
     }
 
     private void OnEnable()
@@ -43,9 +56,9 @@ public class RebindDisplayUpdater : MonoBehaviour
             StartCoroutine(WaitForInputManager());
     }
 
-    private System.Collections.IEnumerator WaitForInputManager()
+    private IEnumerator WaitForInputManager()
     {
-        yield return new WaitUntil(() => InputManager.Instance != null);
+        yield return new WaitUntil(() => InputManager.Instance != null && InputManager.Instance.FindAction(actionName) != null);
         UpdateKeyDisplay();
     }
 }

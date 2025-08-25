@@ -19,6 +19,11 @@ public class PausePanelManager : MonoBehaviour
     [Header("External UI Panels - In Game CheckPoints")]
     [SerializeField] private GameObject inGameCheckPointsPanel;
 
+    [Header("Checkpoint Proximity Control")]
+    [SerializeField] private Transform playerTransform;
+    [SerializeField] private Transform[] checkpointTransform; // Current checkpoint to check distance from
+    [SerializeField] private float checkpointActivationDistance = 2.45f; // Range to consider 'close'
+
     private bool isPaused = false;
 
     private void Awake()
@@ -37,8 +42,8 @@ public class PausePanelManager : MonoBehaviour
         if (keyboardPanel != null)
         {
             keyboardPanel.SetActive(true);
-            gamepadPanel?.SetActive(false);
-            volumePanel?.SetActive(false);
+            if (gamepadPanel != null) gamepadPanel.SetActive(false);
+            if (volumePanel != null) volumePanel.SetActive(false);
         }
     }
 
@@ -49,8 +54,26 @@ public class PausePanelManager : MonoBehaviour
             // Prevent pause toggle if in settings menu or in-game checkpoints panel is active
             if (inGameCheckPointsPanel != null && inGameCheckPointsPanel.activeSelf)
             {
-                Debug.Log("In-Game Checkpoints Panel is active - cannot toggle pause menu disabled.");
-                return;
+                Debug.Log("[Check] Checkpoint Panel is Active");
+
+                if (playerTransform != null && checkpointTransform != null && checkpointTransform.Length > 0)
+                {
+                    foreach (Transform checkpoint in checkpointTransform)
+                    {
+                        float distanceToCheckpoint = Vector3.Distance(playerTransform.position, checkpoint.position);
+                        Debug.Log($"Distance to checkpoint '{checkpoint.name}': {distanceToCheckpoint:F2}");
+
+                        if (distanceToCheckpoint <= checkpointActivationDistance)
+                        {
+                            Debug.Log($"[Blocked] Checkpoint panel active & player within {checkpointActivationDistance} units – pause disabled.");
+                            return; // Exit early if player is near a checkpoint
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("PlayerTransform or CheckpointTransform not assigned properly.");
+                }
             }
             Debug.Log("V key [Detected] pressed - toggling pause menu");
             TogglePause();
@@ -79,10 +102,10 @@ public class PausePanelManager : MonoBehaviour
         settingsMenuUI.SetActive(true); // Show the settings menu UI
 
         // Show keyboard panel by default
-        keyboardPanel?.SetActive(true);
-        gamepadPanel?.SetActive(false);
-        volumePanel?.SetActive(false);
-        volumeBtn?.SetActive(true); // Make sure volume button is visible again
+        if (keyboardPanel != null) keyboardPanel.SetActive(true);
+        if (gamepadPanel != null) gamepadPanel.SetActive(false);
+        if (volumePanel != null) volumePanel.SetActive(false);
+        if (volumeBtn != null) volumeBtn.SetActive(true); // Make sure volume button is visible again
 
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Show the cursor
@@ -128,39 +151,39 @@ public class PausePanelManager : MonoBehaviour
     // Button Handlers for switching panels
     public void OnKeyboardPanelBtnClicked()
     {
-        keyboardPanel?.SetActive(true);
-        gamepadPanel?.SetActive(false);
-        volumePanel?.SetActive(false);
-        volumeBtn?.SetActive(true); 
+        if (keyboardPanel != null) keyboardPanel.SetActive(true);
+        if (gamepadPanel != null) gamepadPanel.SetActive(false);
+        if (volumePanel != null) volumePanel.SetActive(false);
+        if (volumeBtn != null) volumeBtn.SetActive(true);
         Debug.Log("Keyboard Panel Opened");
     }
 
     public void OnGamepadPanelBtnClicked()
     {
-        keyboardPanel?.SetActive(false);
-        gamepadPanel?.SetActive(true);
-        volumePanel?.SetActive(false);
+        if (keyboardPanel != null) keyboardPanel.SetActive(false);
+        if (gamepadPanel != null) gamepadPanel.SetActive(true);
+        if (volumePanel != null) volumePanel.SetActive(false);
         Debug.Log("Gamepad Panel Opened");
     }
 
     public void OnVolumePanelBtnClicked()
     {
-        keyboardPanel?.SetActive(false);
-        gamepadPanel?.SetActive(false);
-        volumePanel?.SetActive(true);
-        volumeBtn?.SetActive(false); // Hide the volume button when volume panel is open
+        if (keyboardPanel != null) keyboardPanel.SetActive(false);
+        if (gamepadPanel != null) gamepadPanel.SetActive(false);
+        if (volumePanel != null) volumePanel.SetActive(true);
+        if (volumeBtn != null) volumeBtn.SetActive(false); // Hide the volume button when volume panel is open
         Debug.Log("Volume Panel Opened");
     }
 
     public void OnBackToPauseMenuUI()
     {
         // Hide all panels and show pause menu UI and return/ show pause menu UI
-        keyboardPanel?.SetActive(false);
-        gamepadPanel?.SetActive(false);
-        volumePanel?.SetActive(false);
-        volumeBtn?.SetActive(true); // Show the volume button again
+        if (keyboardPanel != null) keyboardPanel.SetActive(false);
+        if (gamepadPanel != null) gamepadPanel.SetActive(false);
+        if (volumePanel != null) volumePanel.SetActive(false);
+        if (volumeBtn != null) volumeBtn.SetActive(true); // Show the volume button again
         pauseMenuUI.SetActive(true);
-        settingsMenuUI.SetActive(false); // Hide settings menu UI
+        if (settingsMenuUI != null) settingsMenuUI.SetActive(false); // Hide settings menu UI
         Debug.Log("Back to Pause Menu UI");
     }
 
