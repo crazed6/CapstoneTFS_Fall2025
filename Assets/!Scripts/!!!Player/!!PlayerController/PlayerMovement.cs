@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using DG.Tweening;
+using System.Collections.Generic;
 
 public class CharacterController : MonoBehaviour
 {
@@ -137,11 +138,16 @@ public class CharacterController : MonoBehaviour
     public float dashSpeed;
     private bool isMoving;
     public float enemyExitForce;
+    [SerializeField] private float dashOvershoot = 5f; // How far past the enemy to dash
+    private float dashTimer = 0f;
+    private Collider playerCollider;
+    private PhysicsMaterial originalMaterial;
 
     [SerializeField] private float dashForce = 25f;  // Speed of the dash
     [SerializeField] private float dashDuration = 0.2f;  // Duration of the dash
 
     private bool isDashing = false;  // Flag to check if we're already dashing
+
 
     [Header("Visual")]
     public GameObject playerVisual; // Used to rotate/tilt/move player model without affecting the colliders etc.
@@ -177,6 +183,8 @@ public class CharacterController : MonoBehaviour
     {
         isOnPoleVaultPad = false;
         rb = GetComponent<Rigidbody>();
+        playerCollider = GetComponent<Collider>();
+        originalMaterial = playerCollider.material;
         lastPosition = transform.position;
         wallrunJumpforce = jumpForce * 1.25f;
         pjt = GetComponent<PlayerJavelinThrow>();
@@ -674,37 +682,35 @@ public class CharacterController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad)
         {
-            // Reset vertical velocity
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-
-            // Apply forward force immediately
-            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
-
-            // Start the upward force gradually
-            StartCoroutine(SmoothPoleVault());
-
             // Mark player as airborne
             isGrounded = false;
+
+            // Apply immediate forward impulse
+            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+
+            // Start upward impulse over short time
+            StartCoroutine(SmoothPoleVaultImpulse());
         }
     }
 
-    IEnumerator SmoothPoleVault()
+    IEnumerator SmoothPoleVaultImpulse()
     {
-        float duration = 0.3f; // Duration of upward force
+        float duration = 0.3f;
         float timer = 0f;
 
-        // Disable gravity temporarily if needed
-        rb.useGravity = false;
+        // Keep gravity on for natural arc
+        rb.useGravity = true;
 
         while (timer < duration)
         {
             float t = timer / duration;
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, upForce * (1 - t), rb.linearVelocity.z); // Decrease upward force over time
+
+            // Apply small upward impulses each frame, decaying over time
+            rb.AddForce(Vector3.up * upForce * (1 - t) * Time.deltaTime, ForceMode.VelocityChange);
+
             timer += Time.deltaTime;
             yield return null;
         }
-
-        rb.useGravity = true;
     }
 
     void DashForward()
@@ -743,13 +749,15 @@ public class CharacterController : MonoBehaviour
     }
 
 
+    private HashSet<EnemyDamageComponent> damagedThisDash = new HashSet<EnemyDamageComponent>();
+
     private void CheckEnemyInCrosshair()
     {
-        Vector3 lastSpeed = rb.linearVelocity;
-
-        if (Input.GetMouseButtonDown(0))
+        // Start dash
+        if (Input.GetMouseButtonDown(0) && !isMoving)
         {
-            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange);
+            // Find best target in cone
+            Collider[] hits = Physics.OverlapSphere(transform.position, coneRange, enemyLayer);
 
             Transform bestTarget = null;
             float bestDistance = Mathf.Infinity;
@@ -761,17 +769,13 @@ public class CharacterController : MonoBehaviour
                     Vector3 toTarget = hit.transform.position - transform.position;
                     Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z).normalized;
 
-                    // Horizontal angle (XZ only)
                     float horizontalAngle = Vector3.Angle(transform.forward, toTargetXZ);
-
-                    // Vertical tolerance (absolute Y difference relative to distance)
                     float verticalDifference = Mathf.Abs(toTarget.y);
                     float verticalTolerance = coneRange * 0.75f;
 
                     if (horizontalAngle <= coneAngle * 0.5f && verticalDifference <= verticalTolerance)
                     {
                         float distance = toTarget.magnitude;
-
                         if (distance < bestDistance)
                         {
                             bestDistance = distance;
@@ -783,52 +787,96 @@ public class CharacterController : MonoBehaviour
 
             if (bestTarget != null)
             {
-                Debug.Log("Dashing through enemy: " + bestTarget.name);
-
-                // --- Compute dash-through end point ---
-                Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
-                float dashOvershoot = 5f; // how far past the enemy to go
-                targetPosition = bestTarget.position + dashDirection * dashOvershoot;
+                // Set dash state
                 isMoving = true;
+                isDashing = true;
+                dashTimer = 0f;
+                damagedThisDash.Clear(); // Reset for this dash
 
-                // --- Josh’s damage part ---
-                EnemyDamageComponent dmg = bestTarget.GetComponent<EnemyDamageComponent>();
+                // Compute target
+                Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
+                targetPosition = bestTarget.position + dashDirection * dashOvershoot;
 
-                float speed = rb.linearVelocity.magnitude;
-                float scaledDamage = dashDamageProfile.damageAmount * speed;
-
-                if (dmg != null && dashDamageProfile != null)
+                // Reduce friction temporarily
+                if (playerCollider.material != null)
                 {
-                    DamageData dashDamage = new DamageData
-                    {
-                        source = gameObject,
-                        profile = dashDamageProfile,
-                        customDamage = scaledDamage
-                    };
-                    dmg.TakeDamage2(dashDamage);
+                    PhysicsMaterial dashMat = new PhysicsMaterial();
+                    dashMat.dynamicFriction = 0f;
+                    dashMat.staticFriction = 0f;
+                    dashMat.frictionCombine = PhysicsMaterialCombine.Minimum;
+                    playerCollider.material = dashMat;
                 }
-                else
-                {
-                    Debug.LogWarning("EnemyDamageComponent or DashDamageProfile missing on: " + bestTarget.name);
-                }
+
+                // Reset velocity and apply impulse
+                rb.linearVelocity = Vector3.zero;
+                rb.AddForce(dashDirection * dashSpeed, ForceMode.VelocityChange);
             }
         }
 
+        // Update dash
         if (isMoving)
         {
-            // Dash toward the end point
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+            dashTimer += Time.deltaTime;
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.2f) // reached past enemy
+            // Apply continuous force towards target (physics-based steering)
+            Vector3 toTarget = (targetPosition - transform.position);
+            Vector3 moveDirection = toTarget.normalized;
+
+            // Calculate desired velocity
+            Vector3 desiredVelocity = moveDirection * dashSpeed;
+
+            // Calculate steering force to maintain dash speed and direction
+            Vector3 steeringForce = (desiredVelocity - rb.linearVelocity) * 10f; // Adjust multiplier as needed
+
+            // Apply the steering force
+            rb.AddForce(steeringForce, ForceMode.Force);
+
+            // --- Manual enemy overlap check ---
+            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
+            foreach (var enemy in enemiesHit)
+            {
+                ApplyDashDamage(enemy);
+            }
+
+            // End dash after duration
+            if (dashTimer >= dashDuration)
             {
                 isMoving = false;
+                isDashing = false;
+                dashTimer = 0f;
+                damagedThisDash.Clear(); // Ready for next dash
 
-                // Carry momentum forward
-                Vector3 dashDirection = (targetPosition - transform.position).normalized;
-                rb.linearVelocity = dashDirection * rb.linearVelocity.magnitude * 1.2f;
+                // Restore friction
+                if (playerCollider.material != null)
+                    playerCollider.material = originalMaterial;
+
+                // Keep momentum forward
+                rb.linearVelocity = moveDirection * rb.linearVelocity.magnitude * 1.2f;
             }
         }
     }
+
+    // Helper method to apply damage only once per dash
+    private void ApplyDashDamage(Collider other)
+    {
+        EnemyDamageComponent dmg = other.GetComponentInParent<EnemyDamageComponent>();
+        if (dmg != null && dashDamageProfile != null && !damagedThisDash.Contains(dmg))
+        {
+            float scaledDamage = dashDamageProfile.damageAmount * rb.linearVelocity.magnitude;
+
+            DamageData dashDamage = new DamageData
+            {
+                source = gameObject,
+                profile = dashDamageProfile,
+                customDamage = scaledDamage
+            };
+
+            dmg.TakeDamage2(dashDamage);
+            damagedThisDash.Add(dmg); // Prevent multiple hits
+            Debug.Log("Dash hit enemy: " + other.name);
+        }
+    }
+
 
 
 
@@ -905,6 +953,41 @@ public class CharacterController : MonoBehaviour
         }
 
 
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+
+        Debug.Log("Triggered with: " + other.name);
+
+        if (isMoving && other.CompareTag("enemy"))
+        {
+            Debug.Log("Hit enemy trigger: " + other.name);
+        }
+        if (isMoving && other.CompareTag("enemy"))
+        {
+            // Look for damage component on this object or its parent
+            EnemyDamageComponent dmg = other.GetComponentInParent<EnemyDamageComponent>();
+            if (dmg != null && dashDamageProfile != null)
+            {
+                float speed = rb.linearVelocity.magnitude;
+                float scaledDamage = dashDamageProfile.damageAmount * speed;
+
+                DamageData dashDamage = new DamageData
+                {
+                    source = gameObject,
+                    profile = dashDamageProfile,
+                    customDamage = scaledDamage
+                };
+
+                dmg.TakeDamage2(dashDamage);
+                Debug.Log("Dash hit enemy and applied " + scaledDamage + " damage to: " + other.name);
+            }
+            else
+            {
+                Debug.LogWarning("EnemyDamageComponent missing on " + other.name);
+            }
+        }
     }
 
 }
