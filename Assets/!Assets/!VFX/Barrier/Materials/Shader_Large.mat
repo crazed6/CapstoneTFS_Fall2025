@@ -26,6 +26,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _Albedo:
+        m_Texture: {fileID: 2800000, guid: fa61f196e0181f141a33e3d2832eaacf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BaseColor:
         m_Texture: {fileID: 2800000, guid: dffb0421a44ed5b45bd3995f5d87575f, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -62,12 +66,13 @@ Material:
     - _DissolveScale: 40
     - _DissolveWidth: 0.05
     - _DstBlend: 0
+    - _EmissiveStrength: 1
     - _Metallic: 0
     - _NormalStrength: 0.5
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Smoothness: 0.5
+    - _Smoothness: 0
     - _SrcBlend: 1
     - _Surface: 0
     - _WorkflowMode: 1
@@ -76,8 +81,9 @@ Material:
     - _ZWriteControl: 0
     m_Colors:
     - _BaseAdjust: {r: 2, g: 2, b: 2, a: 1}
+    - _BaseColor: {r: 2, g: 2, b: 2, a: 1}
     - _DissolveColor: {r: 0.1799881, g: 0, b: 1.360269, a: 0}
-    - _EmissiveAdjust: {r: 128, g: 128, b: 128, a: 0}
+    - _EmissiveAdjust: {r: 170.89003, g: 170.89003, b: 170.89003, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &5676206681151018208
