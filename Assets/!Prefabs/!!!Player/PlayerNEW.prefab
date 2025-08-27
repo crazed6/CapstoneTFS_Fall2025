@@ -25,7 +25,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 629633697216102284}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.018090809, y: -0.07457058, z: -0.004069877, w: 0.9970433}
+  m_LocalRotation: {x: 0.018090796, y: -0.07457014, z: -0.0040698545, w: 0.9970434}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -409,7 +409,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -824,7 +824,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3904535402347047826}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000016431079, y: -0.07448449, z: -0.00542203, w: 0.99720746}
+  m_LocalRotation: {x: -0.000000005292431, y: -0.07448403, z: -0.005421995, w: 0.9972075}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1141,10 +1141,15 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  wallRunLookAwayAngle: 20
+  wallRunCamRotationSpeed: 8
+  wallRunSideJumpFactor: 1.5
+  wallRunUpwardBoost: 1.5
   fallWhileWallRunning: 0
   keepWallRunningSpeedThreshold: 20
   playerCameraZRotator: {fileID: 2958926970785626954}
   wallrunJumpSpeedBoost: 1.2
+  wallrunStartSpeedBoost: 1.2
   wallrunJumpforce: 20
   ledgeDetectDistance: 1
   ledgeCheckHeight: 1.5
@@ -1156,12 +1161,14 @@ MonoBehaviour:
     m_Bits: 0
   upForce: 60
   forwardForce: 40
+  isOnPoleVaultPad: 0
   displacement: {x: 0, y: 0, z: 0}
   playerCamera: {fileID: 2210516106603341894}
   playercam: {fileID: 7648052900323614605}
   maxDistance: 50
   dashSpeed: 500
   enemyExitForce: 1.2
+  dashOvershoot: 5
   dashForce: 25
   dashDuration: 0.2
   playerVisual: {fileID: 2189780166438479276}
@@ -1232,6 +1239,7 @@ MonoBehaviour:
   useManualCheckpoint: 0
   initialCheckpointPosition: {x: 0, y: 0, z: 0}
   initialCheckpointObject: {fileID: 0}
+  player: {fileID: 0}
 --- !u!1 &4116722902510824059
 GameObject:
   m_ObjectHideFlags: 3
@@ -1257,7 +1265,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4116722902510824059}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.036223467, y: -0.07463228, z: -0.0027128074, w: 0.9965493}
+  m_LocalRotation: {x: 0.036223516, y: -0.074631825, z: -0.0027127883, w: 0.99654937}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
