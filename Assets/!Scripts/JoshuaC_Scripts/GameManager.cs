@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public PlayerSave PlayerSave { get; private set; }
+    public PlayerSave PlayerSave;
     //public CollectibleManager CollectibleManager { get; set; }
 
 
@@ -39,12 +39,15 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded; //Used to subscribe to Scene Loaded Event
+            TryGetComponent<PlayerSave>(out PlayerSave);
+            //SceneManager.sceneLoaded += OnSceneLoaded; //Used to subscribe to Scene Loaded Event
         }
         else
         {
             Destroy(gameObject);
         }
+        
+
     }
 
     private void Update()
@@ -62,19 +65,19 @@ public class GameManager : MonoBehaviour
         //}
     }
 
-    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene BuildTesting, UnityEngine.SceneManagement.LoadSceneMode mode)
-    {
-        PlayerSave = Object.FindFirstObjectByType<PlayerSave>();
+    //private void OnSceneLoaded(UnityEngine.SceneManagement.Scene BuildTesting, UnityEngine.SceneManagement.LoadSceneMode mode)
+    //{
+    //    PlayerSave = Object.FindFirstObjectByType<PlayerSave>();
 
-        if (PlayerSave == null)
-        {
-            Debug.LogWarning("PlayerSave not found in this scene.");
-        }
-        else
-        {
-            Debug.Log("PlayerSave assigned successfully!");
-        }
-    }
+    //    if (PlayerSave == null)
+    //    {
+    //        Debug.LogWarning("PlayerSave not found in this scene.");
+    //    }
+    //    else
+    //    {
+    //        Debug.Log("PlayerSave assigned successfully!");
+    //    }
+    //}
 
     public void StartNew()
     {
