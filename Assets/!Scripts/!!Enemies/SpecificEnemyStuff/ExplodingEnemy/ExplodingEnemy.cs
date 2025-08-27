@@ -17,7 +17,7 @@ public class ExplodingEnemy : MonoBehaviour
     public float innerDamage = 50f;
     public float middleDamage = 30f;
     public float outerDamage = 15f;
-    public GameObject explosionPrefab;
+    public ParticleSystem explosionEffect;
     public LayerMask damageableLayer; // Layer mask to filter damageable objects
 
     [Header("Explosion Timer Settings")]
@@ -168,18 +168,8 @@ public class ExplodingEnemy : MonoBehaviour
         HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
         ApplySingleExplosionDamage(origin, alreadyDamaged);
 
-        if (explosionPrefab != null)
-        {
-            GameObject explosionInstance = Instantiate(explosionPrefab, origin, Quaternion.identity);
-
-            // Optional: auto-destroy once all particles are done
-            float maxDuration = 0f;
-            foreach (var ps in explosionInstance.GetComponentsInChildren<ParticleSystem>())
-            {
-                maxDuration = Mathf.Max(maxDuration, ps.main.duration + ps.main.startLifetime.constantMax);
-            }
-            Destroy(explosionInstance, maxDuration);
-        }
+        if (explosionEffect != null)
+            Instantiate(explosionEffect, origin, Quaternion.identity);
 
         Destroy(gameObject);
     }
