@@ -104,11 +104,15 @@ public class EnemyDamageComponent : MonoBehaviour
         // if (anim != null) anim.SetTrigger("Die");
 
         // Kaylani's addition : Change the material color to red when the enemy dies
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (Renderer rend in renderers)
-        {
-            rend.material.color = Color.red;
-        }
+        //Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        //foreach (Renderer rend in renderers)
+        //{
+        //    rend.material.color = Color.red;
+        //}
+        // Aiden's swap from kaylani's red -> actual death
+        EnemyVFXController vfx = GetComponent<EnemyVFXController>();
+        if (vfx != null)
+            vfx.PlayDeathVFX();
 
         if (healthBar != null)
             healthBar.gameObject.SetActive(false);
@@ -130,6 +134,7 @@ public class EnemyDamageComponent : MonoBehaviour
         Destroy(gameObject, 2.0f);
         OnDeath?.Invoke();
     }
+
 
 
     private void UpdateHealthUI()
