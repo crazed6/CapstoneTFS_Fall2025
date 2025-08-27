@@ -5,6 +5,7 @@ public class ProjectileScript : MonoBehaviour
     public float speed = 25f;
     public float lifeTime = 5f;
     public int damage = 1;
+    public static event System.Action<ProjectileScript, Collider> OnAnyProjectileHit;
 
     private Vector3 direction;
 
@@ -37,6 +38,8 @@ public class ProjectileScript : MonoBehaviour
                 DamageData damageData = new DamageData(gameObject, WorkerProjectile);
                 playerHealth.PlayerTakeDamage(damageData);
             }
+            OnAnyProjectileHit?.Invoke(this, other);
+
             Destroy(gameObject);
         }
         else if (!other.isTrigger)

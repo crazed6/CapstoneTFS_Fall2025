@@ -23,6 +23,9 @@ public class EnemyDamageComponent : MonoBehaviour
     //public string hurtTrigger = "TakeDamage";
     //public string dieTrigger = "Die";
 
+    public event Action OnDamaged; // Raised when the enemy takes damage (Diego hook, hi)
+    public event Action OnDied;    // Raised when the enemy dies (Diego hook, hi)
+
 
     private void Update()
     {
@@ -72,6 +75,8 @@ public class EnemyDamageComponent : MonoBehaviour
         //trigger damage animation
         //if (anim != null) anim.SetTrigger("TakeDamage");
 
+        OnDamaged?.Invoke(); //notify damage sound
+
         UpdateHealthUI();
 
         if (currentHealth <= 0)
@@ -99,11 +104,15 @@ public class EnemyDamageComponent : MonoBehaviour
         // if (anim != null) anim.SetTrigger("Die");
 
         // Kaylani's addition : Change the material color to red when the enemy dies
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        foreach (Renderer rend in renderers)
-        {
-            rend.material.color = Color.red;
-        }
+        //Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        //foreach (Renderer rend in renderers)
+        //{
+        //    rend.material.color = Color.red;
+        //}
+        // Aiden's swap from kaylani's red -> actual death
+        EnemyVFXController vfx = GetComponent<EnemyVFXController>();
+        if (vfx != null)
+            vfx.PlayDeathVFX();
 
         if (healthBar != null)
             healthBar.gameObject.SetActive(false);
@@ -118,10 +127,14 @@ public class EnemyDamageComponent : MonoBehaviour
         if (agent != null)
             agent.isStopped = true;
 
+        OnDied?.Invoke(); //notify death for sound
+
+
         // Cleanup logic - destroy after delay (allows color/animation to play)
         Destroy(gameObject, 2.0f);
         OnDeath?.Invoke();
     }
+
 
 
     private void UpdateHealthUI()

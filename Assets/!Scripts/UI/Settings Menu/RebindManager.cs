@@ -44,8 +44,11 @@ public static class RebindManager
                 {
                     Debug.LogWarning($"Key {newPath} is already in use.");
                     action.RemoveBindingOverride(bindingIndx); // Revert
-                    displayTxt.color = Color.red;
-                    displayTxt.text = "Key already in use!";
+                    if (displayTxt != null)
+                    {
+                        displayTxt.color = Color.red;
+                        displayTxt.text = "Key already in use!";
+                    }
                     action.Enable();
                     return;
                 }
@@ -55,23 +58,11 @@ public static class RebindManager
                 UsedKeyRegistry.AddUsedKey(newPath);
 
                 action.Enable();
+                if (displayTxt != null)
+                { 
                 displayTxt.color = Color.white;
-                displayTxt.text = InputControlPath.ToHumanReadableString(
-                    newPath,
-                    InputControlPath.HumanReadableStringOptions.OmitDevice
-                );
-
-                // Re-enable the action
-                // action.Enable();
-
-                //if (displayTxt != null)
-                // {
-                //     displayTxt.text = InputControlPath.ToHumanReadableString(
-                //     action.bindings[bindingIndx].effectivePath,
-                //     InputControlPath.HumanReadableStringOptions.OmitDevice
-                //   );
-                // }
-
+                displayTxt.text = InputControlPath.ToHumanReadableString(newPath, InputControlPath.HumanReadableStringOptions.OmitDevice);
+                }
                 InputManager.Instance.SaveRebinds();
                 UsedKeyRegistry.RefreshUsedKeys(); // Update all other UIs
                 onComplete?.Invoke();
@@ -81,6 +72,12 @@ public static class RebindManager
 
     public static void PrintAllBindingIndexes()
     {
+        if (InputManager.Instance == null)
+        {
+            Debug.LogWarning("[RebindManager] InputManager.Instance is null, cannot print bindings.");
+            return;
+        }
+
         var asset = InputManager.Instance.GetAsset();
 
         foreach (var actionMap in asset.actionMaps)
