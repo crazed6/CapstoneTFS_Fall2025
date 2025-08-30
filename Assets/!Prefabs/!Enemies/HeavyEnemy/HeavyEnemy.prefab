@@ -219,6 +219,8 @@ GameObject:
   - component: {fileID: 3488501994566730523}
   - component: {fileID: 6825079313609789028}
   - component: {fileID: 9139702396020319951}
+  - component: {fileID: 9134032275042068629}
+  - component: {fileID: 4426722622125975946}
   m_Layer: 8
   m_Name: HeavyEnemy
   m_TagString: enemy
@@ -343,10 +345,10 @@ MonoBehaviour:
   slamHitDelay: 0.15
   isSlamming: 0
   slamOnCooldown: 0
-  dashDetectionCollider: {fileID: 0}
+  dashDetectionCollider: {fileID: 4426722622125975946}
   playerLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8
   dashAttackEffect: {fileID: 0}
   cantDashAttack: 0
   GroundSlam: {fileID: 11400000, guid: 8ec53be9547db32429f271c976f28fbb, type: 2}
@@ -487,6 +489,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5cb70e3db50f0f4419b272672dd18f22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!64 &9134032275042068629
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5626978083835023484}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
+--- !u!135 &4426722622125975946
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5626978083835023484}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 70
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7917244218112485725
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,6 +724,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 365727784976138829}
     m_Modifications:
+    - target: {fileID: 36122727918389967, guid: 9f96bba8a06537842a58fe5c60c16a01, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.5131874
+      objectReference: {fileID: 0}
     - target: {fileID: 8389107255964452791, guid: 9f96bba8a06537842a58fe5c60c16a01, type: 3}
       propertyPath: m_Name
       value: Large_low
