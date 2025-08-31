@@ -1,75 +1,79 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class PlayerAudio : MonoBehaviour
 {
-    [Header("Run / Footsteps")]
-    public string runStepId = "RunF";   // CSV key for footsteps
-    public float baseStepInterval = 0.40f;
-    public float minStepInterval = 0.20f;
-    public float speedForMinInterval = 20f;
+    private CharacterController player;
+    private AudioSource audioSource;
 
-    private bool runLoopActive = false;
-    private Coroutine runLoopRoutine;
-
-    // One-shot hooks
-    public void PlayLandSFX() => AudioManager.instance.PlaySFX("Land");
-    public void PlaySlideSFX() => AudioManager.instance.PlaySFX("Slide");
-    public void PlayDashSFX() => AudioManager.instance.PlaySFX("Dash");
-    public void PlayPoleVaultSFX() => AudioManager.instance.PlaySFX("PoleVault");
-
-    // Called from CharacterController.Move()
-    public void StartRunLoop()
+    [System.Serializable]
+    public class PlayerSound
     {
-        if (runLoopActive) return;
-        runLoopActive = true;
-        runLoopRoutine = StartCoroutine(RunLoop());
+        public string clipKey;   // The AudioManager key
+        [Range(0f, 2f)] public float volume = 1f; // Inspector volume multiplier
     }
 
-    public void StopRunLoop()
+    [Header("Player Sounds")]
+    public PlayerSound landSound;
+    public PlayerSound slideSound;
+    public PlayerSound poleVaultSound;
+    public PlayerSound dashSound;
+
+    private bool wasGroundedLastFrame = true;
+
+    void Awake()
     {
-        if (!runLoopActive) return;
-        runLoopActive = false;
-        if (runLoopRoutine != null)
+        player = GetComponent<CharacterController>();
+        audioSource = GetComponent<AudioSource>();
+        audioSource.spatialBlend = 0.6f; // 3D positional audio
+        audioSource.playOnAwake = false;
+    }
+
+    void Update()
+    {
+        HandleLanding();
+    }
+
+    private void HandleLanding()
+    {
+        if (player == null) return;
+
+        // Detect transition from not grounded → grounded
+        if (!wasGroundedLastFrame && player.IsGrounded)
         {
-            StopCoroutine(runLoopRoutine);
-            runLoopRoutine = null;
+            PlayOneShot(landSound);
         }
+
+        wasGroundedLastFrame = player.IsGrounded;
     }
 
-    private IEnumerator RunLoop()
+    public void PlaySlide()
     {
-        CharacterController ctrl = GetComponent<CharacterController>();
+        PlayOneShot(slideSound);
+    }
 
-        while (runLoopActive)
+    public void PlayPoleVault()
+    {
+        PlayOneShot(poleVaultSound);
+    }
+
+    public void PlayDash()
+    {
+        PlayOneShot(dashSound);
+    }
+
+    private void PlayOneShot(PlayerSound sound)
+    {
+        if (sound == null || string.IsNullOrEmpty(sound.clipKey) || AudioManager.instance == null) return;
+
+        AudioClip clip = AudioManager.instance.GetClipByName(sound.clipKey);
+        if (clip != null)
         {
-            if (ctrl == null)
-            {
-                yield return null;
-                continue;
-            }
-
-            // Horizontal speed
-            Vector3 hv = ctrl.displacement;
-            hv.y = 0f;
-            float speed = hv.magnitude;
-
-            // Only play footsteps if moving and grounded
-            if (speed > 0.1f && ctrl.IsGrounded)
-            {
-                // Faster movement → shorter interval
-                float t = Mathf.InverseLerp(0f, speedForMinInterval, speed);
-                float stepInterval = Mathf.Lerp(baseStepInterval, minStepInterval, t);
-
-                AudioManager.instance.PlaySFX(runStepId);
-
-                yield return new WaitForSeconds(stepInterval);
-            }
-            else
-            {
-                // Not moving or not grounded → wait a short time before checking again
-                yield return null;
-            }
+            audioSource.PlayOneShot(clip, sound.volume);
+        }
+        else
+        {
+            Debug.LogWarning($"[PlayerAudio] Missing clip: {sound.clipKey}");
         }
     }
 }
