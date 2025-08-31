@@ -18,7 +18,7 @@ public class ExplodingEnemy : MonoBehaviour
     public float middleDamage = 30f;
     public float outerDamage = 15f;
     public GameObject explosionPrefab;
-    public LayerMask damageableLayer;
+    public LayerMask damageableLayer; // Layer mask to filter damageable objects
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
@@ -29,11 +29,8 @@ public class ExplodingEnemy : MonoBehaviour
     public float knockbackForceY = 10f;
 
     [Header("Bobbing Settings")]
-    public float bobAmplitude = 0.1f;
-    public float bobFrequency = 4f;
-
-    [Header("⚡ Particle Effect Settings")]
-    public ParticleSystem countdownEffect; // assign your particle prefab in Inspector
+    public float bobAmplitude = 0.1f; // How high the bobbing goes
+    public float bobFrequency = 4f;   // How fast it bobs
 
     private float bobTimer = 0f;
     private float baseYPos;
@@ -43,7 +40,7 @@ public class ExplodingEnemy : MonoBehaviour
     private int currentPointIndex = 0;
     private bool hasExploded = false;
 
-    public bool TimerStarted { get { return timerStarted; } }
+    public bool TimerStarted { get { return timerStarted; }  }
     private bool timerStarted = false;
     public float explosionTimer = 0f;
 
@@ -75,10 +72,8 @@ public class ExplodingEnemy : MonoBehaviour
             agent.SetDestination(patrolPoints[0].position);
         }
 
+        // Store original Y position for bobbing
         baseYPos = transform.position.y;
-
-        // make sure particle is off at start
-        if (countdownEffect != null) countdownEffect.Stop();
     }
 
     void Update()
@@ -101,14 +96,7 @@ public class ExplodingEnemy : MonoBehaviour
 
         if (timerStarted)
         {
-            explosionTimer -= Time.deltaTime * (distanceToPlayer < middleRadius ? middleRadiusTimeReduction : 1);
-
-            // start particle if not already playing
-            if (countdownEffect != null && !countdownEffect.isPlaying)
-            {
-                countdownEffect.Play();
-            }
-
+            explosionTimer -= Time.deltaTime * (distanceToPlayer < middleRadius ? middleRadiusTimeReduction : 1); // Speed up timer if inside middle radius
             if (explosionTimer <= 0f)
             {
                 Explode();
@@ -118,15 +106,19 @@ public class ExplodingEnemy : MonoBehaviour
         // 🌀 Bobbing effect only if moving
         if (agent.velocity.magnitude > 0.1f)
         {
-            bobTimer += Time.deltaTime * bobFrequency;
+            bobTimer += Time.deltaTime * bobFrequency; // increase timer based on frequency
             Vector3 pos = transform.position;
 
+            // Y bob (up/down)
             pos.y = baseYPos + Mathf.Sin(bobTimer) * bobAmplitude;
-            pos.x += Mathf.Sin(bobTimer) * (bobAmplitude * 0.2f);
+
+            // X sway (side-to-side) with smaller amplitude
+            pos.x += Mathf.Sin(bobTimer) * (bobAmplitude * 0.2f); // 20% of Y's amplitude
 
             transform.position = pos;
         }
     }
+
 
     void Patrol()
     {
@@ -143,11 +135,13 @@ public class ExplodingEnemy : MonoBehaviour
 
     void HandleRadiusExplosion(float distance)
     {
+        // 💥 Immediate explosion if inside inner radius
         if (distance <= innerRadius)
         {
             explosionTimer = 0f;
         }
 
+        // 🔒 Start explosion timer permanently when player enters outer radius
         if (!timerStarted && distance <= outerRadius)
         {
             explosionTimer = outerRadiusTimerStart;
@@ -155,6 +149,7 @@ public class ExplodingEnemy : MonoBehaviour
         }
     }
 
+    //Javilin exploding and it works YAY
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Javilin") && !hasExploded)
@@ -168,11 +163,10 @@ public class ExplodingEnemy : MonoBehaviour
         if (hasExploded) return;
         hasExploded = true;
 
-        // 🔴 stop countdown effect immediately on explosion
-        if (countdownEffect != null && countdownEffect.isPlaying)
-            countdownEffect.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+        GetComponent<ExploderAudio>()?.PlayExplosion(); //audio hook
 
         Vector3 origin = transform.position;
+
         HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
         ApplySingleExplosionDamage(origin, alreadyDamaged);
 
@@ -180,6 +174,7 @@ public class ExplodingEnemy : MonoBehaviour
         {
             GameObject explosionInstance = Instantiate(explosionPrefab, origin, Quaternion.identity);
 
+            // Optional: auto-destroy once all particles are done
             float maxDuration = 0f;
             foreach (var ps in explosionInstance.GetComponentsInChildren<ParticleSystem>())
             {
@@ -191,8 +186,10 @@ public class ExplodingEnemy : MonoBehaviour
         Destroy(gameObject);
     }
 
-    void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged)
+
+    void ApplySingleExplosionDamage(Vector3 position, HashSet<Collider> alreadyDamaged) // Applies single damage and knockback loop
     {
+        //Declared variables before for each so it dosnt die after the for each loop
         float distance = 0f;
         float damageToApply = 0f;
         Vector3 hitPosition = Vector3.zero;
@@ -201,6 +198,8 @@ public class ExplodingEnemy : MonoBehaviour
         DamageProfile selectedProfile = null;
 
         Collider[] hits = Physics.OverlapSphere(position, outerRadius, damageableLayer);
+        /* checks the over lap sphere compare to the outer radius, and check how man collider are in the overlap, 
+            then checks the damage and knockback variable for one collider relating to it */
         foreach (Collider hit in hits)
         {
             if (alreadyDamaged.Contains(hit)) continue;
@@ -227,27 +226,32 @@ public class ExplodingEnemy : MonoBehaviour
 
             hitPosition = hit.transform.position;
             targetRb = hit.attachedRigidbody;
-            hitCollider = hit;
+            hitCollider = hit; // Store the hit enemy collider for later use
         }
 
+        //Vector3 knockbackDir = (hitPosition - position).normalized;
         float distanceFactor = 1f - Mathf.Clamp01(distance / outerRadius);
         Debug.Log($"distance factor is {distanceFactor}");
 
+        // Knockback
         if (hitCollider != null)
         {
+            // Ritwik's KnockbackReceiver component
             KnockbackReceiver kb = hitCollider.GetComponent<KnockbackReceiver>();
             if (kb != null)
             {
                 KnockbackData kbData = new KnockbackData(
                     source: transform.position,
-                    force: knockbackForceX,
+                    force: knockbackForceX, // Adjust force based on distance
                     duration: 1f,
                     upwardForce: knockbackForceY,
                     overrideVel: true
                 );
+
                 kb.ApplyKnockback(kbData);
             }
 
+            // Joshua 's Health component
             if (hitCollider.CompareTag("Player"))
             {
                 Health playerHealth = hitCollider.GetComponent<Health>();
@@ -276,4 +280,11 @@ public class ExplodingEnemy : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, outerRadius);
     }
+
+    public float GetPlayerDistance() //audio helper method
+    {
+        if (player == null) return Mathf.Infinity;
+        return Vector3.Distance(transform.position, player.position);
+    }
+
 }

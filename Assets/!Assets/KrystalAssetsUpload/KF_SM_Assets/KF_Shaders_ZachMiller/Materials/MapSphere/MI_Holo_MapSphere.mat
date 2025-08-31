@@ -25,11 +25,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Scanlines:
-        m_Texture: {fileID: 2800000, guid: 6b0f5719c6bb7bc48800122ee67cbab4, type: 3}
+        m_Texture: {fileID: 2800000, guid: dda4fcc6b5cae1a488b0400b4332e7e7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Texture:
-        m_Texture: {fileID: 2800000, guid: ea94e5746ed2423498504398498e7401, type: 3}
+        m_Texture: {fileID: 2800000, guid: f32207eaec707524390ee26deffa56ce, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -47,8 +47,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha_intensity: 1
-    - _Breath_spped: 1
+    - _Breath_spped: 0
     - _DegreesPerSecond: 55
+    - _Emissive_Stregnth: 0
+    - _Flicker_speed: 0
     - _Frensel_Power: 2
     - _Metallic: 0
     - _Move_speed: 1
@@ -58,16 +60,24 @@ Material:
     - _Smotthness: 0
     - _Vertex_offSet: 1
     m_Colors:
+    - _Back_Color: {r: 0, g: 0, b: 0, a: 0}
     - _BreatheColor: {r: 0, g: 0, b: 0, a: 0}
+    - _BreatheColor_Seconday_Color: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DO_NOT_TOUCH: {r: 0, g: 0, b: 0, a: 0}
     - _FlickerColor: {r: 1, g: 1, b: 1, a: 0}
     - _FlickerTiling: {r: 0, g: 0, b: 0, a: 0}
     - _Flicker_Speed: {r: 1, g: 1, b: 0, a: 0}
-    - _Mat_Color: {r: 0, g: 0, b: 0, a: 0}
+    - _Mat_Color: {r: 0, g: 1, b: 0.06542063, a: 0}
+    - _Mat_Color2: {r: 0.341719, g: 0.02614832, b: 0.02614832, a: 0}
+    - _Mat_Color3: {r: 0.6394129, g: 0.4610911, b: 0, a: 1}
+    - _Mat_Color_1: {r: 0.4884695, g: 0.3344443, b: 0, a: 0}
     - _Move_axis: {r: 0, g: -0.12, b: 0, a: 0}
+    - _Primary_Color: {r: 0, g: 1, b: 0.40782142, a: 0}
     - _Rotation_axis: {r: 0, g: 1, b: 0, a: 0}
     - _ScanLine_Tiling: {r: 2, g: 2, b: 0, a: 0}
     - _ScanlineColor: {r: 1, g: 1, b: 1, a: 0}
+    - _ScanlineSpeed: {r: 1, g: 1, b: 0, a: 0}
     - _ScanlineSpped: {r: 1, g: 1, b: 0, a: 0}
     - _Scanline_Offset: {r: 0, g: 0, b: 0, a: 0}
     - _UVTilling: {r: 1, g: 1, b: 0, a: 0}

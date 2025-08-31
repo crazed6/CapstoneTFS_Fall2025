@@ -49,6 +49,7 @@ GameObject:
   - component: {fileID: 4499357826501556569}
   - component: {fileID: 1949924324059314012}
   - component: {fileID: 7859198709452178594}
+  - component: {fileID: 3027228875975287844}
   m_Layer: 0
   m_Name: ExplodingEnemyFixed
   m_TagString: enemy
@@ -161,7 +162,7 @@ AudioSource:
   m_GameObject: {fileID: 7050838999477027297}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 5699618269089690898, guid: 4571f64207a9c5343b5b27d1cf2721d0, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
@@ -209,7 +210,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.636
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -346,6 +347,24 @@ MonoBehaviour:
   minDistanceFromCenter: 0.2
   spinCenter: {fileID: 8578765142923340463}
   explodingEnemy: {fileID: 1949924324059314012}
+--- !u!114 &3027228875975287844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050838999477027297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68d23e0d2a2ef7442a9e437c97b41a88, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  idleClip: IdleHum
+  idleVolume: 0.8
+  detectClip: ExploderBeep
+  detectVolume: 1.14
+  explosionClip: ExploderExplosion
+  explosionVolume: 1.27
 --- !u!1001 &8542986625732888528
 PrefabInstance:
   m_ObjectHideFlags: 0

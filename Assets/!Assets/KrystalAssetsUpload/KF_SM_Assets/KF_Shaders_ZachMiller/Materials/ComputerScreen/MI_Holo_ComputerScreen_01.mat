@@ -25,11 +25,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _Scanlines:
-        m_Texture: {fileID: 2800000, guid: 6b0f5719c6bb7bc48800122ee67cbab4, type: 3}
+        m_Texture: {fileID: 2800000, guid: dda4fcc6b5cae1a488b0400b4332e7e7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Texture:
-        m_Texture: {fileID: 2800000, guid: 029d0d3331d35c24ba5551c92185a8a2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 2898e480919e2744aa8305f5043ee5a3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -47,8 +47,10 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha_intensity: 1
-    - _Breath_spped: 1
+    - _Breath_spped: 0
     - _DegreesPerSecond: 0
+    - _Emissive_Stregnth: 0
+    - _Flicker_speed: 1
     - _Frensel_Power: 2
     - _Metallic: 0
     - _Move_speed: 0
@@ -58,16 +60,21 @@ Material:
     - _Smotthness: 0
     - _Vertex_offSet: 1
     m_Colors:
-    - _BreatheColor: {r: 0, g: 0, b: 0, a: 0}
+    - _Back_Color: {r: 0, g: 0.5052411, b: 0.44208595, a: 0}
+    - _BreatheColor: {r: 1, g: 0.13084112, b: 0, a: 0}
+    - _BreatheColor_Seconday_Color: {r: 0, g: 1, b: 0.43420768, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DO_NOT_TOUCH: {r: 0, g: 0, b: 0, a: 0}
     - _FlickerColor: {r: 1, g: 1, b: 1, a: 0}
     - _FlickerTiling: {r: 0, g: 0, b: 0, a: 0}
     - _Flicker_Speed: {r: 1, g: 1, b: 0, a: 0}
-    - _Mat_Color: {r: 0, g: 0, b: 0, a: 0}
+    - _Mat_Color: {r: 0, g: 1, b: 0.39896607, a: 0}
     - _Move_axis: {r: 0, g: 1, b: 0, a: 0}
+    - _Primary_Color: {r: 1, g: 1, b: 1, a: 0}
     - _Rotation_axis: {r: 0, g: 1, b: 0, a: 0}
     - _ScanLine_Tiling: {r: 1, g: 1, b: 0, a: 0}
     - _ScanlineColor: {r: 1, g: 1, b: 1, a: 0}
+    - _ScanlineSpeed: {r: 1, g: 1, b: 0, a: 0}
     - _ScanlineSpped: {r: 1, g: 1, b: 0, a: 0}
     - _Scanline_Offset: {r: 0, g: 0, b: 0, a: 0}
     - _UVTilling: {r: 1, g: 1, b: 0, a: 0}

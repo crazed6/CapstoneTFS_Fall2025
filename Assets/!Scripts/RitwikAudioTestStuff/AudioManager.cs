@@ -1,6 +1,7 @@
-using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
+using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
@@ -62,6 +63,18 @@ public class AudioManager : MonoBehaviour
             AudioSource source = audioObject.AddComponent<AudioSource>();
             source.clip = clip;
 
+            // ✅ Force 3D settings only for SFX
+            if (type.ToUpper() == "SFX")
+            {
+                source.spatialBlend = 1f;   // 3D audio
+                source.minDistance = 1f;    // full volume up close
+                source.maxDistance = 20f;   // fade out after 20 units
+            }
+            else
+            {
+                source.spatialBlend = 0f;   // BGM & VOICE stay 2D
+            }
+
             switch (type.ToUpper())
             {
                 case "SFX": sfx[id] = source; break;
@@ -90,6 +103,7 @@ public class AudioManager : MonoBehaviour
             source.Stop();
     }
 
+
     public void PlayBGM(string id)
     {
         if (currentBGM == id) return;
@@ -98,6 +112,7 @@ public class AudioManager : MonoBehaviour
         if (bgm.TryGetValue(id, out var source))
         {
             source.loop = true;
+            source.spatialBlend = 0f; // always 2D
             source.Play();
             currentBGM = id;
         }
@@ -120,7 +135,10 @@ public class AudioManager : MonoBehaviour
         StopAllVoice();
 
         if (voice.TryGetValue(id, out var source))
+        {
+            source.spatialBlend = 0f; // keep VOICE 2D
             source.Play();
+        }
         else
             Debug.LogWarning($"Voice '{id}' not found.");
     }
@@ -139,4 +157,21 @@ public class AudioManager : MonoBehaviour
                 voiceSource.Stop();
         }
     }
+
+    public AudioClip GetClipByName(string id)
+    {
+        if (sfx.TryGetValue(id, out var sfxSource))
+            return sfxSource.clip;
+
+        if (bgm.TryGetValue(id, out var bgmSource))
+            return bgmSource.clip;
+
+        if (voice.TryGetValue(id, out var voiceSource))
+            return voiceSource.clip;
+
+        Debug.LogWarning($"Audio clip with id '{id}' not found in any dictionary.");
+        return null;
+    }
+
+
 }
