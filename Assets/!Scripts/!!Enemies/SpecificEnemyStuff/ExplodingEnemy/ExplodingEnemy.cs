@@ -163,6 +163,8 @@ public class ExplodingEnemy : MonoBehaviour
         if (hasExploded) return;
         hasExploded = true;
 
+        GetComponent<ExploderAudio>()?.PlayExplosion(); //audio hook
+
         Vector3 origin = transform.position;
 
         HashSet<Collider> alreadyDamaged = new HashSet<Collider>();
@@ -278,4 +280,11 @@ public class ExplodingEnemy : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, outerRadius);
     }
+
+    public float GetPlayerDistance() //audio helper method
+    {
+        if (player == null) return Mathf.Infinity;
+        return Vector3.Distance(transform.position, player.position);
+    }
+
 }

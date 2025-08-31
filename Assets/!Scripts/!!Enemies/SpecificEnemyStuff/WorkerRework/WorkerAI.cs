@@ -71,25 +71,24 @@ public class WorkerAI : MonoBehaviour
 
     void ShootProjectile(Vector3 direction)
     {
-        // Create rotation so projectile faces its shoot direction
         Quaternion rotation = Quaternion.LookRotation(direction);
-
-        // Add 90° tilt on the X axis
         rotation *= Quaternion.Euler(90f, 0f, 90f);
 
-        // Spawn projectile at firePoint with correct facing + tilt
         GameObject proj = Instantiate(projectilePrefab, firePoint.position, rotation);
+        ProjectileScript projScript = proj.GetComponent<ProjectileScript>();
+        projScript.Initialize(direction);
 
-        // Tell the projectile which direction to go
-        proj.GetComponent<ProjectileScript>().Initialize(direction);
+        // ✅ Assign the worker audio so projectile can play hit sounds
+        projScript.ownerAudio = GetComponent<WorkerAudio>();
 
-        //Notify WorkerAudio
+        // Play shoot sound
         WorkerAudio workerAudio = GetComponent<WorkerAudio>();
         if (workerAudio != null)
         {
-            workerAudio.PlayShootSFX();
+            workerAudio.PlayShoot();
         }
     }
+
 
     void ShootPlayer()
     {

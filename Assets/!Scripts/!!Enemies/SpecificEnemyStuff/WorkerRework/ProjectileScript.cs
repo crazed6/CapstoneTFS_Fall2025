@@ -11,6 +11,8 @@ public class ProjectileScript : MonoBehaviour
 
     public DamageProfile WorkerProjectile;
 
+    public WorkerAudio ownerAudio;
+
     public void Initialize(Vector3 shootDirection)
     {
         direction = shootDirection.normalized;
@@ -31,14 +33,16 @@ public class ProjectileScript : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Player hit!");
+            // Damage logic stays the same
             Health playerHealth = other.GetComponent<Health>();
             if (playerHealth != null && WorkerProjectile != null)
             {
                 DamageData damageData = new DamageData(gameObject, WorkerProjectile);
                 playerHealth.PlayerTakeDamage(damageData);
             }
-            OnAnyProjectileHit?.Invoke(this, other);
+
+            // Play the hit sound on the Worker that fired this projectile
+            ownerAudio?.PlayImpact();
 
             Destroy(gameObject);
         }
@@ -47,4 +51,5 @@ public class ProjectileScript : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
 }

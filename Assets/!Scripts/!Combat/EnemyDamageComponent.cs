@@ -75,7 +75,8 @@ public class EnemyDamageComponent : MonoBehaviour
         //trigger damage animation
         //if (anim != null) anim.SetTrigger("TakeDamage");
 
-        OnDamaged?.Invoke(); //notify damage sound
+        var audio = GetComponent<WorkerAudio>();
+        audio?.PlayHit();
 
         UpdateHealthUI();
 
@@ -127,7 +128,8 @@ public class EnemyDamageComponent : MonoBehaviour
         if (agent != null)
             agent.isStopped = true;
 
-        OnDied?.Invoke(); //notify death for sound
+        var audio = GetComponent<WorkerAudio>();
+        audio?.PlayDeath();
 
 
         // Cleanup logic - destroy after delay (allows color/animation to play)
