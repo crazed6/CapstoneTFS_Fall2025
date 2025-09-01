@@ -123,6 +123,7 @@ public class CharacterController : MonoBehaviour
     public float upForce;
     public float forwardForce;
     public bool isOnPoleVaultPad;
+    public bool isVaulting;
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -181,6 +182,7 @@ public class CharacterController : MonoBehaviour
 
     void Start()
     {
+        isVaulting = false;
         isOnPoleVaultPad = false;
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
@@ -446,8 +448,8 @@ public class CharacterController : MonoBehaviour
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
 
         
-        playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
-        playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
+        //playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
+        //playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
         // Add bonus speed
         // TODO: Boost should "dampen" out as the players speed increases the max cap
@@ -470,8 +472,8 @@ public class CharacterController : MonoBehaviour
         // Move camera back up
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
-        playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
-        playerVisual.transform.DOLocalMoveY(0f, 0.2f);
+        //playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
+        //playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
         // Debug.Log("SLIDE [END]");
     }
@@ -689,12 +691,26 @@ public class CharacterController : MonoBehaviour
             // Mark player as airborne
             isGrounded = false;
 
-            // Apply immediate forward impulse
-            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+            isVaulting = true; // For Pole Vault Animation - Colton
+
+            //// Apply immediate forward impulse
+            //rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse); -------- Moved to EndVaultAfterDelay - Colton
 
             // Start upward impulse over short time
-            StartCoroutine(SmoothPoleVaultImpulse());
+            //StartCoroutine(SmoothPoleVaultImpulse()); ------- Moved to EndVaultAfterDelay - Colton
+
+            StartCoroutine(EndVaultAfterDelay(0.5f)); // End vaulting state after 1.2 seconds - Colton
         }
+    }
+    // Ends vaulting state after a delay - Colton
+    private IEnumerator EndVaultAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        isVaulting = false;
+        // Apply immediate forward impulse
+        rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+
+        StartCoroutine(SmoothPoleVaultImpulse());
     }
 
     IEnumerator SmoothPoleVaultImpulse()
