@@ -162,6 +162,16 @@ public class PlayerJavelinThrow : MonoBehaviour
             var javelin = currentJavelin.GetComponent<JavelinController>();
             if (javelin != null)
             {
+                Vector3 refForward = aimingCameraController.GetCamera().transform.forward;
+
+                // Hard guard: if ray is actually behind, start from forward -_-
+                if (Vector3.Dot(finalDirection, refForward) <= 0f)
+                    finalDirection = refForward;
+
+                // Clamp to forward hemisphere (≤ 89°) -_-
+                // Set flattenY=false to keep it unbiased in 3D (prevents the "drifts right" issue) -_-
+                finalDirection = ClampDirectionWithinCone(finalDirection, refForward, 89f, flattenY: false);
+
                 javelin.SetAimingMode(false); // Re-enable colliders & layer -_-
                 javelin.transform.rotation = Quaternion.LookRotation(finalDirection);
                 javelin.SetDirection(finalDirection); // Begin flight -_-
@@ -303,4 +313,44 @@ public class PlayerJavelinThrow : MonoBehaviour
             currentThrowPoint = defaultThrowPoint != null ? defaultThrowPoint : rightHandThrowPoint;
         }
     }
+
+    // Clamp 'dir' to be within 'maxAngleDeg' of 'referenceForward' using RotateTowards -_-
+    // Set flattenY=true to only enforce the clamp horizontally (keeps vertical freedom) -_-
+    static Vector3 ClampDirectionWithinCone(Vector3 dir, Vector3 referenceForward, float maxAngleDeg, bool flattenY)
+    {
+        if (flattenY)
+        {
+            // Work in horizontal (planar) space to avoid messing with vertical aim
+            Vector3 refPlanar = referenceForward; refPlanar.y = 0f;
+            Vector3 dirPlanar = dir; dirPlanar.y = 0f;
+
+            if (refPlanar.sqrMagnitude < 1e-6f) refPlanar = Vector3.forward;
+            if (dirPlanar.sqrMagnitude < 1e-6f) dirPlanar = refPlanar;
+
+            Vector3 clampedPlanar = Vector3.RotateTowards(
+                refPlanar.normalized,
+                dirPlanar.normalized,
+                maxAngleDeg * Mathf.Deg2Rad,
+                float.PositiveInfinity
+            );
+
+            // Reapply original vertical component, then renormalize -_-
+            Vector3 result = new Vector3(clampedPlanar.x, dir.y, clampedPlanar.z).normalized;
+            return result;
+        }
+        else
+        {
+            if (referenceForward.sqrMagnitude < 1e-6f) referenceForward = Vector3.forward;
+            if (dir.sqrMagnitude < 1e-6f) dir = referenceForward;
+
+            Vector3 clamped3D = Vector3.RotateTowards(
+                referenceForward.normalized,
+                dir.normalized,
+                maxAngleDeg * Mathf.Deg2Rad,
+                float.PositiveInfinity
+            );
+            return clamped3D.normalized;
+        }
+    }
+
 }
