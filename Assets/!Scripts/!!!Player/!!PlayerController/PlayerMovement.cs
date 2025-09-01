@@ -437,6 +437,8 @@ public class CharacterController : MonoBehaviour
         slideInitiated = false;
         SetIsSliding(true);
 
+        GetComponent<PlayerAudio>()?.PlaySlide(); //audio hook
+
         // Move camera down 1 unit
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
 
@@ -682,6 +684,8 @@ public class CharacterController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad)
         {
+            GetComponent<PlayerAudio>()?.PlayPoleVault(); //audio hook
+
             // Mark player as airborne
             isGrounded = false;
 
@@ -717,6 +721,7 @@ public class CharacterController : MonoBehaviour
     {
         if (!isDashing && !isDashOnCooldown)
         {
+            GetComponent<PlayerAudio>()?.PlayDash(); //audio hook
             StartCoroutine(DashRoutine());
         }
     }

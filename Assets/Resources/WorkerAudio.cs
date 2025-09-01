@@ -1,53 +1,65 @@
-using UnityEngine;
+﻿using UnityEngine;
+
+[System.Serializable]
+public class WorkerSound
+{
+    public string clipKey;   // The AudioManager key (e.g., "WorkerLaser")
+    [Range(0f, 2f)] public float volume = 1f; // Volume multiplier
+}
 
 public class WorkerAudio : MonoBehaviour
 {
-    private WorkerAI workerAI;
-    private EnemyDamageComponent damageComponent;
+    private AudioSource audioSource;
+
+    [Header("Worker Sounds")]
+    public WorkerSound shootSound;   // Shooting projectile
+    public WorkerSound deathSound;   // Dying
+    public WorkerSound hitSound;     // Worker takes damage
+    public WorkerSound impactSound;  // Projectile impact
 
     void Awake()
     {
-        workerAI = GetComponent<WorkerAI>();
-        damageComponent = GetComponent<EnemyDamageComponent>();
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
-    void OnEnable()
+    private void PlayClip(WorkerSound sound)
     {
-        if (damageComponent != null)
+        if (AudioManager.instance == null || sound == null) return;
+
+        AudioClip clip = AudioManager.instance.GetClipByName(sound.clipKey);
+        if (clip != null)
         {
-            damageComponent.OnDamaged += PlayDamagedSFX;
-            damageComponent.OnDied += PlayDeathSFX;
-            ProjectileScript.OnAnyProjectileHit += HandleProjectileHit;
+            audioSource.PlayOneShot(clip, sound.volume);
+        }
+        else
+        {
+            Debug.LogWarning($"[WorkerAudio] Missing audio clip: {sound.clipKey}");
         }
     }
 
-    void OnDisable()
+    // 🔫 Call when worker shoots
+    public void PlayShoot()
     {
-        if (damageComponent != null)
-        {
-            damageComponent.OnDamaged -= PlayDamagedSFX;
-            damageComponent.OnDied -= PlayDeathSFX;
-            ProjectileScript.OnAnyProjectileHit -= HandleProjectileHit;
-        }
+        PlayClip(shootSound);
     }
 
-    public void PlayShootSFX()
+    // 💀 Call when worker dies
+    public void PlayDeath()
     {
-        AudioManager.instance.PlaySFX("WorkerLaser");
+        PlayClip(deathSound);
     }
 
-    private void HandleProjectileHit(ProjectileScript proj, Collider target)
+    // 🤕 Call when worker takes damage
+    public void PlayHit()
     {
-        AudioManager.instance.PlaySFX("WorkerLaserHit");
+        PlayClip(hitSound);
     }
 
-    private void PlayDamagedSFX()
+    // 💥 Call when projectile impacts something
+    public void PlayImpact()
     {
-        AudioManager.instance.PlaySFX("WorkerInjured");
-    }
-
-    private void PlayDeathSFX()
-    {
-        AudioManager.instance.PlaySFX("WorkerDeath");
+        PlayClip(impactSound);
     }
 }
