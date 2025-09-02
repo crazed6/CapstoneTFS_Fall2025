@@ -23,9 +23,18 @@ public class PlayerAnimsController : MonoBehaviour
         Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         float speed = horizontalVelocity.magnitude;
 
-        animator.SetFloat("Velo", speed);
+        animator.SetFloat("Velo", cc.IsGrounded ? speed : 0f);
 
         animator.SetBool("IsSliding", cc.IsSliding);
+
+        animator.SetBool("IsWallLeft", cc.IsWallRunLeft);
+
+        animator.SetBool("IsWallRight", cc.IsWallRunRight);
+
+        if (cc.IsJumping)
+        {
+            //animator.Play("KF_Jump_Forward");
+        }
 
         if (cc.isVaulting)
         {
