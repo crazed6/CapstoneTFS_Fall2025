@@ -59,7 +59,6 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         }
         GameSession.IsNewSession = false; // Reset the session flag after the first run
 
-        LoadCheckpoint(); // Load the last checkpoint position
 
         if (hasCheckpoint)
         {
@@ -79,7 +78,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         //fadetoBlack = gameOverPanel.GetComponentInChildren<FadetoBlack>(true); // Get the FadetoBlack component from the GameOver panel, even if inactive
         fadetoBlack = FindFirstObjectByType<FadetoBlack>(FindObjectsInactive.Include); // Find the FadetoBlack component in the scene, even if inactive
 
-        if (fadetoBlack = null)
+        if (fadetoBlack == null)
         {
             Debug.LogError("FadetoBlack component is not assigned in Inspector!");
         }
@@ -99,23 +98,18 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X) && hasCheckpoint)
-        {
-            Debug.Log("Respawning at: " + lastCheckpoint);
-            ResetRespawn();
-        }
 
-        if (Input.GetKeyDown(KeyCode.P) && isInCheckpointZone)
-        {
-            if (!CheckpointPanelTriggered)
-            {
-                ShowCheckpointPanel();
-            }
-            else
-            {
-                HideCheckpointPanel();
-            }
-        }
+        //if (Input.GetKeyDown(KeyCode.P) && isInCheckpointZone)
+        //{
+        //    if (!CheckpointPanelTriggered)
+        //    {
+        //        ShowCheckpointPanel();
+        //    }
+        //    else
+        //    {
+        //        HideCheckpointPanel();
+        //    }
+        //}
     }
 
     public void ResetRespawn()
@@ -125,16 +119,53 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         controller.enabled = true;
     }
 
-    private void OnTriggerEnter(Collider other) //this works when attached to the player object the rigiddbody, and not when attached to the parent.
+    //private void OnTriggerEnter(Collider other) //this works when attached to the player object the rigiddbody, and not when attached to the parent.
+    //{
+    //    if (other.CompareTag("Checkpoint")) //removing "&& !panelTriggered" to facilitate new functionality.
+    //    {
+    //        lastCheckpoint = other.transform.position;
+    //        SaveCheckpoint();
+    //        hasCheckpoint = true;
+    //        isInCheckpointZone = true; // Set the flag to true when entering the checkpoint zone
+    //        //ShowCheckpointPanel();
+    //        Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+    //    }
+    //}
+
+    //private void OnTriggerEnter(Collider other) //For when the player just walks into the checkpoint zone.
+    //{
+    //    if (other.CompareTag("Checkpoint"))
+    //    {
+    //        lastCheckpoint = other.transform.position;
+    //        SaveCheckpoint();
+    //        hasCheckpoint = true;
+    //        isInCheckpointZone = true; // Player is inside checkpoint zone
+
+    //        // Only show the panel if it hasn’t been triggered yet
+    //        if (!CheckpointPanelTriggered)
+    //        {
+    //            ShowCheckpointPanel();
+    //        }
+
+    //        Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+    //    }
+    //}
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Checkpoint")) //removing "&& !panelTriggered" to facilitate new functionality.
+        if (other.CompareTag("Checkpoint"))
         {
             lastCheckpoint = other.transform.position;
-            SaveCheckpoint();
             hasCheckpoint = true;
-            isInCheckpointZone = true; // Set the flag to true when entering the checkpoint zone
-            //ShowCheckpointPanel();
+            isInCheckpointZone = true;
+
             Debug.Log("Checkpoint activated at: " + lastCheckpoint);
+
+            // --- TEMP SAVE (for death respawn in current session only) ---
+            SaveCheckpoint(); // PlayerPrefs-based
+
+            // --- FULL SAVE (persistent to file) ---
+            SaveLoadSystem.Save(this);
         }
     }
 
@@ -199,6 +230,7 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
             hasCheckpoint = true;
             checkpointLoaded = true; // Set the flag to true since a checkpoint was loaded from file
             Debug.Log("Loaded checkpoint from file: " + lastCheckpoint);
+            Debug.Log("Checkpoint loaded from file: " + saveFilePath); //Just added
             return; // Exit early if checkpoint loaded from file
         }
 
