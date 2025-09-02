@@ -35,6 +35,7 @@ public class Health : MonoBehaviour
     public float invincibilityDuration = 10f;
 
     private FadetoBlack fadetoBlack; // Reference to the fade effect script
+    private CharacterController characterController; // Reference to the CharacterController component
 
 
     public int health
@@ -103,12 +104,36 @@ public class Health : MonoBehaviour
         {
             Debug.Log("Player has died!");
 
+            //Testing for disabling player movement on death
+            characterController = GetComponent<CharacterController>();
+            Rigidbody rb = GetComponent<Rigidbody>();
+
+            if (characterController != null)
+            {
+                characterController.enabled = false; // Disable player movement
+            }
+            else
+            {
+                Debug.LogWarning("CharacterController component not found on the player.");
+            }
+
+            if (rb != null)
+            {
+                rb.isKinematic = true; // Disable physics interactions
+            }
+            else
+            {
+                Debug.LogWarning("Rigidbody component not found on the player.");
+            }
+            //End test
+
             // Trigger fade to black effect
             FadetoBlack fadeEffect = FindFirstObjectByType<FadetoBlack>(FindObjectsInactive.Include);
             if (fadeEffect != null)
             {
                 fadeEffect.gameObject.SetActive(true); // Ensure the fade effect object is active
                 fadeEffect.StartFadeToBlack();
+
             }
             else
             {
