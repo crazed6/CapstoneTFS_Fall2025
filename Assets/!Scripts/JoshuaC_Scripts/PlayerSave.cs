@@ -17,34 +17,39 @@ public class PlayerSave : MonoBehaviour
 
     public void Save(ref PlayerSaveData data)
     {
-        //data.Position = transform.position; //Replace with CharacterController.instance.transform.position if using CharacterController
-        data.Position = CharacterController.instance.transform.position; //Ensures the position is saved from the CharacterController
-        
-        Health health = CharacterController.instance.GetComponent<Health>(); //Replace with GetComponent<Health>() if not using CharacterController
-        //Saving Health as well, saved to same object
-
-        //Health health = GetComponent<Health>(); //Replace with CharacterController.instance.GetComponent<Health>() if using CharacterController
-        if (health != null)
+        if (CharacterController.instance == null)
         {
-            data.Health = health.health; //Saves the current health
+            Debug.LogWarning("Save skipped: CharacterController.instance is null!");
+            return;
         }
 
-        data.SceneName = SceneManager.GetActiveScene().name; //Saves the current scene name
+        // Position & Rotation
+        data.Position = CharacterController.instance.transform.position;
+        data.Rotation = CharacterController.instance.transform.rotation;
 
-        inventoryManager = GameObject.Find("InventoryCanvas").GetComponent<InventoryManager>();
+        // Health
+        Health health = CharacterController.instance.GetComponent<Health>();
+        if (health != null)
+            data.Health = health.health;
 
+        // Scene
+        data.SceneName = SceneManager.GetActiveScene().name;
 
-        if (inventoryManager != null)
+        // Inventory
+        var inventoryObj = GameObject.Find("InventoryCanvas");
+        if (inventoryObj != null)
         {
-           List<string> collectedItems = new List<string>();
-            foreach (var slot in inventoryManager.itemSlot)
+            inventoryManager = inventoryObj.GetComponent<InventoryManager>();
+            if (inventoryManager != null)
             {
-                if (slot.isFull) // Check if the slot is occupied
+                List<string> collectedItems = new List<string>();
+                foreach (var slot in inventoryManager.itemSlot)
                 {
-                    collectedItems.Add(slot.itemName); // Assuming itemName is a string representing the item's name
+                    if (slot.isFull)
+                        collectedItems.Add(slot.itemName);
                 }
+                data.collectedItems = collectedItems;
             }
-            data.collectedItems = collectedItems; // Save the list of collected items
         }
     }
 
@@ -58,7 +63,7 @@ public class PlayerSave : MonoBehaviour
 
         //transform.position = data.Position; //Used to convert the Data position into the current Transform. Change to CharacterController.instance.transform.position if using CharacterController
         CharacterController.instance.transform.position = data.Position; //Ensures the position is loaded from the CharacterController
-
+        CharacterController.instance.transform.rotation = data.Rotation; //Loads the rotation of the player as well
 
         CharacterController.instance.GetComponent<CharacterController>().enabled = true; //Re-enabling character controller so as to prevent the override of the player position on load
 
@@ -149,9 +154,11 @@ public class PlayerSave : MonoBehaviour
 public struct PlayerSaveData
 {
     public Vector3 Position;
+    public Quaternion Rotation;
     public Vector3 lastCheckpoint;
     public int Health;
     public string SceneName; // This stores the last scene
+
 
     public List<string> collectedItems; // List to store inventory items
 
