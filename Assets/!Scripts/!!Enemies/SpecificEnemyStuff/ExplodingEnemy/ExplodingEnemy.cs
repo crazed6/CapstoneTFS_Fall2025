@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.VFX; // ✅ Needed for Visual Effect Graph
 
 public class ExplodingEnemy : MonoBehaviour
 {
@@ -18,8 +19,8 @@ public class ExplodingEnemy : MonoBehaviour
     public float middleDamage = 30f;
     public float outerDamage = 15f;
     public GameObject explosionPrefab;
-    public GameObject warningEffectPrefab; // NEW – warning particle while countdown runs
-    public LayerMask damageableLayer; // Layer mask to filter damageable objects
+    public VisualEffect warningEffectPrefab; // 🔥 VFX Graph effect
+    public LayerMask damageableLayer;
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
@@ -30,8 +31,12 @@ public class ExplodingEnemy : MonoBehaviour
     public float knockbackForceY = 10f;
 
     [Header("Bobbing Settings")]
-    public float bobAmplitude = 0.1f; // How high the bobbing goes
-    public float bobFrequency = 4f;   // How fast it bobs
+    public float bobAmplitude = 0.1f;
+    public float bobFrequency = 4f;
+
+    [Header("Warning Effect Color Settings")]
+    public Color startColor = Color.yellow;
+    public Color endColor = Color.red;
 
     private float bobTimer = 0f;
     private float baseYPos;
@@ -44,11 +49,12 @@ public class ExplodingEnemy : MonoBehaviour
     public bool TimerStarted { get { return timerStarted; } }
     private bool timerStarted = false;
     public float explosionTimer = 0f;
+    private float warningDuration = 0f; // for lerp
 
     private Vector3 lastKnownPlayerPosition;
 
-    // NEW – Active warning effect instance
-    private GameObject activeWarningEffect;
+    // Active warning effect instance (VFX)
+    private VisualEffect activeWarningEffect;
 
     public DamageProfile InnerExplosionDamage;
     public DamageProfile MiddleExplosionDamage;
@@ -72,11 +78,8 @@ public class ExplodingEnemy : MonoBehaviour
         agent.autoBraking = true;
 
         if (patrolPoints.Length > 0)
-        {
             agent.SetDestination(patrolPoints[0].position);
-        }
 
-        // Store original Y position for bobbing
         baseYPos = transform.position.y;
     }
 
@@ -104,8 +107,19 @@ public class ExplodingEnemy : MonoBehaviour
             if (warningEffectPrefab != null && activeWarningEffect == null)
             {
                 activeWarningEffect = Instantiate(warningEffectPrefab, transform.position, Quaternion.identity, transform);
+                activeWarningEffect.gameObject.SetActive(true); // ✅ force enable
+                activeWarningEffect.Play();
             }
 
+            // Lerp warning color
+            if (activeWarningEffect != null && warningDuration > 0f)
+            {
+                float t = 1f - (explosionTimer / warningDuration); // 0 → 1 over lifetime
+                Color lerpedColor = Color.Lerp(startColor, endColor, t);
+                activeWarningEffect.SetVector4("_WarningColor", lerpedColor);
+            }
+
+            // Reduce timer
             explosionTimer -= Time.deltaTime * (distanceToPlayer < middleRadius ? middleRadiusTimeReduction : 1);
             if (explosionTimer <= 0f)
             {
@@ -113,15 +127,13 @@ public class ExplodingEnemy : MonoBehaviour
             }
         }
 
-        // 🌀 Bobbing effect only if moving
+        // 🌀 Bobbing effect
         if (agent.velocity.magnitude > 0.1f)
         {
             bobTimer += Time.deltaTime * bobFrequency;
             Vector3 pos = transform.position;
-
             pos.y = baseYPos + Mathf.Sin(bobTimer) * bobAmplitude;
             pos.x += Mathf.Sin(bobTimer) * (bobAmplitude * 0.2f);
-
             transform.position = pos;
         }
     }
@@ -141,16 +153,23 @@ public class ExplodingEnemy : MonoBehaviour
 
     void HandleRadiusExplosion(float distance)
     {
-        // 💥 Immediate explosion if inside inner radius
         if (distance <= innerRadius)
         {
             explosionTimer = 0f;
+
+            // 🚫 Stop warning effect immediately if forced instant explosion
+            if (activeWarningEffect != null)
+            {
+                activeWarningEffect.Stop();
+                Destroy(activeWarningEffect.gameObject, 1f);
+                activeWarningEffect = null;
+            }
         }
 
-        // 🔒 Start explosion timer permanently when player enters outer radius
         if (!timerStarted && distance <= outerRadius)
         {
             explosionTimer = outerRadiusTimerStart;
+            warningDuration = outerRadiusTimerStart; // ✅ save max duration for lerp
             timerStarted = true;
         }
     }
@@ -168,10 +187,11 @@ public class ExplodingEnemy : MonoBehaviour
         if (hasExploded) return;
         hasExploded = true;
 
-        // Stop/destroy warning effect
+        // Stop warning effect
         if (activeWarningEffect != null)
         {
-            Destroy(activeWarningEffect);
+            activeWarningEffect.Stop();
+            Destroy(activeWarningEffect.gameObject, 1f);
             activeWarningEffect = null;
         }
 
@@ -212,7 +232,6 @@ public class ExplodingEnemy : MonoBehaviour
             if (alreadyDamaged.Contains(hit)) continue;
 
             distance = Vector3.Distance(position, hit.transform.position);
-            damageToApply = 0f;
 
             if (distance <= innerRadius)
             {
@@ -231,7 +250,6 @@ public class ExplodingEnemy : MonoBehaviour
             }
             else continue;
 
-            hitPosition = hit.transform.position;
             targetRb = hit.attachedRigidbody;
             hitCollider = hit;
         }
@@ -251,7 +269,6 @@ public class ExplodingEnemy : MonoBehaviour
                     upwardForce: knockbackForceY,
                     overrideVel: true
                 );
-
                 kb.ApplyKnockback(kbData);
             }
 
