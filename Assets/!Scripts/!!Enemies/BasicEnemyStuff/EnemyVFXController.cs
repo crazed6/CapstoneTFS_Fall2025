@@ -12,22 +12,31 @@ public abstract class EnemyVFXController : MonoBehaviour
     protected Renderer[] renderers;
     protected MaterialPropertyBlock mpb;
     protected int dissolvePropertyID;
+    protected Animator animator; // enemy animator reference
 
     protected virtual void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
         mpb = new MaterialPropertyBlock();
         dissolvePropertyID = Shader.PropertyToID(dissolveProperty);
+
+        animator = GetComponentInChildren<Animator>();
     }
 
     public virtual void PlayDeathVFX()
     {
+        // freeze animation on current frame
+        if (animator != null)
+            animator.speed = 0f;
+
+        // play particles
         foreach (var ps in deathParticles)
         {
             if (ps != null)
                 ps.Play();
         }
 
+        // start dissolve
         StartCoroutine(DissolveRoutine());
     }
 
