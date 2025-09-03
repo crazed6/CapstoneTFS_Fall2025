@@ -53,21 +53,49 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         HideGameOverPanel(); // Hide the game over panel at the start
 
 
-        if (GameSession.IsNewSession) //&& !File.Exists(saveFilePath))
+        if (GameSession.IsNewSession && !GameSession.IsLoadedGame) //&& !File.Exists(saveFilePath))
         {
+            //Fresh Start - No saved data exists
             DeleteCheckpointPrefs(); // Clear PlayerPrefs if new session
+            ClearSavedCheckpoint(); // Clear any existing checkpoint file
+            lastCheckpoint = spawnPosition;
+            hasCheckpoint = false;
+            Debug.Log("New session started, no saved checkpoint.");
         }
-        GameSession.IsNewSession = false; // Reset the session flag after the first run
-
-
-        if (hasCheckpoint)
+        else if (GameSession.IsLoadedGame)
         {
-            transform.position = lastCheckpoint + Vector3.up * 1.5f; // Move player slightly above the checkpoint
+            //Only Load from File if user chose Load Game from Main Menu
+            LoadCheckpoint(); // Load the checkpoint if not a new session
+            if (hasCheckpoint)
+            {
+                controller.enabled = false;
+                transform.position = lastCheckpoint + Vector3.up * 1.5f;
+                controller.enabled = true;
+                Debug.Log("Resumed from checkpoint: " + lastCheckpoint);
+            }
         }
         else
         {
-            lastCheckpoint = spawnPosition; // If no checkpoint exists, use the spawn position
+            // Resume after death in current session ? load from PlayerPrefs only
+            if (PlayerPrefs.HasKey("CheckpointX"))
+            {
+                LoadCheckpoint(); // this will pick PlayerPrefs first
+                if (hasCheckpoint)
+                {
+                    controller.enabled = false;
+                    transform.position = lastCheckpoint + Vector3.up * 1.5f;
+                    controller.enabled = true;
+                    Debug.Log("Resumed from PlayerPrefs checkpoint: " + lastCheckpoint);
+                }
+            }
+            else
+            {
+                Debug.Log("No session checkpoint found, respawning at spawn.");
+                lastCheckpoint = spawnPosition;
+            }
         }
+
+        GameSession.IsNewSession = false; // Reset the new session flag after loading
 
         //For grabbing player controller component
         if (player != null)
@@ -380,12 +408,12 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
         Debug.Log("Scene reloaded: " + SceneManager.GetActiveScene().name);
     }
 
-    public void StartNew()
-    {
-        PlayerPrefs.DeleteAll(); // Clear all PlayerPrefs data
-        File.Delete(saveFilePath); // Delete the checkpoint file
-        SceneManager.LoadScene("tut_Josh"); // Load the scene ("tut_Josh")
-    }
+    //public void StartNew()
+    //{
+    //    PlayerPrefs.DeleteAll(); // Clear all PlayerPrefs data
+    //    File.Delete(saveFilePath); // Delete the checkpoint file
+    //    SceneManager.LoadScene("tut_Josh"); // Load the scene ("tut_Josh")
+    //}
 
     public void ResumeFromDeath()
     {
