@@ -194,6 +194,17 @@ public class CheckpointSystem : MonoBehaviour //CheckpointSystem script only has
 
             // --- FULL SAVE (persistent to file) ---
             SaveLoadSystem.Save(this);
+
+            //Show Checkpoint UI
+            CheckpointSaveText checkpointSaveText = FindFirstObjectByType<CheckpointSaveText>();
+            if (checkpointSaveText != null) 
+            {
+                checkpointSaveText.ShowCheckpointSaved(); // Show "Checkpoint Saved!" text
+            }
+            else
+            {
+                Debug.LogWarning("No CheckpointSaveText found in the scene!");
+            }
         }
     }
 
