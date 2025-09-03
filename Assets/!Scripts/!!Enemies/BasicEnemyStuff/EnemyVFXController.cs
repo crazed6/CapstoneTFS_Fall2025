@@ -1,16 +1,25 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class EnemyVFXController : MonoBehaviour
 {
     [Header("Death VFX")]
-    [SerializeField] private ParticleSystem[] deathParticles; // multiple supported
+    [SerializeField] private ParticleSystem[] deathParticles;
     [SerializeField] private string dissolveProperty = "_DissolveAmount";
     [SerializeField] private float dissolveDuration = 2f;
+
+    [Header("Attack VFX")]
+    [SerializeField] private VisualEffect rockThrowChargeUpPrefab;
+    [SerializeField] private Transform rockThrowChargeUpPoint;
+    [SerializeField] private VisualEffect slamVFXPrefab;
+    [SerializeField] private Transform slamVFXPoint;
 
     private Renderer[] renderers;
     private MaterialPropertyBlock mpb;
     private int dissolvePropertyID;
+
+    private VisualEffect activeChargeUpVFX;
 
     private void Awake()
     {
@@ -21,7 +30,6 @@ public class EnemyVFXController : MonoBehaviour
 
     public void PlayDeathVFX()
     {
-        // Play all particles assigned
         foreach (var ps in deathParticles)
         {
             if (ps != null)
@@ -48,6 +56,46 @@ public class EnemyVFXController : MonoBehaviour
             }
 
             yield return null;
+        }
+    }
+
+    public void PlayRockThrowChargeUpVFX()
+    {
+        if (rockThrowChargeUpPrefab != null && rockThrowChargeUpPoint != null)
+        {
+            activeChargeUpVFX = Instantiate(
+                rockThrowChargeUpPrefab,
+                rockThrowChargeUpPoint.position,
+                rockThrowChargeUpPoint.rotation,
+                rockThrowChargeUpPoint
+            );
+
+            activeChargeUpVFX.Play();
+        }
+    }
+
+    public void StopRockThrowChargeUpVFX()
+    {
+        if (activeChargeUpVFX != null)
+        {
+            activeChargeUpVFX.Stop();
+            Destroy(activeChargeUpVFX.gameObject);
+            activeChargeUpVFX = null;
+        }
+    }
+
+    public void PlaySlamVFX()
+    {
+        if (slamVFXPrefab != null && slamVFXPoint != null)
+        {
+            VisualEffect slamVFX = Instantiate(
+                slamVFXPrefab,
+                slamVFXPoint.position,
+                slamVFXPoint.rotation
+            );
+            slamVFX.Play();
+
+            Destroy(slamVFX.gameObject, 5f); // cleanup after effect finishes
         }
     }
 }

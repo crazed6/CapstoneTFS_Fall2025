@@ -12,30 +12,37 @@ public class HeavyEnemyShootingState : IHeavyEnemyState
     public void Enter()
     {
         Debug.Log("Entered Shooting State");
-        enemy.StartTracking(); // Begin aiming and rock throw
+
+        // 1. Tell the animator to play the shooting animation loop
+        if (enemy.animator != null)
+        {
+            enemy.animator.SetBool("isShooting", true);
+        }
+
+        // 2. Start the aiming process
+        enemy.AimAndLockTarget();
     }
 
     public void Execute()
     {
         float distanceToPlayer = Vector3.Distance(enemy.transform.position, enemy.player.position);
 
-        // Check for Slam opportunity only if not on cooldown
+        // Check for Slam opportunity
         if (distanceToPlayer <= enemy.slamRadius && !enemy.slamOnCooldown)
         {
             enemy.stateMachine.ChangeState(new HeavyEnemySlamAttackState(enemy));
             return;
         }
 
-        // Exit to Idle if player is out of sight
-        if (distanceToPlayer > enemy.firingZoneRange || !enemy.CanSeePlayer())
+        // Exit to Idle if player is out of sight (and we are not currently aiming)
+        if ((distanceToPlayer > enemy.firingZoneRange || !enemy.CanSeePlayer()) && !enemy.isTracking)
         {
-            Debug.Log("Player left the firing zone, stopping attack...");
             enemy.StopTracking();
             enemy.stateMachine.ChangeState(new HeavyEnemyIdleState(enemy));
             return;
         }
 
-        // Face the player while shooting
+        // Face the player while in this state
         Vector3 direction = (enemy.player.position - enemy.transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
         enemy.transform.rotation = Quaternion.Slerp(
