@@ -19,11 +19,11 @@ public class MainMenu : MonoBehaviour
             InputManager.Instance.LoadRebinds(); // Load rebinds from PlayerPrefs  
         }
     }
-    public void PlayGame() //method to start the first game scene
-    {
-        SceneManager.LoadSceneAsync("BuildTesting"); //Replace SampleScene with the name of the first game scene 
-        SoundManager.Instance.PlayBGM(2);
-    }
+    //public void PlayGame() //method to start the first game scene
+    //{
+    //    SceneManager.LoadSceneAsync("BuildTesting"); //Replace SampleScene with the name of the first game scene 
+    //    SoundManager.Instance.PlayBGM(2);
+    //}
     public void Settings() //method to start the first game scene
     {
         SceneManager.LoadSceneAsync("Kadeem_SettingsMenu"); //Replace SampleScene with the name of the first game scene 
@@ -34,6 +34,8 @@ public class MainMenu : MonoBehaviour
     public void ChangeScene(string SceneName)
     {
         //SoundManager.Instance.StopAudio();    ---causing errors with new SoundManager.cs
+        GameSession.IsNewSession = true; // Reset the game session flag when changing scenes
+        GameSession.IsLoadedGame = false; // Reset the loaded game flag when changing scenes
         SceneManager.LoadSceneAsync(SceneName);
     }
     public void QuitGame() //method to close the game 
