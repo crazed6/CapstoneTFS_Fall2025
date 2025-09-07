@@ -9,6 +9,8 @@ public class PlayerAnimsController : MonoBehaviour
 
     [Header("Settings")]
     public float speedThreshold = 0.1f; // Minimum speed to count as running
+
+    private bool fallingTriggered;
     void Reset()
     {
         // Auto-assign references if not set
@@ -31,14 +33,38 @@ public class PlayerAnimsController : MonoBehaviour
 
         animator.SetBool("IsWallRight", cc.IsWallRunRight);
 
+        
+
         if (cc.IsJumping)
         {
-            //animator.Play("KF_Jump_Forward");
+            animator.Play("KF_Jump_Forward");
         }
 
         if (cc.isVaulting)
         {
             animator.Play("KF_PoleVault");
+        }
+
+        if (!cc.IsGrounded && rb.linearVelocity.y < -0.1f)
+        {
+            if (!fallingTriggered)
+            {
+                animator.SetTrigger("IsFalling");
+                fallingTriggered = true;
+            }
+        }
+        else
+        {
+            fallingTriggered = false;
+        }
+
+        if (cc.IsGrounded)
+        {
+            animator.SetBool("IsGrounded", true);
+        }
+        else
+        {
+            animator.SetBool("IsGrounded", false);
         }
     }
 }
