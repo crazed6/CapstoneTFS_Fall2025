@@ -15140,8 +15140,10 @@ MonoBehaviour:
   slamVolume: 1.22
   throwClip: LobberProj.Woosh
   throwVolume: 1.08
-  lockOnClip: LobberCharge
-  lockOnVolume: 1.22
+  lockOnClip: LobberCharge2
+  lockOnVolume: 0.89
+  deathClip: LobberDeath
+  deathVolume: 0.61
 --- !u!82 &9209802139219159768
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15154,7 +15156,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 5699618269089690898, guid: 4571f64207a9c5343b5b27d1cf2721d0, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -15162,9 +15164,9 @@ AudioSource:
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 25
   Pan2D: 0
   rolloffMode: 0
   BypassEffects: 0

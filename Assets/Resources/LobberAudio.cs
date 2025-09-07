@@ -1,9 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
 public class LobberAudio : MonoBehaviour
 {
     private HeavyEnemyAI enemy;
+    private EnemyDamageComponent damageComponent;
     private AudioSource audioSource;
 
     [Header("Audio Clips & Volumes")]
@@ -16,14 +17,14 @@ public class LobberAudio : MonoBehaviour
     public string lockOnClip = "LobberCharge";
     [Range(0f, 2f)] public float lockOnVolume = 1f;
 
+    public string deathClip = "LobberDeath";    // 🔥 New death SFX key
+    [Range(0f, 2f)] public float deathVolume = 1f;
+
     void Awake()
     {
         enemy = GetComponent<HeavyEnemyAI>();
-
-        // Create dedicated AudioSource for 3D sound
+        damageComponent = GetComponent<EnemyDamageComponent>();
         audioSource = GetComponent<AudioSource>();
-        audioSource.spatialBlend = 0.6f; // 3D audio
-        audioSource.playOnAwake = false;
     }
 
     void OnEnable()
@@ -35,6 +36,11 @@ public class LobberAudio : MonoBehaviour
             enemy.OnLockOn += PlayLockOnSFX;
             enemy.OnStopTracking += StopLockOnSFX;
         }
+
+        if (damageComponent != null)
+        {
+            damageComponent.OnDeath += PlayDeathSFX;
+        }
     }
 
     void OnDisable()
@@ -45,6 +51,11 @@ public class LobberAudio : MonoBehaviour
             enemy.OnThrowRock -= PlayThrowSFX;
             enemy.OnLockOn -= PlayLockOnSFX;
             enemy.OnStopTracking -= StopLockOnSFX;
+        }
+
+        if (damageComponent != null)
+        {
+            damageComponent.OnDeath -= PlayDeathSFX;
         }
     }
 
@@ -66,6 +77,11 @@ public class LobberAudio : MonoBehaviour
     private void StopLockOnSFX()
     {
         audioSource.Stop();
+    }
+
+    private void PlayDeathSFX()
+    {
+        PlayClip(deathClip, deathVolume);
     }
 
     private void PlayClip(string clipKey, float volume)
