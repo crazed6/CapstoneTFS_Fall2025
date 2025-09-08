@@ -46,17 +46,15 @@ public class PlayerAnimsController : MonoBehaviour
         }
 
         if (!cc.IsGrounded && rb.linearVelocity.y < -0.1f)
-        {
-            if (!fallingTriggered)
-            {
-                animator.SetTrigger("IsFalling");
-                fallingTriggered = true;
-            }
+        { 
+            animator.SetBool("IsFalling", true);
         }
         else
         {
-            fallingTriggered = false;
+            animator.SetBool("IsFalling", false);
         }
+
+
 
         if (cc.IsGrounded)
         {
