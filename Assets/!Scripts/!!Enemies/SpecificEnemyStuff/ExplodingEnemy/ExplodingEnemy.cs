@@ -11,6 +11,7 @@ public class ExplodingEnemy : MonoBehaviour
     public float chaseSpeed = 3f;
     public float detectionRadius = 5f;
 
+
     [Header("Explosion Settings")]
     public float innerRadius = 1f;
     public float middleRadius = 2f;
@@ -21,6 +22,7 @@ public class ExplodingEnemy : MonoBehaviour
     public GameObject explosionPrefab;
     public VisualEffect warningEffectPrefab; // 🔥 VFX Graph effect
     public LayerMask damageableLayer;
+    [SerializeField] private Collider humRange; // assign in Inspector
 
     [Header("Explosion Timer Settings")]
     public float outerRadiusTimerStart = 3f;
@@ -174,9 +176,9 @@ public class ExplodingEnemy : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (other.CompareTag("Javilin") && !hasExploded)
+        if (collision.gameObject.CompareTag("Javilin") && !hasExploded)
         {
             Explode();
         }
