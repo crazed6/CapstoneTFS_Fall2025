@@ -83,6 +83,7 @@ public class CharacterController : MonoBehaviour
     public float coneAngle = 30f; // Angle in degrees
     public float coneRange = 10f; // How far the cone reaches
     public LayerMask enemyLayer;
+    [SerializeField] public float bounceForce = 2f;
 
     [Header("Wall Running")]
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
@@ -824,17 +825,19 @@ public class CharacterController : MonoBehaviour
 
             if (bestTarget != null)
             {
-                // Set dash state
                 isMoving = true;
                 isDashing = true;
                 dashTimer = 0f;
+
                 damagedThisDash.Clear(); // Reset for this dash
 
-                // Compute target
                 Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
                 targetPosition = bestTarget.position + dashDirection * dashOvershoot;
 
-                // Reduce friction temporarily
+                // Switch to kinematic for controlled movement
+                rb.isKinematic = true;
+
+                // Optional: reduce friction
                 if (playerCollider.material != null)
                 {
                     PhysicsMaterial dashMat = new PhysicsMaterial();
@@ -843,10 +846,6 @@ public class CharacterController : MonoBehaviour
                     dashMat.frictionCombine = PhysicsMaterialCombine.Minimum;
                     playerCollider.material = dashMat;
                 }
-
-                // Reset velocity and apply impulse
-                rb.linearVelocity = Vector3.zero;
-                rb.AddForce(dashDirection * dashSpeed, ForceMode.VelocityChange);
             }
         }
 
@@ -855,24 +854,36 @@ public class CharacterController : MonoBehaviour
         {
             dashTimer += Time.deltaTime;
 
-            // Apply continuous force towards target (physics-based steering)
-            Vector3 toTarget = (targetPosition - transform.position);
-            Vector3 moveDirection = toTarget.normalized;
-
-            // Calculate desired velocity
-            Vector3 desiredVelocity = moveDirection * dashSpeed;
-
-            // Calculate steering force to maintain dash speed and direction
-            Vector3 steeringForce = (desiredVelocity - rb.linearVelocity) * 10f; // Adjust multiplier as needed
-
-            // Apply the steering force
-            rb.AddForce(steeringForce, ForceMode.Force);
-
-            // --- Manual enemy overlap check ---
-            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
-            foreach (var enemy in enemiesHit)
+            if (rb.isKinematic)
             {
-                ApplyDashDamage(enemy);
+                // Move kinematically toward target
+                Vector3 newPosition = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+                rb.MovePosition(newPosition);
+
+                // Check if we reached target
+                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                {
+                    // Switch back to dynamic to apply physics
+                    rb.isKinematic = false;
+
+                    // Hang in air for a frame
+                    rb.linearVelocity = Vector3.zero;
+
+                    // Apply upward bounce
+                    rb.AddForce(Vector3.up * bounceForce, ForceMode.Impulse);
+                }
+            }
+
+            // --- Manual enemy overlap check (single-hit per dash) ---
+            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
+            foreach (var enemyCollider in enemiesHit)
+            {
+                var enemy = enemyCollider.GetComponent<EnemyDamageComponent>();
+                if (enemy != null && !damagedThisDash.Contains(enemy))
+                {
+                    ApplyDashDamage(enemyCollider);
+                    damagedThisDash.Add(enemy); // mark as hit
+                }
             }
 
             // End dash after duration
@@ -881,17 +892,15 @@ public class CharacterController : MonoBehaviour
                 isMoving = false;
                 isDashing = false;
                 dashTimer = 0f;
-                damagedThisDash.Clear(); // Ready for next dash
+                damagedThisDash.Clear();
 
                 // Restore friction
                 if (playerCollider.material != null)
                     playerCollider.material = originalMaterial;
-
-                // Keep momentum forward
-                rb.linearVelocity = moveDirection * rb.linearVelocity.magnitude * 1.2f;
             }
         }
     }
+
 
     // Helper method to apply damage only once per dash
     private void ApplyDashDamage(Collider other)
