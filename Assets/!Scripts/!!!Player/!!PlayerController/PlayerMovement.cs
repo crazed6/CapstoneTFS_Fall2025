@@ -735,21 +735,19 @@ public class CharacterController : MonoBehaviour
         float duration = 0.3f;
         float timer = 0f;
 
-        // Keep gravity on for natural arc
         rb.useGravity = true;
 
         while (timer < duration)
         {
             float t = timer / duration;
 
-            // Apply small upward impulses each frame, decaying over time
-            rb.AddForce(Vector3.up * upForce * (1 - t) * Time.deltaTime, ForceMode.VelocityChange);
+            // Remove Time.deltaTime for VelocityChange
+            rb.AddForce(Vector3.up * upForce * (1 - t), ForceMode.VelocityChange);
 
             timer += Time.deltaTime;
             yield return null;
         }
     }
-
     void DashForward()
     {
         if (!isDashing && !isDashOnCooldown)
