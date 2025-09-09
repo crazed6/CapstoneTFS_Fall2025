@@ -54,7 +54,7 @@ public class HeavyEnemyAI : MonoBehaviour
     [HideInInspector] public bool slamOnCooldown = false;
 
     public HeavyEnemyStateMachine stateMachine;
-    private bool isTracking = false;
+    public bool isTracking = false;
     private Vector3 lockedTarget;
     private CancellationTokenSource trackingTokenSource;
     private GameObject lastDashedPlayer = null;
@@ -71,6 +71,9 @@ public class HeavyEnemyAI : MonoBehaviour
     [HideInInspector] public bool cantDashAttack = false;
     private ParticleSystem activeEffectInstance;
     // ===============================
+
+    [Header("Animation")]
+    public Animator animator;
 
     // Damage Profile Reference
     public DamageProfile GroundSlam;
@@ -188,75 +191,71 @@ public class HeavyEnemyAI : MonoBehaviour
         return false;
     }
 
-    public async void StartTracking()
+    public async void AimAndLockTarget()
     {
-        if (this == null || gameObject == null || !gameObject.activeInHierarchy)
-            return;
-
+        if (this == null || gameObject == null || !gameObject.activeInHierarchy) return;
         if (isTracking) return;
         isTracking = true;
 
-        OnLockOn?.Invoke(); //audio hook
+        OnLockOn?.Invoke();
 
         trackingTokenSource?.Cancel();
         trackingTokenSource = new CancellationTokenSource();
         CancellationToken token = trackingTokenSource.Token;
-
         float timer = 0f;
 
         try
         {
+            // Aiming phase
             while (timer < trackDuration)
             {
-                if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
-                    return;
-
-                if (player != null && CanSeePlayer())
-                {
-                    lockedTarget = player.position;
-                    DrawTrajectory(lockedTarget, false);
-                }
-
+                if (token.IsCancellationRequested || player == null) return;
+                lockedTarget = player.position;
+                DrawTrajectory(lockedTarget, false);
                 timer += Time.deltaTime;
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
-
-                if (this == null || gameObject == null || !gameObject.activeInHierarchy)
-                    return;
             }
 
-            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
-                return;
-
-            if (trajectoryLine != null && trajectoryLine.gameObject.activeInHierarchy)
-                trajectoryLine.colorGradient = lockedColor;
-
+            // Lock-in phase
+            if (trajectoryLine != null) trajectoryLine.colorGradient = lockedColor;
             await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token);
 
-            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
-                return;
-
-            ThrowRockAtLockedPosition(lockedTarget);
-
-            isTracking = false;
-
-            await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown), cancellationToken: token);
-
-            if (token.IsCancellationRequested || this == null || gameObject == null || !gameObject.activeInHierarchy)
-                return;
-
-            if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
-            {
-                stateMachine.ChangeState(new HeavyEnemyShootingState(this));
-            }
-            else
-            {
-                StopTracking();
-                stateMachine.ChangeState(new HeavyEnemyIdleState(this));
-            }
+            // NOTE: We no longer throw the rock here. We wait for the animation event.
         }
         catch (OperationCanceledException)
         {
-            Debug.Log("StartTracking() was safely cancelled.");
+            Debug.Log("Aiming was cancelled.");
+        }
+    }
+
+    // ADD this new function to be called by the animation event
+    public void HandleRockThrowTrigger()
+    {
+        if (!isTracking) return; // Don't throw if we weren't aiming
+
+        ThrowRockAtLockedPosition(lockedTarget);
+        isTracking = false; // Reset tracking after the throw
+
+        // After throwing, start a cooldown and then check if we should aim again or go idle
+        PostThrowCheckAsync().Forget();
+    }
+
+    // ADD this new helper async method
+    private async UniTaskVoid PostThrowCheckAsync()
+    {
+        await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown));
+
+        if (this == null || gameObject == null || !gameObject.activeInHierarchy) return;
+
+        // If player is still visible, enter shooting state again to start a new aim cycle
+        if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
+        {
+            stateMachine.ChangeState(new HeavyEnemyShootingState(this));
+        }
+        else
+        {
+            StopTracking();
+            stateMachine.ChangeState(new HeavyEnemyIdleState(this));
         }
     }
 
@@ -315,7 +314,15 @@ public class HeavyEnemyAI : MonoBehaviour
 
         OnThrowRock?.Invoke();//audio hook
     }
-
+    public void TriggerSlamAOE()
+    {
+        // Check if the current state is the SlamAttackState
+        if (stateMachine.GetCurrentState() is HeavyEnemySlamAttackState slamState)
+        {
+            // If it is, call the function to apply damage and knockback
+            slamState.ApplySlamAOE();
+        }
+    }
     public async UniTaskVoid StartSlamCooldown()
     {
         slamOnCooldown = true;
@@ -336,6 +343,12 @@ public class HeavyEnemyAI : MonoBehaviour
                 dashDetectionCollider.transform.lossyScale.z
             );
             Gizmos.DrawWireSphere(center, radius);
+        }
+        // Draw the slam radius
+        if (slamOrigin != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(slamOrigin.position, slamRadius);
         }
     }
 }

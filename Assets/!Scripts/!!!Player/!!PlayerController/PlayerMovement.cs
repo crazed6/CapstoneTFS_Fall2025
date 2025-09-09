@@ -46,6 +46,7 @@ public class CharacterController : MonoBehaviour
     private float currentDownwardForce = 0f;
     public float downwardGravityForce;
     public float downwardForceLerpSpeed;
+    bool isJumping = false; // For jump animation - Colton
 
     [Header("Jump Buffer")]
     public float jumpBufferTime = 0.15f; // Duration for buffering input
@@ -82,6 +83,7 @@ public class CharacterController : MonoBehaviour
     public float coneAngle = 30f; // Angle in degrees
     public float coneRange = 10f; // How far the cone reaches
     public LayerMask enemyLayer;
+    [SerializeField] public float bounceForce = 2f;
 
     [Header("Wall Running")]
     // --- Aiden & Kaylani's : bool to lock rotation and editable variable to lock camera angle ---
@@ -90,6 +92,8 @@ public class CharacterController : MonoBehaviour
     [SerializeField] private float wallRunCamRotationSpeed = 8.0f;
     [SerializeField] private float wallRunSideJumpFactor = 1.5f;
     [SerializeField] private float wallRunUpwardBoost = 1.5f; // Multiplies the vertical jump force
+    bool isWallRunLeft = false; // For wall run animation - Colton
+    bool isWallRunRight = false; // For wall run animation - Colton
 
     public bool fallWhileWallRunning; // Slowly fall character while wall running
     public float keepWallRunningSpeedThreshold = 3f; // If speed drops below this, stop wall running
@@ -123,6 +127,7 @@ public class CharacterController : MonoBehaviour
     public float upForce;
     public float forwardForce;
     public bool isOnPoleVaultPad;
+    public bool isVaulting; // For Pole Vault Animation - Colton
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -158,6 +163,9 @@ public class CharacterController : MonoBehaviour
     public bool IsGrounded => isGrounded; // Public getter for isGrounded -_-
     public bool IsDashing => isMoving; // Already tracked as isMoving -_-
     public bool IsWallOnRight => onRightWall; // Public getter for wallRuning directions -_-
+    public bool IsJumping => isJumping; // Public getter for jump animation - Colton
+    public bool IsWallRunLeft => isWallRunLeft; // Public getter for wallRuning directions - Colton
+    public bool IsWallRunRight => isWallRunRight; // Public getter for wallRuning directions - Colton
 
     public bool IsDashAttackActive => isDashing || isMoving; // Public getter for DashAttack -_-
 
@@ -181,6 +189,7 @@ public class CharacterController : MonoBehaviour
 
     void Start()
     {
+        isVaulting = false;
         isOnPoleVaultPad = false;
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
@@ -321,13 +330,14 @@ public class CharacterController : MonoBehaviour
             coyoteTimer = 0f;
 
             // rest of your jump code...
-            isFalling = false;
             currentDownwardForce = 0f;
 
             lastSpeedBeforeTakeoff = displacement.magnitude;
 
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+            isJumping = true; // For jump animation - Colton
         }
 
         // Custom gravity handling (affects both ascent and descent)
@@ -338,10 +348,14 @@ public class CharacterController : MonoBehaviour
         }
         else // Falling
         {
-            if (!isFalling) isFalling = true;
+            if (rb.linearVelocity.y < 0)
+            {
+                currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
+                rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
 
-            currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
-            rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
+                isJumping = false; // For jump animation - Colton
+                isFalling = true;
+            }
         }
     }
 
@@ -396,6 +410,7 @@ public class CharacterController : MonoBehaviour
         isGrounded = state;
         if (PlayerStatesManager.instance) PlayerStatesManager.instance.SetGroundedState(isGrounded);
         if (!isGrounded && isSliding) StopSliding();
+        
     }
 
     #region Sliding
@@ -446,8 +461,8 @@ public class CharacterController : MonoBehaviour
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
 
         
-        playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
-        playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
+        //playerVisual.transform.DOLocalRotate(new Vector3(-45, 0, 0), 0.2f);
+        //playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
 
         // Add bonus speed
         // TODO: Boost should "dampen" out as the players speed increases the max cap
@@ -470,8 +485,8 @@ public class CharacterController : MonoBehaviour
         // Move camera back up
         //cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         cameraController.UpdateCameraState(CinemachineCameraController.PlayerState.Default);
-        playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
-        playerVisual.transform.DOLocalMoveY(0f, 0.2f);
+        //playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
+        //playerVisual.transform.DOLocalMoveY(0f, 0.2f);
 
         // Debug.Log("SLIDE [END]");
     }
@@ -531,11 +546,13 @@ public class CharacterController : MonoBehaviour
                 {
                     StartWallRunning(false); // left wall
                     jumpInitiated = false;
+                    isWallRunLeft = true; // For wall run animation - Colton
                 }
                 else if (rightCollider.IsColliding && (!recentlyWallRan || !lastWallWasRight))
                 {
                     StartWallRunning(true); // right wall
                     jumpInitiated = false;
+                    isWallRunRight = true; // For wall run animation - Colton
                 }
                 else
                 {
@@ -627,7 +644,7 @@ public class CharacterController : MonoBehaviour
 
         // --- VISUALS AND STATE MANAGEMENT (Jaxson's original code) ---
         playerCameraZRotator.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
-        playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
+        //playerVisual.transform.DOLocalRotate(new Vector3(0, 0, rightWall ? 20 : -20), 0.2f);
 
         wallRunStartingSpeed = rb.linearVelocity.magnitude * 1.2f;
 
@@ -646,6 +663,8 @@ public class CharacterController : MonoBehaviour
     {
         isRotationLocked = false; // Unlock the rotation (Aiden & Kaylani's code)
         SetIsWallRunning(false);
+        isWallRunLeft = false; // For wall run animation - Colton
+        isWallRunRight = false; // For wall run animation - Colton
 
         if (!fallWhileWallRunning)
             rb.useGravity = true;
@@ -689,12 +708,26 @@ public class CharacterController : MonoBehaviour
             // Mark player as airborne
             isGrounded = false;
 
-            // Apply immediate forward impulse
-            rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+            isVaulting = true; // For Pole Vault Animation - Colton
+
+            //// Apply immediate forward impulse
+            //rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse); -------- Moved to EndVaultAfterDelay - Colton
 
             // Start upward impulse over short time
-            StartCoroutine(SmoothPoleVaultImpulse());
+            //StartCoroutine(SmoothPoleVaultImpulse()); ------- Moved to EndVaultAfterDelay - Colton
+
+            StartCoroutine(EndVaultAfterDelay(0.5f)); // End vaulting state after 1.2 seconds - Colton
         }
+    }
+    // Ends vaulting state after a delay - Colton
+    private IEnumerator EndVaultAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        isVaulting = false;
+        // Apply immediate forward impulse
+        rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
+
+        StartCoroutine(SmoothPoleVaultImpulse());
     }
 
     IEnumerator SmoothPoleVaultImpulse()
@@ -702,21 +735,19 @@ public class CharacterController : MonoBehaviour
         float duration = 0.3f;
         float timer = 0f;
 
-        // Keep gravity on for natural arc
         rb.useGravity = true;
 
         while (timer < duration)
         {
             float t = timer / duration;
 
-            // Apply small upward impulses each frame, decaying over time
-            rb.AddForce(Vector3.up * upForce * (1 - t) * Time.deltaTime, ForceMode.VelocityChange);
+            // Remove Time.deltaTime for VelocityChange
+            rb.AddForce(Vector3.up * upForce * (1 - t), ForceMode.VelocityChange);
 
             timer += Time.deltaTime;
             yield return null;
         }
     }
-
     void DashForward()
     {
         if (!isDashing && !isDashOnCooldown)
@@ -792,17 +823,19 @@ public class CharacterController : MonoBehaviour
 
             if (bestTarget != null)
             {
-                // Set dash state
                 isMoving = true;
                 isDashing = true;
                 dashTimer = 0f;
+
                 damagedThisDash.Clear(); // Reset for this dash
 
-                // Compute target
                 Vector3 dashDirection = (bestTarget.position - transform.position).normalized;
                 targetPosition = bestTarget.position + dashDirection * dashOvershoot;
 
-                // Reduce friction temporarily
+                // Switch to kinematic for controlled movement
+                rb.isKinematic = true;
+
+                // Optional: reduce friction
                 if (playerCollider.material != null)
                 {
                     PhysicsMaterial dashMat = new PhysicsMaterial();
@@ -811,10 +844,6 @@ public class CharacterController : MonoBehaviour
                     dashMat.frictionCombine = PhysicsMaterialCombine.Minimum;
                     playerCollider.material = dashMat;
                 }
-
-                // Reset velocity and apply impulse
-                rb.linearVelocity = Vector3.zero;
-                rb.AddForce(dashDirection * dashSpeed, ForceMode.VelocityChange);
             }
         }
 
@@ -823,24 +852,36 @@ public class CharacterController : MonoBehaviour
         {
             dashTimer += Time.deltaTime;
 
-            // Apply continuous force towards target (physics-based steering)
-            Vector3 toTarget = (targetPosition - transform.position);
-            Vector3 moveDirection = toTarget.normalized;
-
-            // Calculate desired velocity
-            Vector3 desiredVelocity = moveDirection * dashSpeed;
-
-            // Calculate steering force to maintain dash speed and direction
-            Vector3 steeringForce = (desiredVelocity - rb.linearVelocity) * 10f; // Adjust multiplier as needed
-
-            // Apply the steering force
-            rb.AddForce(steeringForce, ForceMode.Force);
-
-            // --- Manual enemy overlap check ---
-            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
-            foreach (var enemy in enemiesHit)
+            if (rb.isKinematic)
             {
-                ApplyDashDamage(enemy);
+                // Move kinematically toward target
+                Vector3 newPosition = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
+                rb.MovePosition(newPosition);
+
+                // Check if we reached target
+                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                {
+                    // Switch back to dynamic to apply physics
+                    rb.isKinematic = false;
+
+                    // Hang in air for a frame
+                    rb.linearVelocity = Vector3.zero;
+
+                    // Apply upward bounce
+                    rb.AddForce(Vector3.up * bounceForce, ForceMode.Impulse);
+                }
+            }
+
+            // --- Manual enemy overlap check (single-hit per dash) ---
+            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
+            foreach (var enemyCollider in enemiesHit)
+            {
+                var enemy = enemyCollider.GetComponent<EnemyDamageComponent>();
+                if (enemy != null && !damagedThisDash.Contains(enemy))
+                {
+                    ApplyDashDamage(enemyCollider);
+                    damagedThisDash.Add(enemy); // mark as hit
+                }
             }
 
             // End dash after duration
@@ -849,17 +890,15 @@ public class CharacterController : MonoBehaviour
                 isMoving = false;
                 isDashing = false;
                 dashTimer = 0f;
-                damagedThisDash.Clear(); // Ready for next dash
+                damagedThisDash.Clear();
 
                 // Restore friction
                 if (playerCollider.material != null)
                     playerCollider.material = originalMaterial;
-
-                // Keep momentum forward
-                rb.linearVelocity = moveDirection * rb.linearVelocity.magnitude * 1.2f;
             }
         }
     }
+
 
     // Helper method to apply damage only once per dash
     private void ApplyDashDamage(Collider other)

@@ -4,6 +4,11 @@ public class HeavyEnemyStateMachine
 {
     private IHeavyEnemyState currentState;
 
+    public IHeavyEnemyState GetCurrentState()
+    {
+        return currentState;
+    }
+
     public void ChangeState(IHeavyEnemyState newState)
     {
         currentState?.Exit();  // Exit current state -_-
