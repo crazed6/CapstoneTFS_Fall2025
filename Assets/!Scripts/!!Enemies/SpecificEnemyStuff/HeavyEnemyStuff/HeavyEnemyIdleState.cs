@@ -13,11 +13,6 @@ public class HeavyEnemyIdleState : IHeavyEnemyState
     {
         Debug.Log("Entered Idle State");
         enemy.StopTracking(); // Stops async process if running
-       
-        if (enemy.animator != null)
-        {
-            enemy.animator.SetBool("isShooting", false);
-        }
     }
 
     public void Execute()

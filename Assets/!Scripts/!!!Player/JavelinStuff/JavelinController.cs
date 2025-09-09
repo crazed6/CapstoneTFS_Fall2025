@@ -1,9 +1,8 @@
 ﻿//Ritwik
+using UnityEngine;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
-using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.VFX;
 
 public class JavelinController : MonoBehaviour
 {
@@ -19,7 +18,7 @@ public class JavelinController : MonoBehaviour
     public float colliderActivationDelay = 0.1f;
 
     [Header("VFX")]
-    public VisualEffect aoeVFXPrefab;
+    public GameObject aoeVFXPrefab;
     public float aoeVFXLifetime = 3f;
 
     private CancellationTokenSource cts;
@@ -51,15 +50,9 @@ public class JavelinController : MonoBehaviour
         foreach (var col in colliders)
             col.enabled = !aiming;
 
+        // Only change layer when no longer aiming
         if (!aiming)
             gameObject.layer = LayerMask.NameToLayer("Default");
-
-        // --- NEW: toggle trails ---
-        var trailController = GetComponent<JavelinVFXController>();
-        if (trailController != null)
-        {
-            trailController.SetTrailsActive(!aiming);
-        }
     }
 
     private async UniTaskVoid FlyForward(CancellationToken token)
@@ -116,16 +109,10 @@ public class JavelinController : MonoBehaviour
         // AoE VFX spawn
         if (aoeVFXPrefab != null)
         {
-            VisualEffect vfxInstance = Instantiate(aoeVFXPrefab, hitPoint, Quaternion.identity);
-
-            // Optionally send events/parameters if your VFX Graph expects them
-            // vfxInstance.SetFloat("ExplosionRadius", aoeRadius);
-            // vfxInstance.SendEvent("OnExplode");
-
-            Destroy(vfxInstance.gameObject, aoeVFXLifetime);
+            GameObject vfx = Instantiate(aoeVFXPrefab, hitPoint, Quaternion.identity);
+            Destroy(vfx, aoeVFXLifetime);
         }
 
-        // Damage logic unchanged
         Collider[] hits = Physics.OverlapSphere(hitPoint, aoeRadius, damageMask);
         foreach (var hit in hits)
         {
@@ -144,7 +131,6 @@ public class JavelinController : MonoBehaviour
 
         Destroy(gameObject);
     }
-
 
     private void OnDestroy()
     {
