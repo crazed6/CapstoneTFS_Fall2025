@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using UnityEngine.VFX;
 
 public class HeavyEnemyAI : MonoBehaviour
 {
@@ -62,15 +63,15 @@ public class HeavyEnemyAI : MonoBehaviour
     private float dashImmunityTimer = 0f;
     public GameObject LastDashedPlayer => lastDashedPlayer;
 
-    // === New Dash Cancel System ===
+    // === Dash Cancel System ===
     [Header("Dash Cancel Detection")]
-    public SphereCollider dashDetectionCollider; // Adjustable collider
+    public SphereCollider dashDetectionCollider; // Trigger collider
     public LayerMask playerLayer;
-    public ParticleSystem dashAttackEffect;
+    public VisualEffect dashCancelEffect; // assign in inspector
 
     [HideInInspector] public bool cantDashAttack = false;
-    private ParticleSystem activeEffectInstance;
-    // ===============================
+    private VisualEffect activeEffectInstance;
+    private bool activeEffectInstancePlaying = false;
 
     [Header("Animation")]
     public Animator animator;
@@ -82,8 +83,6 @@ public class HeavyEnemyAI : MonoBehaviour
     public event Action OnThrowRock; //audio hook
     public event Action OnLockOn; //audio hook
     public event Action OnStopTracking; //audio hook
-
-
 
     private void Start()
     {
@@ -104,57 +103,61 @@ public class HeavyEnemyAI : MonoBehaviour
                 lastDashedPlayer = null;
             }
         }
-
-        // 🔴 Dash Cancel Sphere Check
-        CheckDashAttack();
     }
 
-    private void CheckDashAttack()
+    // === Dash Cancel Trigger ===
+    private void OnTriggerEnter(Collider other)
     {
-        if (dashDetectionCollider == null) return;
-
-        // Sphere position/scale
-        Vector3 center = dashDetectionCollider.transform.TransformPoint(dashDetectionCollider.center);
-        float radius = dashDetectionCollider.radius * Mathf.Max(
-            dashDetectionCollider.transform.lossyScale.x,
-            dashDetectionCollider.transform.lossyScale.y,
-            dashDetectionCollider.transform.lossyScale.z
-        );
-
-        Collider[] hits = Physics.OverlapSphere(center, radius, playerLayer);
-
-        bool playerInside = false;
-        foreach (var hit in hits)
-        {
-            if (hit.CompareTag("Player"))
-            {
-                playerInside = true;
-                break;
-            }
-        }
-
-        if (playerInside && !cantDashAttack)
+        if (other.CompareTag("Player"))
         {
             cantDashAttack = true;
+            Debug.Log($"{name} → Player entered dash-cancel radius → cantDashAttack = TRUE");
 
-            if (dashAttackEffect != null && activeEffectInstance == null)
+            if (dashCancelEffect != null && !activeEffectInstancePlaying)
             {
-                activeEffectInstance = Instantiate(dashAttackEffect, transform.position, Quaternion.identity, transform);
-                activeEffectInstance.Play();
+                dashCancelEffect.SetBool("Active", true); // Start VFX via parameter
+                activeEffectInstance = dashCancelEffect;
+                activeEffectInstancePlaying = true;
             }
         }
-        else if (!playerInside && cantDashAttack)
+
+        if (other.CompareTag("javilin"))
         {
             cantDashAttack = false;
+            Debug.Log($"{name} → Hit by Javilin → cantDashAttack = FALSE, effect turned off");
 
             if (activeEffectInstance != null)
             {
-                activeEffectInstance.Stop();
-                Destroy(activeEffectInstance.gameObject, 2f);
+                activeEffectInstance.SetBool("Active", false); // Stop VFX
                 activeEffectInstance = null;
+                activeEffectInstancePlaying = false;
+            }
+
+            // Permanently disable the collider for this enemy only
+            if (dashDetectionCollider != null)
+            {
+                dashDetectionCollider.enabled = false;
             }
         }
     }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player") && cantDashAttack)
+        {
+            cantDashAttack = false;
+            Debug.Log($"{name} → Player exited dash-cancel radius → cantDashAttack = FALSE");
+
+            if (activeEffectInstance != null)
+            {
+                activeEffectInstance.SetBool("Active", false);
+                activeEffectInstance = null;
+                activeEffectInstancePlaying = false;
+            }
+        }
+    }
+
 
     public bool CanSeePlayer()
     {
@@ -206,7 +209,6 @@ public class HeavyEnemyAI : MonoBehaviour
 
         try
         {
-            // Aiming phase
             while (timer < trackDuration)
             {
                 if (token.IsCancellationRequested || player == null) return;
@@ -216,11 +218,8 @@ public class HeavyEnemyAI : MonoBehaviour
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
 
-            // Lock-in phase
             if (trajectoryLine != null) trajectoryLine.colorGradient = lockedColor;
             await UniTask.Delay(TimeSpan.FromSeconds(lockDuration), cancellationToken: token);
-
-            // NOTE: We no longer throw the rock here. We wait for the animation event.
         }
         catch (OperationCanceledException)
         {
@@ -228,26 +227,22 @@ public class HeavyEnemyAI : MonoBehaviour
         }
     }
 
-    // ADD this new function to be called by the animation event
     public void HandleRockThrowTrigger()
     {
-        if (!isTracking) return; // Don't throw if we weren't aiming
+        if (!isTracking) return;
 
         ThrowRockAtLockedPosition(lockedTarget);
-        isTracking = false; // Reset tracking after the throw
+        isTracking = false;
 
-        // After throwing, start a cooldown and then check if we should aim again or go idle
         PostThrowCheckAsync().Forget();
     }
 
-    // ADD this new helper async method
     private async UniTaskVoid PostThrowCheckAsync()
     {
         await UniTask.Delay(TimeSpan.FromSeconds(postThrowCooldown));
 
         if (this == null || gameObject == null || !gameObject.activeInHierarchy) return;
 
-        // If player is still visible, enter shooting state again to start a new aim cycle
         if (Vector3.Distance(transform.position, player.position) <= firingZoneRange && CanSeePlayer())
         {
             stateMachine.ChangeState(new HeavyEnemyShootingState(this));
@@ -267,7 +262,6 @@ public class HeavyEnemyAI : MonoBehaviour
         trajectoryLine.enabled = false;
         isTracking = false;
 
-        // AUDIO: notify listeners to stop lock-on sound
         OnStopTracking?.Invoke();
     }
 
@@ -312,17 +306,17 @@ public class HeavyEnemyAI : MonoBehaviour
 
         rockScript.Launch(target, shootSpeed, trajectoryHeight);
 
-        OnThrowRock?.Invoke();//audio hook
+        OnThrowRock?.Invoke();
     }
+
     public void TriggerSlamAOE()
     {
-        // Check if the current state is the SlamAttackState
         if (stateMachine.GetCurrentState() is HeavyEnemySlamAttackState slamState)
         {
-            // If it is, call the function to apply damage and knockback
             slamState.ApplySlamAOE();
         }
     }
+
     public async UniTaskVoid StartSlamCooldown()
     {
         slamOnCooldown = true;
@@ -330,21 +324,14 @@ public class HeavyEnemyAI : MonoBehaviour
         slamOnCooldown = false;
     }
 
-    // Debug Gizmo for Dash Cancel
     private void OnDrawGizmosSelected()
     {
         if (dashDetectionCollider != null)
         {
             Gizmos.color = cantDashAttack ? Color.red : Color.green;
-            Vector3 center = dashDetectionCollider.transform.TransformPoint(dashDetectionCollider.center);
-            float radius = dashDetectionCollider.radius * Mathf.Max(
-                dashDetectionCollider.transform.lossyScale.x,
-                dashDetectionCollider.transform.lossyScale.y,
-                dashDetectionCollider.transform.lossyScale.z
-            );
-            Gizmos.DrawWireSphere(center, radius);
+            Gizmos.DrawWireSphere(dashDetectionCollider.transform.position, dashDetectionCollider.radius);
         }
-        // Draw the slam radius
+
         if (slamOrigin != null)
         {
             Gizmos.color = Color.yellow;
