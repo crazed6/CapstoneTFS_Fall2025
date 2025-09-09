@@ -33,12 +33,7 @@ public class PlayerAnimsController : MonoBehaviour
 
         animator.SetBool("IsWallRight", cc.IsWallRunRight);
 
-        
-
-        if (cc.IsJumping)
-        {
-            animator.Play("KF_Jump_Forward");
-        }
+        animator.SetBool("IsJumping", cc.IsJumping);
 
         if (cc.isVaulting)
         {
