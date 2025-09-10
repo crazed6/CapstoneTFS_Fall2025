@@ -129,6 +129,11 @@ public class CharacterController : MonoBehaviour
     public bool isOnPoleVaultPad;
     public bool isVaulting; // For Pole Vault Animation - Colton
 
+    [Tooltip("Total upward delta-v (m/s) you want the vault to add over 'upDuration'.")]
+    public float upTotalDeltaV = 500f;
+    [Tooltip("How long (seconds) to distribute the upward velocity.")]
+    public float upDuration = 0.3f;
+
     // Displacement Calculation
     Vector3 lastPosition;
     [HideInInspector] public Vector3 displacement;
@@ -278,10 +283,10 @@ public class CharacterController : MonoBehaviour
             rb.AddForce(-transform.up * 30f, ForceMode.Acceleration); // Stick to slope
             return;
         }
+
+        // Don't handle movement if wall running
         if (isWallRunning)
-        {
-            return; // Wall running handles its own movement
-        }
+            return;
 
         // Get slope normal
         Vector3 groundNormal = Vector3.up;
@@ -293,31 +298,56 @@ public class CharacterController : MonoBehaviour
         // Project input onto slope
         Vector3 slopeAdjustedDirection = Vector3.ProjectOnPlane(inputDirection, groundNormal).normalized;
 
-        float horizontalSpeed = new Vector3(displacement.x, 0, displacement.z).magnitude;
-        float speedToApply = Mathf.Max(baseSpeed, horizontalSpeed);
-
-        if (!isGrounded) speedToApply = lastSpeedBeforeTakeoff;
-        if (speedToApply > baseSpeed) speedToApply *= isGrounded ? 0.985f : 0.99f;
-
-        Vector3 newVelocity = slopeAdjustedDirection * speedToApply;
-        newVelocity.y = rb.linearVelocity.y;
-
         if (isGrounded)
         {
+            // Grounded movement
+            float horizontalSpeed = new Vector3(displacement.x, 0, displacement.z).magnitude;
+            float speedToApply = Mathf.Max(baseSpeed, horizontalSpeed);
+
+            if (speedToApply > baseSpeed)
+                speedToApply *= 0.985f; // Slight damping
+
+            Vector3 newVelocity = slopeAdjustedDirection * speedToApply;
+            newVelocity.y = rb.linearVelocity.y; // preserve vertical
             rb.linearVelocity = newVelocity;
         }
         else
         {
-            rb.AddForce(slopeAdjustedDirection * speedToApply, ForceMode.Force);
+            // Air movement
+            float airControlMultiplier = 0.5f; // Tweak to control strength of air control
 
-            if (horizontalSpeed > baseSpeed)
+            // Use last speed before takeoff or fallback to baseSpeed
+            float horizontalSpeed = lastSpeedBeforeTakeoff;
+            if (horizontalSpeed < 0.1f) horizontalSpeed = baseSpeed; // Fix for standing jump
+
+            if (inputDirection.sqrMagnitude > 0.01f)
             {
-                Vector3 newHorizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-                newHorizontalVelocity *= 0.98f;
-                rb.linearVelocity = new Vector3(newHorizontalVelocity.x, rb.linearVelocity.y, newHorizontalVelocity.z);
+                // Current horizontal velocity
+                Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+
+                // Target velocity based on input
+                Vector3 targetVelocity = slopeAdjustedDirection * horizontalSpeed;
+
+                // MoveTowards gradually adjusts horizontal velocity per FixedUpdate
+                float maxDelta = airControlMultiplier * horizontalSpeed * Time.fixedDeltaTime;
+                horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, maxDelta);
+
+                // Apply without changing vertical velocity
+                rb.linearVelocity = new Vector3(horizontalVelocity.x, rb.linearVelocity.y, horizontalVelocity.z);
+            }
+
+            // Clamp horizontal speed
+            Vector3 horizontalVelCheck = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            if (horizontalVelCheck.magnitude > maxSpeed)
+            {
+                horizontalVelCheck = horizontalVelCheck.normalized * maxSpeed;
+                rb.linearVelocity = new Vector3(horizontalVelCheck.x, rb.linearVelocity.y, horizontalVelCheck.z);
             }
         }
     }
+
+
+
 
 
 
@@ -329,15 +359,18 @@ public class CharacterController : MonoBehaviour
             jumpBufferTimer = -1f; // consume jump buffer
             coyoteTimer = 0f;
 
-            // rest of your jump code...
             currentDownwardForce = 0f;
 
             lastSpeedBeforeTakeoff = displacement.magnitude;
 
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            // --- FIXED: Don't reset horizontal velocity ---
+            Vector3 jumpVelocity = rb.linearVelocity;
+            jumpVelocity.y = 0f; // only reset vertical velocity
+            rb.linearVelocity = jumpVelocity;
+
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
 
-            isJumping = true; // For jump animation - Colton
+            isJumping = true; // For jump animation
         }
 
         // Custom gravity handling (affects both ascent and descent)
@@ -353,11 +386,12 @@ public class CharacterController : MonoBehaviour
                 currentDownwardForce = Mathf.Lerp(currentDownwardForce, downwardGravityForce, Time.deltaTime * downwardForceLerpSpeed);
                 rb.AddForce(Vector3.down * currentDownwardForce, ForceMode.Acceleration);
 
-                isJumping = false; // For jump animation - Colton
+                isJumping = false; // For jump animation
                 isFalling = true;
             }
         }
     }
+
 
 
 
@@ -698,54 +732,51 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-
+    private Coroutine vaultRoutine;
     void poleVault()
     {
-        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad)
+        // guard: only start a vault if none is running
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded && !isSliding && isOnPoleVaultPad && vaultRoutine == null)
         {
-            GetComponent<PlayerAudio>()?.PlayPoleVault(); //audio hook
+            GetComponent<PlayerAudio>()?.PlayPoleVault();
 
-            // Mark player as airborne
             isGrounded = false;
+            isVaulting = true;
 
-            isVaulting = true; // For Pole Vault Animation - Colton
-
-            //// Apply immediate forward impulse
-            //rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse); -------- Moved to EndVaultAfterDelay - Colton
-
-            // Start upward impulse over short time
-            //StartCoroutine(SmoothPoleVaultImpulse()); ------- Moved to EndVaultAfterDelay - Colton
-
-            StartCoroutine(EndVaultAfterDelay(0.5f)); // End vaulting state after 1.2 seconds - Colton
+            vaultRoutine = StartCoroutine(EndVaultAfterDelay(0.5f));
         }
     }
-    // Ends vaulting state after a delay - Colton
+
     private IEnumerator EndVaultAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        isVaulting = false;
-        // Apply immediate forward impulse
+
+        // Apply forward impulse ONCE
         rb.AddForce(transform.forward * forwardForce, ForceMode.Impulse);
 
-        StartCoroutine(SmoothPoleVaultImpulse());
+        // Apply upward delta-v smoothly but safely (aligned to physics)
+        yield return StartCoroutine(SmoothPoleVaultImpulse(upTotalDeltaV, upDuration));
+
+        // finish vault
+        isVaulting = false;
+        vaultRoutine = null;
     }
 
-    IEnumerator SmoothPoleVaultImpulse()
+    // Smoothly apply a TOTAL upward delta-v over `duration` seconds,
+    // split evenly across FixedUpdate steps (prevents huge stacking).
+    private IEnumerator SmoothPoleVaultImpulse(float totalDeltaV, float duration)
     {
-        float duration = 0.3f;
-        float timer = 0f;
+        if (duration <= 0f || Mathf.Approximately(totalDeltaV, 0f))
+            yield break;
 
-        rb.useGravity = true;
+        int steps = Mathf.Max(1, Mathf.RoundToInt(duration / Time.fixedDeltaTime));
+        float deltaPerStep = totalDeltaV / steps; // units: m/s per physics step
 
-        while (timer < duration)
+        for (int i = 0; i < steps; i++)
         {
-            float t = timer / duration;
-
-            // Remove Time.deltaTime for VelocityChange
-            rb.AddForce(Vector3.up * upForce * (1 - t), ForceMode.VelocityChange);
-
-            timer += Time.deltaTime;
-            yield return null;
+            // Add the small velocity change each fixed step
+            rb.AddForce(Vector3.up * deltaPerStep, ForceMode.VelocityChange);
+            yield return new WaitForFixedUpdate(); // align to physics
         }
     }
     void DashForward()
@@ -1034,5 +1065,6 @@ public class CharacterController : MonoBehaviour
         }
     }
 
+   
 }
 
