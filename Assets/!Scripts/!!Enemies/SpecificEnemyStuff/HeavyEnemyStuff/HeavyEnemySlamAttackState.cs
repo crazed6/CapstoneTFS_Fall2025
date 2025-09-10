@@ -1,3 +1,4 @@
+// HeavyEnemySlamAttackState.cs
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Threading;
@@ -6,11 +7,7 @@ using System;
 public class HeavyEnemySlamAttackState : IHeavyEnemyState
 {
     private readonly HeavyEnemyAI enemy;
-    private CancellationTokenSource slamTokenSource;
-
-    // Small telegraph/impact delay so we check dash at the exact moment we apply damage.
-    // Tune this to taste (0.10f–0.25f usually feels good).
-    private const float HitDelaySeconds = 0.15f;
+    private CancellationTokenSource stateTransitionTokenSource;
 
     public HeavyEnemySlamAttackState(HeavyEnemyAI enemy)
     {
@@ -19,70 +16,39 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
 
     public void Enter()
     {
+        Debug.Log("SLAM STATE ENTERED! If the animation isn't playing, check the Animator transition.");
+
         Debug.Log("Entered Slam Attack State");
-        enemy.StopTracking();                 // cancel rock logic
+        enemy.StopTracking();
         enemy.isSlamming = true;
-        slamTokenSource = new CancellationTokenSource();
-        SlamAttackAsync().Forget();
+        stateTransitionTokenSource = new CancellationTokenSource();
+
+        // Trigger the slam animation!
+        if (enemy.animator != null)
+        {
+            enemy.animator.SetTrigger("LobberSlam");
+        }
     }
 
     public void Execute()
     {
-        // No per-frame logic; handled asynchronously.
+        // No per-frame logic; everything is driven by the animation now.
     }
 
     public void Exit()
     {
         Debug.Log("Exiting Slam Attack State");
         enemy.isSlamming = false;
-        slamTokenSource?.Cancel();
+        stateTransitionTokenSource?.Cancel();
     }
 
-    private async UniTaskVoid SlamAttackAsync()
-    {
-        // 1) Optional: play windup animation/VFX here
-
-        try
-        {
-            // 2) Wait a small delay and THEN apply the AoE (dash flag is checked at impact time)
-            await UniTask.Delay(TimeSpan.FromSeconds(HitDelaySeconds), cancellationToken: slamTokenSource.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            return; // state changed / enemy destroyed
-        }
-
-        if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
-
-        // 3) Apply AOE at impact time (we re-check dash here)
-        ApplySlamAOE();
-
-        // 4) Start cooldown
-        enemy.StartSlamCooldown().Forget();
-
-        try
-        {
-            await UniTask.Delay(TimeSpan.FromSeconds(enemy.slamCooldown), cancellationToken: slamTokenSource.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            // safely cancelled
-        }
-
-        if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
-
-        // 5) Return to next appropriate state
-        if (enemy.CanSeePlayer())
-            enemy.stateMachine.ChangeState(new HeavyEnemyShootingState(enemy));
-        else
-            enemy.stateMachine.ChangeState(new HeavyEnemyIdleState(enemy));
-    }
-
-    private void ApplySlamAOE()
+    // THIS FUNCTION IS NOW PUBLIC and will be called by the animation event
+    public void ApplySlamAOE()
     {
         // Guard enemy references
         if (enemy == null || enemy.slamOrigin == null) return;
 
+        Debug.Log("Animation Event triggered ApplySlamAOE!");
         enemy.OnSlam?.Invoke(); // <-- Audio triggers here
 
         Collider[] hits = Physics.OverlapSphere(enemy.slamOrigin.position, enemy.slamRadius);
@@ -91,21 +57,14 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
         {
             if (!hit.CompareTag("Player")) continue;
 
-            // --- Robustly fetch your custom CharacterController no matter where the collider lives ---
-            // Use global::CharacterController to avoid clashing with UnityEngine.CharacterController.
+            // ... (The rest of your existing damage and knockback logic remains unchanged)
             global::CharacterController controller =
                 hit.GetComponent<global::CharacterController>() ??
                 hit.GetComponentInParent<global::CharacterController>() ??
                 (hit.attachedRigidbody != null ? hit.attachedRigidbody.GetComponent<global::CharacterController>() : null);
 
-            // If the player is in ANY dash mode at impact time, skip damage & knockback.
-            if (enemy.LastDashedPlayer == hit.gameObject)
-            {
-                
-                continue;
-            }
+            if (enemy.LastDashedPlayer == hit.gameObject) continue;
 
-            // --- Damage ---
             Health playerHealth =
                 hit.GetComponent<Health>() ??
                 hit.GetComponentInParent<Health>() ??
@@ -117,7 +76,6 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
                 playerHealth.PlayerTakeDamage(damageData);
             }
 
-            // --- Knockback ---
             KnockbackReceiver kb =
                 hit.GetComponent<KnockbackReceiver>() ??
                 hit.GetComponentInParent<KnockbackReceiver>() ??
@@ -135,5 +93,30 @@ public class HeavyEnemySlamAttackState : IHeavyEnemyState
                 kb.ApplyKnockback(kbData);
             }
         }
+
+        // After applying damage, start the cooldown and prepare to transition to the next state.
+        enemy.StartSlamCooldown().Forget();
+        TransitionAfterSlamAsync().Forget();
+    }
+
+    private async UniTaskVoid TransitionAfterSlamAsync()
+    {
+        try
+        {
+            // Wait for a short duration after the slam to let the animation finish blending out
+            await UniTask.Delay(TimeSpan.FromSeconds(1.0f), cancellationToken: stateTransitionTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return; // State was changed by something else
+        }
+
+        if (enemy == null || !enemy.gameObject.activeInHierarchy) return;
+
+        // Transition to the next appropriate state
+        if (enemy.CanSeePlayer())
+            enemy.stateMachine.ChangeState(new HeavyEnemyShootingState(enemy));
+        else
+            enemy.stateMachine.ChangeState(new HeavyEnemyIdleState(enemy));
     }
 }

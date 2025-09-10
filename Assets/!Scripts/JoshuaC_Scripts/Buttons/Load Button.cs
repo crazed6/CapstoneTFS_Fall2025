@@ -22,6 +22,11 @@ public class LoadButton : MonoBehaviour
         if (!string.IsNullOrEmpty(sceneName))
         {
             Debug.LogError("Loading last scene." +sceneName);
+
+            //GameSession communicating that its a Loaded Game
+            GameSession.IsNewSession = false; // It's not a new session
+            GameSession.IsLoadedGame = true; // It's a loaded game
+
             SceneManager.sceneLoaded += OnSceneLoaded; // Subscribe to the scene loaded event
             SceneManager.LoadScene(sceneName);
 

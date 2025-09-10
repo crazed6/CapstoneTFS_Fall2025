@@ -9,10 +9,6 @@ public class SettingsManager : MonoBehaviour
 {
     public static SettingsManager Instance { get; private set; }
 
-    [Header("Turn Off/On GameObjects")]
-    public GameObject displayMenu; // The display menu panel to toggle
-    public GameObject optionsMenu; // The options menu panel to toggle
-
     [Header("UI References")]
     public TMP_Dropdown resolutionDropdown;
     public TMP_Dropdown qualityDropdown;
@@ -337,17 +333,4 @@ public class SettingsManager : MonoBehaviour
         }
     }
     #endregion
-
-    public void DisplayMenuOpen()
-    {
-        if (displayMenu) displayMenu.SetActive(true);
-        if (optionsMenu) optionsMenu.SetActive(false);
-    }
-
-   public void OptionsMenuOpen()
-    {
-        if (optionsMenu) optionsMenu.SetActive(true);
-        if (displayMenu) displayMenu.SetActive(false);
-    }
-
 }
