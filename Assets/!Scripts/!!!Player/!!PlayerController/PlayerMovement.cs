@@ -267,7 +267,7 @@ public class CharacterController : MonoBehaviour
     
     displacement = (transform.position - lastPosition) * 50;
     lastPosition = transform.position;
-    LimitVelocity(maxSpeed);
+    //LimitVelocity(maxSpeed);
 }
     void Move()
     {
