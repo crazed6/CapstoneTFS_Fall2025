@@ -1,46 +1,37 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VFX;
 
-public abstract class EnemyVFXController : MonoBehaviour
+public class EnemyVFXController : MonoBehaviour
 {
     [Header("Death VFX")]
-    [SerializeField] protected ParticleSystem[] deathParticles;
-    [SerializeField] protected string dissolveProperty = "_DissolveAmount";
-    [SerializeField] protected float dissolveDuration = 2f;
+    [SerializeField] private ParticleSystem[] deathParticles; // multiple supported
+    [SerializeField] private string dissolveProperty = "_DissolveAmount";
+    [SerializeField] private float dissolveDuration = 2f;
 
-    protected Renderer[] renderers;
-    protected MaterialPropertyBlock mpb;
-    protected int dissolvePropertyID;
-    protected Animator animator; // enemy animator reference
+    private Renderer[] renderers;
+    private MaterialPropertyBlock mpb;
+    private int dissolvePropertyID;
 
-    protected virtual void Awake()
+    private void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
         mpb = new MaterialPropertyBlock();
         dissolvePropertyID = Shader.PropertyToID(dissolveProperty);
-
-        animator = GetComponentInChildren<Animator>();
     }
 
-    public virtual void PlayDeathVFX()
+    public void PlayDeathVFX()
     {
-        // freeze animation on current frame
-        if (animator != null)
-            animator.speed = 0f;
-
-        // play particles
+        // Play all particles assigned
         foreach (var ps in deathParticles)
         {
             if (ps != null)
                 ps.Play();
         }
 
-        // start dissolve
         StartCoroutine(DissolveRoutine());
     }
 
-    protected virtual IEnumerator DissolveRoutine()
+    private IEnumerator DissolveRoutine()
     {
         float timer = 0f;
 

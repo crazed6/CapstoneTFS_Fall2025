@@ -111,7 +111,7 @@ public class EnemyDamageComponent : MonoBehaviour
         //    rend.material.color = Color.red;
         //}
         // Aiden's swap from kaylani's red -> actual death
-       EnemyVFXController vfx = GetComponent<EnemyVFXController>();
+        EnemyVFXController vfx = GetComponent<EnemyVFXController>();
         if (vfx != null)
             vfx.PlayDeathVFX();
 
@@ -136,6 +136,8 @@ public class EnemyDamageComponent : MonoBehaviour
         Destroy(gameObject, 2.0f);
         OnDeath?.Invoke();
     }
+
+
 
     private void UpdateHealthUI()
     {
