@@ -2,61 +2,65 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 
+// Diego & Joshua's segmented Momentum UI
 public class MomentumBar : MonoBehaviour
 {
-    // Reference to the Image component used for the fill amount (inside the mask)
-    public Image fillImage;
-
-    // Reference to the CharacterController script to access the player's speed
+    [Header("References")]
+    public RectTransform maskTransform;  // The moving mask
+    public Image[] slots;                // 10 slot images inside the mask
     public CharacterController playerController;
 
     [Header("Speed Settings")]
-    // The maximum speed that the player can reach; used to normalize current speed
     public float maxSpeed = 30f;
 
     [Header("Color Settings")]
-    // Color of the bar when at low or normal speed
     public Color normalColor = Color.green;
-
-    // Color of the bar when at max speed (momentum maxed)
     public Color maxedColor = Color.cyan;
 
-    private void Start()
+    private float originalWidth;
+
+    void Start()
     {
-        // Auto-assign player controller if it's not set in the Inspector
+        if (maskTransform != null)
+            originalWidth = maskTransform.sizeDelta.x;
+
         if (playerController == null)
             playerController = CharacterController.instance;
 
-        // If we successfully found the player controller, use its maxSpeed
         if (playerController != null)
             maxSpeed = playerController.maxSpeed;
 
-        // Set the initial color of the bar
-        fillImage.color = normalColor;
+        // Initialize slot colors
+        foreach (var slot in slots)
+        {
+            if (slot != null)
+                slot.color = normalColor;
+        }
     }
 
     void Update()
     {
-        // Return early if required references are missing
-        if (playerController == null || fillImage == null) return;
+        if (playerController == null || maskTransform == null || slots == null || slots.Length == 0)
+            return;
 
-        // Get the player's velocity (from their Rigidbody)
+        // Get horizontal speed
         Vector3 velocity = playerController.rb.linearVelocity;
-
-        // Calculate horizontal speed only (ignore vertical velocity like jumping/falling)
         Vector2 horizontalVelocity = new Vector2(velocity.x, velocity.z);
         float speed = horizontalVelocity.magnitude;
 
-        // Normalize the speed between 0 and 1
+        // Normalize (0–1)
         float normalized = Mathf.Clamp01(speed / maxSpeed);
 
-        // Animate the fill amount of the bar using DOTween (smooth transition)
-        fillImage.DOFillAmount(normalized, 0.1f);
+        // Resize mask like HealthUI
+        float targetWidth = originalWidth * normalized;
+        maskTransform.sizeDelta = new Vector2(targetWidth, maskTransform.sizeDelta.y);
 
-        // Lerp the color between normalColor and maxedColor based on normalized speed
+        // Smoothly update slot colors
         Color targetColor = Color.Lerp(normalColor, maxedColor, normalized);
-
-        // Animate the color change smoothly using DOTween
-        fillImage.DOColor(targetColor, 0.1f);
+        foreach (var slot in slots)
+        {
+            if (slot != null)
+                slot.DOColor(targetColor, 0.1f);
+        }
     }
 }

@@ -1,97 +1,108 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-
-//Joshuas and Diego's Script
+using DG.Tweening;
 
 public class HealthUI : MonoBehaviour
 {
     [Header("References")]
-    public RectTransform maskTransform; // The transform of the mask
-    public Image fillImage;             // The fill image (can be used to set color)
+    public RectTransform maskTransform; // The moving mask
+    public Image[] slots;               // 10 slot images inside the mask
     public Health playerHealth;
 
     [Header("Visuals")]
-    public Gradient healthGradient;
+    public Color maxColor = Color.green;
+    public Color minColor = Color.red;
+    public Color flashColorA = Color.red;
+    public Color flashColorB = Color.white;
 
     private float originalWidth;
-    private Coroutine warningCoroutine;
-    private bool isWarningActive = false;
+    private Coroutine flashCoroutine;
+    private bool isFlashing = false;
 
     void Start()
     {
         if (maskTransform != null)
-        {
             originalWidth = maskTransform.sizeDelta.x;
-        }
 
         if (playerHealth != null)
-        {
             SetHealth(playerHealth.health, playerHealth.MaxHealth);
+
+        // Initialize slot colors
+        foreach (var slot in slots)
+        {
+            if (slot != null)
+                slot.color = maxColor;
         }
     }
 
     void Update()
     {
         if (playerHealth != null)
-        {
             SetHealth(playerHealth.health, playerHealth.MaxHealth);
-        }
     }
 
     public void SetHealth(int currentHealth, int maxHealth)
     {
-        // Clamp health percentage between 0 and 1
         float healthPercent = Mathf.Clamp01((float)currentHealth / maxHealth);
 
-        // Resize the mask width to reflect current health (left-to-right)
+        // Resize mask based on health %
         if (maskTransform != null)
         {
-            // Multiply original full width by health percentage
-            maskTransform.sizeDelta = new Vector2(originalWidth * healthPercent, maskTransform.sizeDelta.y);
+            float targetWidth = originalWidth * healthPercent;
+            maskTransform.sizeDelta = new Vector2(targetWidth, maskTransform.sizeDelta.y);
         }
 
-        // Update the fill image color if no warning is active
-        if (fillImage != null && !isWarningActive)
+        // Base gradient color
+        Color targetColor = Color.Lerp(minColor, maxColor, healthPercent);
+
+        // Update slots if not flashing
+        if (!isFlashing)
         {
-            fillImage.color = healthGradient.Evaluate(healthPercent);
+            foreach (var slot in slots)
+            {
+                if (slot != null)
+                    slot.DOColor(targetColor, 0.15f);
+            }
         }
 
-        // Low health warning logic (below 20%)
-        if (healthPercent < 0.2f && !isWarningActive)
+        // Handle flashing
+        if (healthPercent <= 0.25f && !isFlashing)
         {
-            isWarningActive = true;
-            if (warningCoroutine != null)
-                StopCoroutine(warningCoroutine);
-            warningCoroutine = StartCoroutine(BlinkRedEffect());
+            isFlashing = true;
+            if (flashCoroutine != null) StopCoroutine(flashCoroutine);
+            flashCoroutine = StartCoroutine(FlashRedWhite());
         }
-        else if (healthPercent >= 0.2f && isWarningActive)
+        else if (healthPercent > 0.25f && isFlashing)
         {
-            isWarningActive = false;
-            if (warningCoroutine != null)
-                StopCoroutine(warningCoroutine);
-            warningCoroutine = null;
+            isFlashing = false;
+            if (flashCoroutine != null) StopCoroutine(flashCoroutine);
+            flashCoroutine = null;
 
-            // Restore fill color immediately after warning stops
-            if (fillImage != null)
-                fillImage.color = healthGradient.Evaluate(healthPercent);
+            // Reset to correct color
+            foreach (var slot in slots)
+            {
+                if (slot != null)
+                    slot.color = targetColor;
+            }
         }
     }
 
-
-    private IEnumerator BlinkRedEffect()
+    private IEnumerator FlashRedWhite()
     {
-        while (isWarningActive)
+        while (isFlashing)
         {
-            if (fillImage != null)
-                fillImage.color = Color.red;
+            foreach (var slot in slots)
+                if (slot != null)
+                    slot.color = flashColorA; // red
 
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.25f);
 
-            if (fillImage != null)
-                fillImage.color = healthGradient.Evaluate((float)playerHealth.health / playerHealth.MaxHealth);
+            foreach (var slot in slots)
+                if (slot != null)
+                    slot.color = flashColorB; // white
 
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.25f);
         }
     }
 }
