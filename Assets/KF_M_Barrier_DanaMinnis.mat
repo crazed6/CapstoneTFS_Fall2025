@@ -9,11 +9,11 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: KF_M_Barrier_DanaMinnis
   m_Shader: {fileID: -6465566751694194690, guid: 6bce81a5ade559547bff4bcf4ed3c0f7, type: 3}
-  m_Parent: {fileID: 2100000, guid: de0aa3eb5fd10bf4caaf78d35c812c99, type: 2}
+  m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords: []
-  m_LightmapFlags: 4
+  m_LightmapFlags: 2
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
@@ -23,11 +23,30 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _SampleTexture2D_2e06cad5c4b249ce81d1dda7fccfa3be_Texture_1_Texture2D:
+        m_Texture: {fileID: 2800000, guid: 49f6b873f7dcb51438437b26c9506ee5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Emissive_Strength: 244.6
+    - _Emissive_Strength: 71.2
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors:
+    - _Base_Colour: {r: 1, g: 0.5666981, b: 0, a: 0}
     - _Tiling: {r: 0.4, g: 0.2, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

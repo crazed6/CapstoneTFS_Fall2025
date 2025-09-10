@@ -25,6 +25,8 @@ public class PlayerAudio : MonoBehaviour
     {
         player = GetComponent<CharacterController>();
         audioSource = GetComponent<AudioSource>();
+        audioSource.spatialBlend = 0.6f; // 3D positional audio
+        audioSource.playOnAwake = false;
     }
 
     void Update()
