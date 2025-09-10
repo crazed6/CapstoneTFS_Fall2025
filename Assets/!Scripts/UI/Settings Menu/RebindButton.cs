@@ -12,10 +12,10 @@ public class RebindButton : MonoBehaviour
 {
     [Header("Input Action")]
     [Tooltip("The action name exactly as it appears in the Input Actions asset")]
-    public string actionName;
+    public string actionName = "Move";
 
     [Tooltip("Which binding slot in that action this row represents")]
-    public int bindingIndex;          // e.g., 1 = W (Move Forward)
+    public int bindingIndex = 1;          // e.g., 1 = W (Move Forward)
 
     [Header("UI References")]
     public TMP_Text bindingDisplay;       // The TMP text that shows the key
