@@ -320,8 +320,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2210516106603341894}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.03628055, y: -0.04940313, z: -0.0017957521, w: 0.9981182}
-  m_LocalPosition: {x: 1.7999878, y: 0.924, z: -13.400006}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.0000035762787, z: -0.000012218952}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -359,10 +359,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 5000
-  field of view: 40
+  far clip plane: 1000
+  field of view: 60.000004
   orthographic: 0
-  orthographic size: 10
+  orthographic size: 5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1019,7 +1019,6 @@ GameObject:
   - component: {fileID: 3068062414870229316}
   - component: {fileID: 2605320387658501482}
   - component: {fileID: 9062703719057241321}
-  - component: {fileID: 4328093772265745455}
   - component: {fileID: 4103840850605711409}
   - component: {fileID: 6297550943330275364}
   - component: {fileID: 544117766979428344}
@@ -1145,6 +1144,7 @@ MonoBehaviour:
   enemyLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  bounceForce: 2
   wallRunLookAwayAngle: 20
   wallRunCamRotationSpeed: 8
   wallRunSideJumpFactor: 3
@@ -1220,31 +1220,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testDamageAmount: 10
   maxHealth: 100
-  CheckpointSystem: {fileID: 4328093772265745455}
+  CheckpointSystem: {fileID: 0}
   regenerationDelay: 5
   regenerationAmount: 1
   regenerationInterval: 1
   invincibilityDuration: 2
   attackProfile: {fileID: 0}
---- !u!114 &4328093772265745455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4116472083982260651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9e521491f1cbce4cab8fd81f475ebb5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controller: {fileID: 3068062414870229316}
-  checkpointPanel: {fileID: 0}
-  gameOverPanel: {fileID: 0}
-  useManualCheckpoint: 1
-  initialCheckpointPosition: {x: 0, y: 0, z: 0}
-  initialCheckpointObject: {fileID: 0}
-  player: {fileID: 4116472083982260651}
 --- !u!82 &4103840850605711409
 AudioSource:
   m_ObjectHideFlags: 0
