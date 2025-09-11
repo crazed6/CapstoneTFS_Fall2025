@@ -4,6 +4,7 @@ using UnityEngine.Audio; // For audio management Mixer reference needed
 using UnityEngine.UI; // For UI elements like Dropdown
 using TMPro; // For TextMeshPro Dropdown
 using System.IO; // For file
+using UnityEngine.SceneManagement; // For scene to hook into sceneLoaded event
 
 public class SettingsManager : MonoBehaviour
 {
@@ -62,13 +63,13 @@ public class SettingsManager : MonoBehaviour
         }
 
         // Assign this as the instance
-           Instance = this;
+        Instance = this;
 
         // Persist across scene loads
-           DontDestroyOnLoad(gameObject);
+        DontDestroyOnLoad(gameObject);
 
         // Initialize resolutions before loading
-           resolutions = Screen.resolutions;
+        resolutions = Screen.resolutions;
 
         // Load Settings if available.
         LoadSettings(); // Try Loadfing settings from file or PlayerPrefs. If none exist, defaults are used.
@@ -76,12 +77,29 @@ public class SettingsManager : MonoBehaviour
 
     private void Start()
     {
-     // Populate Resolution Dropdown
+        // Populate Resolution Dropdown
         SetupResolutionDropdown();
         SetupQualityDropdown();
         SetupVolumeSlider(); // Master volume slider setup - hanldes all (4) sliders
         SetupFullscreenToggle();
     }
+
+    // NEW: hook into scene load events so settings re-apply after any scene load
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ApplyAllSettings(); // re-apply settings after new scene loads
+    }
+
 
     private void OnDestroy()
     {
@@ -344,7 +362,7 @@ public class SettingsManager : MonoBehaviour
         if (optionsMenu) optionsMenu.SetActive(false);
     }
 
-   public void OptionsMenuOpen()
+    public void OptionsMenuOpen()
     {
         if (optionsMenu) optionsMenu.SetActive(true);
         if (displayMenu) displayMenu.SetActive(false);
