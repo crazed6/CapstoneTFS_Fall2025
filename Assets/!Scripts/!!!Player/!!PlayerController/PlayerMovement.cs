@@ -109,7 +109,7 @@ public class CharacterController : MonoBehaviour
     float wallRunCooldown = 1.0f;
     float lastWallRunTime = -999f;
 
-
+    
 
     bool isWallRunning = false;
     bool onRightWall = false;
@@ -152,6 +152,8 @@ public class CharacterController : MonoBehaviour
     private float dashTimer = 0f;
     private Collider playerCollider;
     private PhysicsMaterial originalMaterial;
+
+    private Transform dashTarget; // the enemy we’re dashing toward
 
     [SerializeField] private float dashForce = 25f;  // Speed of the dash
     [SerializeField] private float dashDuration = 0.2f;  // Duration of the dash
@@ -356,6 +358,8 @@ public class CharacterController : MonoBehaviour
 
     void Jump()
     {
+
+
         // Only jump if jump buffer active AND coyote time active AND NOT wallrunning
         if (jumpBufferTimer > 0 && coyoteTimer > 0 && !isWallRunning)
         {
@@ -892,16 +896,13 @@ public class CharacterController : MonoBehaviour
                 Vector3 newPosition = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
                 rb.MovePosition(newPosition);
 
-                // Check if we reached target
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                float remainingDist = Vector3.Distance(transform.position, targetPosition);
+
+                // --- FIX: restore physics if close OR dash is almost over ---
+                if (remainingDist < 0.1f || dashTimer >= dashDuration * 0.95f)
                 {
-                    // Switch back to dynamic to apply physics
                     rb.isKinematic = false;
-
-                    // Hang in air for a frame
                     rb.linearVelocity = Vector3.zero;
-
-                    // Apply upward bounce
                     rb.AddForce(Vector3.up * bounceForce, ForceMode.Impulse);
                 }
             }
