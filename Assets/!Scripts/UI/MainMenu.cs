@@ -87,4 +87,10 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    public void PlayIntro()
+    {
+        SceneManager.LoadScene("Kadeem_Intro");
+        //SoundManager.Instance.PlayBGM(3);
+    }
+
 }

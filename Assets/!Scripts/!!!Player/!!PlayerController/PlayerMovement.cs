@@ -109,7 +109,7 @@ public class CharacterController : MonoBehaviour
     float wallRunCooldown = 1.0f;
     float lastWallRunTime = -999f;
 
-
+    
 
     bool isWallRunning = false;
     bool onRightWall = false;
@@ -153,6 +153,8 @@ public class CharacterController : MonoBehaviour
     private Collider playerCollider;
     private PhysicsMaterial originalMaterial;
 
+    private Transform dashTarget; // the enemy we’re dashing toward
+
     [SerializeField] private float dashForce = 25f;  // Speed of the dash
     [SerializeField] private float dashDuration = 0.2f;  // Duration of the dash
 
@@ -178,6 +180,9 @@ public class CharacterController : MonoBehaviour
     public GameObject thirdPersonCamera;
     public GameObject cutSceneCamera;
     public GameObject cutScenePlayerCamera;
+
+
+
 
     void Awake()
     {
@@ -247,7 +252,7 @@ public class CharacterController : MonoBehaviour
     }
 
     void FixedUpdate()
-{
+    {
         if (knockbackReceiver != null && knockbackReceiver.isBeingKnocked)
         {
             return; // Stop here and let the knockback take over
@@ -255,20 +260,20 @@ public class CharacterController : MonoBehaviour
 
         SetIsGrounded(bottomCollider.IsColliding);
 
-    if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
-    if (isGrounded) coyoteTimer = coyoteTime;
-    else coyoteTimer -= Time.fixedDeltaTime;
+        if (jumpBufferTimer > 0) jumpBufferTimer -= Time.fixedDeltaTime;
+        if (isGrounded) coyoteTimer = coyoteTime;
+        else coyoteTimer -= Time.fixedDeltaTime;
 
-    Jump();
-    CheckForLedgeVault(); //<-- right here
-    WallRun();
-    Move();
-    Slide();
+        Jump();
+        WallRun();
+        Move();
+       
+        Slide();
     
-    displacement = (transform.position - lastPosition) * 50;
-    lastPosition = transform.position;
-    //LimitVelocity(maxSpeed);
-}
+        displacement = (transform.position - lastPosition) * 50;
+        lastPosition = transform.position;
+        LimitVelocity(maxSpeed);
+    }
     void Move()
     {
         float x = Input.GetAxisRaw("Horizontal");
@@ -353,6 +358,8 @@ public class CharacterController : MonoBehaviour
 
     void Jump()
     {
+
+
         // Only jump if jump buffer active AND coyote time active AND NOT wallrunning
         if (jumpBufferTimer > 0 && coyoteTimer > 0 && !isWallRunning)
         {
@@ -889,16 +896,13 @@ public class CharacterController : MonoBehaviour
                 Vector3 newPosition = Vector3.MoveTowards(transform.position, targetPosition, dashSpeed * Time.deltaTime);
                 rb.MovePosition(newPosition);
 
-                // Check if we reached target
-                if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+                float remainingDist = Vector3.Distance(transform.position, targetPosition);
+
+                // --- FIX: restore physics if close OR dash is almost over ---
+                if (remainingDist < 0.1f || dashTimer >= dashDuration * 0.95f)
                 {
-                    // Switch back to dynamic to apply physics
                     rb.isKinematic = false;
-
-                    // Hang in air for a frame
                     rb.linearVelocity = Vector3.zero;
-
-                    // Apply upward bounce
                     rb.AddForce(Vector3.up * bounceForce, ForceMode.Impulse);
                 }
             }
@@ -953,36 +957,6 @@ public class CharacterController : MonoBehaviour
     }
 
 
-
-
-
-
-
-
-    private void CheckForLedgeVault()
-    {
-        if (!isGrounded || isSliding || isWallRunning) return;
-
-        Vector3 origin = transform.position + Vector3.up * ledgeCheckHeight;
-        Vector3 forward = transform.forward;
-
-        // Step 1: Detect wall in front
-        if (Physics.Raycast(origin, forward, out RaycastHit wallHit, ledgeDetectDistance, ledgeLayerMask))
-        {
-            // Step 2: Check if there's a surface above it we can stand on
-            Vector3 ledgeCheckOrigin = wallHit.point + Vector3.up * 0.5f + forward * 0.1f;
-
-            if (Physics.Raycast(ledgeCheckOrigin, Vector3.down, out RaycastHit ledgeHit, ledgeCheckDown, ledgeLayerMask))
-            {
-                // Vault: Reset Y velocity, and apply upward & forward force
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-                rb.AddForce(Vector3.up * vaultUpForce, ForceMode.Impulse);
-                rb.AddForce(forward * vaultForwardForce, ForceMode.Impulse);
-
-                // Optional: trigger animation or sound here
-            }
-        }
-    }
 
     private void OnDrawGizmosSelected()
     {
@@ -1065,6 +1039,6 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-   
+
 }
 
