@@ -13,6 +13,10 @@ public class AudioManager : MonoBehaviour
 
     private string currentBGM = "";
 
+    [Header("Global Volume Controls")]
+    [Range(0.1f, 5f)] public float globalVoiceBoost = 1f; // default = no boost
+
+
     [System.Serializable]
     public class AudioClipEntry
     {
@@ -137,6 +141,7 @@ public class AudioManager : MonoBehaviour
         if (voice.TryGetValue(id, out var source))
         {
             source.spatialBlend = 0f; // keep VOICE 2D
+            source.volume = Mathf.Clamp01(source.volume * globalVoiceBoost);
             source.Play();
         }
         else
@@ -170,6 +175,12 @@ public class AudioManager : MonoBehaviour
             return voiceSource.clip;
 
         Debug.LogWarning($"Audio clip with id '{id}' not found in any dictionary.");
+        return null;
+    }
+    public AudioSource GetVoiceSource(string id)
+    {
+        if (voice.TryGetValue(id, out var source))
+            return source;
         return null;
     }
 
