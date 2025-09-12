@@ -3,68 +3,52 @@ using UnityEngine.SceneManagement;
 
 public class LoadButton : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private int slotIndex = 1;
+    //Which save slot to load (set in Inspector per button)
 
-    // Update is called once per frame
-    void Update()
+    public void LoadGameButton()
     {
-        
-    }
+        SaveLoadSystem.Load(GameSession.ActiveSaveSlot); // Load from slot
 
-    public void LoadGameButton() //Josh's method to load the game
-    {
-        string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
+        var saveData = SaveLoadSystem.GetSaveData();
 
-        if (!string.IsNullOrEmpty(sceneName))
+        GameSession.IsNewSession = false;
+        GameSession.IsLoadedGame = true;
+
+        // Set player position
+        CharacterController.instance.GetComponent<CharacterController>().enabled = false;
+
+        if (saveData.CheckpointData.x != 0 || saveData.CheckpointData.y != 0 || saveData.CheckpointData.z != 0)
         {
-            Debug.LogError("Loading last scene." +sceneName);
-
-            //GameSession communicating that its a Loaded Game
-            GameSession.IsNewSession = false; // It's not a new session
-            GameSession.IsLoadedGame = true; // It's a loaded game
-
-            SceneManager.sceneLoaded += OnSceneLoaded; // Subscribe to the scene loaded event
-            SceneManager.LoadScene(sceneName);
-
-            SaveLoadSystem.Load(); // Load the save data after the scene is loaded
+            CharacterController.instance.transform.position = new Vector3(
+                saveData.CheckpointData.x,
+                saveData.CheckpointData.y + 1.5f, // Slight offset
+                saveData.CheckpointData.z
+            );
+            Debug.Log("Loaded checkpoint position: " + CharacterController.instance.transform.position);
         }
         else
         {
-            Debug.Log("No scene name found in save data.");
+            // Fallback if no checkpoint
+            CharacterController.instance.transform.position = Vector3.zero; // or spawn point
         }
 
+        CharacterController.instance.GetComponent<CharacterController>().enabled = true;
 
-
+        // Load Player Data (health, inventory, etc.)
+        PlayerSave playerSave = GameManager.Instance.GetComponent<PlayerSave>();
+        if (playerSave != null)
+        {
+            playerSave.Load(saveData.PlayerSaveData);
+        }
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // This method can be used to handle any actions after the scene is loaded
-        Debug.Log("Scene loaded: " + scene.name);
-        SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to avoid multiple calls
+        Debug.Log($"Scene loaded: {scene.name}");
+        SceneManager.sceneLoaded -= OnSceneLoaded;
 
-        SaveLoadSystem.Load(); // Load the save data after the scene is loaded
-
-        //var player = GameObject.FindWithTag("Player");
-        //if (player != null)
-        //{
-        //    var playerSave = player.GetComponent<PlayerSave>();
-        //    if (playerSave != null)
-        //    {
-        //        playerSave.Load(SaveLoadSystem.GetSaveData().PlayerSaveData); // Load player data after scene load
-        //    }
-        //    else
-        //    {
-        //        Debug.LogError("PlayerSave component not found on player object.");
-        //    }
-        //}
-        //else
-        //{
-        //  Debug.LogError("Player object not found in the scene.");
-        //}
+        // Apply saved data *after* the scene has fully loaded
+        SaveLoadSystem.Load(GameSession.ActiveSaveSlot);
     }
 }

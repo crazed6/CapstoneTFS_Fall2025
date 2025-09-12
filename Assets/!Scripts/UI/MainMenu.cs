@@ -89,6 +89,14 @@ public class MainMenu : MonoBehaviour
 
     public void PlayIntro()
     {
+        // Reset the active save slot
+        GameSession.ActiveSaveSlot = 0;
+        SaveLoadSystem.ClearMemoryData();
+
+        // Mark it as a new session
+        GameSession.IsNewSession = true;
+        GameSession.IsLoadedGame = false;
+
         SceneManager.LoadScene("Kadeem_Intro");
         //SoundManager.Instance.PlayBGM(3);
     }

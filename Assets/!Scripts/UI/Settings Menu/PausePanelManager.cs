@@ -6,16 +6,18 @@ using UnityEngine.SceneManagement;
 public class PausePanelManager : MonoBehaviour
 {
     public static PausePanelManager Instance { get; private set; }
-
-    [SerializeField] private GameObject pauseMenuUI;
+    
     [SerializeField] private GameObject pauseMenuBackground;
+    [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject settingsMenuUI;
 
+    [Header("Settings Menu Root Elements")]
+    [SerializeField] private GameObject buttonsVGroup;    // The group of Keybind/Volume/Display/Back buttons
+
     [Header("Settings Sub Panels")]
-    [SerializeField] private GameObject keyboardPanel;
-    [SerializeField] private GameObject gamepadPanel;
-    [SerializeField] private GameObject volumePanel;
-    [SerializeField] private GameObject volumeBtn;
+    [SerializeField] private GameObject keybindsUI_View;
+    [SerializeField] private GameObject volumeUI_View;
+    [SerializeField] private GameObject displayUI_View;
 
     [Header("External UI Panels - In Game CheckPoints")]
     [SerializeField] private GameObject inGameCheckPointsPanel;
@@ -39,13 +41,9 @@ public class PausePanelManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
         Debug.Log("PausePanelManager Awake - initialized - active in scene:" + SceneManager.GetActiveScene().name);
 
-        // Show keyboard panel by default
-        if (keyboardPanel != null)
-        {
-            keyboardPanel.SetActive(true);
-            if (gamepadPanel != null) gamepadPanel.SetActive(false);
-            if (volumePanel != null) volumePanel.SetActive(false);
-        }
+        // default state:
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(true);
+        HideAllSettingsViews();
     }
 
     private void Update()
@@ -86,15 +84,27 @@ public class PausePanelManager : MonoBehaviour
         isPaused = !isPaused;
 
         Time.timeScale = isPaused ? 0 : 1;
-        pauseMenuUI.SetActive(isPaused);
         pauseMenuBackground.SetActive(isPaused);
+        pauseMenuUI.SetActive(isPaused);
 
         if (settingsMenuUI != null)
             settingsMenuUI.SetActive(false); // Always hide settings when toggling pause
 
+        // Hide sub-panels when unpausing
+        if (!isPaused)
+        {
+            if (keybindsUI_View != null)
+                keybindsUI_View.SetActive(false);
+            if (volumeUI_View != null)
+                volumeUI_View.SetActive(false);
+            if (displayUI_View != null)
+                displayUI_View.SetActive(false);
+        }
+
         Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isPaused;
     }
+
 
     public void ShowGameSettings()
     {
@@ -103,11 +113,9 @@ public class PausePanelManager : MonoBehaviour
         pauseMenuUI.SetActive(false); // Hide the pause menu UI
         settingsMenuUI.SetActive(true); // Show the settings menu UI
 
-        // Show keyboard panel by default
-        if (keyboardPanel != null) keyboardPanel.SetActive(true);
-        if (gamepadPanel != null) gamepadPanel.SetActive(false);
-        if (volumePanel != null) volumePanel.SetActive(false);
-        if (volumeBtn != null) volumeBtn.SetActive(true); // Make sure volume button is visible again
+        // show buttons VGroup, hide any subviews
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(true);
+        HideAllSettingsViews();
 
         Cursor.lockState = CursorLockMode.None; // Unlock the cursor
         Cursor.visible = true; // Show the cursor
@@ -127,8 +135,8 @@ public class PausePanelManager : MonoBehaviour
     {
         isPaused = false;
         Time.timeScale = 1;
-        pauseMenuUI.SetActive(false);
-        pauseMenuBackground.SetActive(false);
+        pauseMenuBackground.SetActive(isPaused);
+        pauseMenuUI.SetActive(isPaused);
         Cursor.lockState = CursorLockMode.Locked; // Lock the cursor back (for FPS-style control)
         Cursor.visible = false;                   // Hide it again
     }
@@ -136,58 +144,70 @@ public class PausePanelManager : MonoBehaviour
     public void QuitGame()
     {
         Debug.Log("Quit Game");
-     #if UNITY_EDITOR
+#if UNITY_EDITOR
         EditorApplication.isPlaying = false; // Stop play mode in the editor
-     #else
+#else
         Application.Quit(); // Quit the game in a build
-     #endif
+#endif
     }
 
     public void LoadScene(string sceneName)
     {
         Time.timeScale = 1; // Ensure time is normal before loading
+        SceneManager.LoadScene(sceneName);
         Debug.Log($"Loading scene: and or relocate to where saved files are stored and user sleects which save file to click on and then it loads thatr saved file that was stored.");
     }
 
     public bool IsPaused() => isPaused;
 
-    // Button Handlers for switching panels
-    public void OnKeyboardPanelBtnClicked()
+    // Utility
+    private void HideAllSettingsViews()
     {
-        if (keyboardPanel != null) keyboardPanel.SetActive(true);
-        if (gamepadPanel != null) gamepadPanel.SetActive(false);
-        if (volumePanel != null) volumePanel.SetActive(false);
-        if (volumeBtn != null) volumeBtn.SetActive(true);
-        Debug.Log("Keyboard Panel Opened");
+        if (keybindsUI_View != null) keybindsUI_View.SetActive(false);
+        if (volumeUI_View != null) volumeUI_View.SetActive(false);
+        if (displayUI_View != null) displayUI_View.SetActive(false);
     }
 
-    public void OnGamepadPanelBtnClicked()
+    // Button Handlers for switching panels
+    public void OnKeybindsUI_ViewBtnClicked()
     {
-        if (keyboardPanel != null) keyboardPanel.SetActive(false);
-        if (gamepadPanel != null) gamepadPanel.SetActive(true);
-        if (volumePanel != null) volumePanel.SetActive(false);
+        HideAllSettingsViews();
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(false);
+        if (keybindsUI_View != null) keybindsUI_View.SetActive(true);
+        Debug.Log("Keybinds UI View Opened");
+    }
+
+    public void OnVolumeUI_ViewBtnClicked()
+    {
+        HideAllSettingsViews();
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(false);
+        if (volumeUI_View != null) volumeUI_View.SetActive(true);
         Debug.Log("Gamepad Panel Opened");
     }
 
-    public void OnVolumePanelBtnClicked()
+    public void OnDisplayUI_ViewBtnClicked()
     {
-        if (keyboardPanel != null) keyboardPanel.SetActive(false);
-        if (gamepadPanel != null) gamepadPanel.SetActive(false);
-        if (volumePanel != null) volumePanel.SetActive(true);
-        if (volumeBtn != null) volumeBtn.SetActive(false); // Hide the volume button when volume panel is open
+        HideAllSettingsViews();
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(false);
+        if (displayUI_View != null) displayUI_View.SetActive(true);
         Debug.Log("Volume Panel Opened");
     }
 
     public void OnBackToPauseMenuUI()
     {
         // Hide all panels and show pause menu UI and return/ show pause menu UI
-        if (keyboardPanel != null) keyboardPanel.SetActive(false);
-        if (gamepadPanel != null) gamepadPanel.SetActive(false);
-        if (volumePanel != null) volumePanel.SetActive(false);
-        if (volumeBtn != null) volumeBtn.SetActive(true); // Show the volume button again
-        pauseMenuUI.SetActive(true);
-        if (settingsMenuUI != null) settingsMenuUI.SetActive(false); // Hide settings menu UI
+        HideAllSettingsViews();
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(true);
         Debug.Log("Back to Pause Menu UI");
+    }
+
+    // called by “Back” button in Buttons_VGroup to return to Pause Menu:
+    public void OnReturnToPauseMenuUI()
+    {
+        HideAllSettingsViews();
+        if (buttonsVGroup != null) buttonsVGroup.SetActive(false);
+        settingsMenuUI.SetActive(false);
+        pauseMenuUI.SetActive(true);
     }
 
     public void OnReturnToMainMenu()

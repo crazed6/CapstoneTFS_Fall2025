@@ -7,12 +7,12 @@ public class PlayerSave : MonoBehaviour
 {
     private static PlayerSave instance;
     private InventoryManager inventoryManager; // Reference to the InventoryManager
-  
+
 
     private void Start()
     {
 
-       
+
     }
 
     public void Save(ref PlayerSaveData data)

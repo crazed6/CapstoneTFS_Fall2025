@@ -41,7 +41,7 @@ public class SaveSlotsManager : MonoBehaviour
     private void OnEnable() => Refresh();
 
     /// Refreshes the slot list by rebuilding from existing save files.
-   public void Refresh()
+    public void Refresh()
     {
         // Clear old slots
         foreach (var slot in _slots)
@@ -77,22 +77,40 @@ public class SaveSlotsManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Wraps Josh’s SaveLoadSystem into a single SaveMeta entry.
+    /// Wraps Josh?s SaveLoadSystem into a single SaveMeta entry.
     /// </summary>
     private IEnumerable<SaveMeta> BuildMetaList()
     {
-        string path = SaveLoadSystem.SaveFileName();
-        if (!File.Exists(path))
-            yield break;
-
-        var info = new FileInfo(path);
-        yield return new SaveMeta
+        if (!Directory.Exists(SaveLoadSystem.SaveFolder))
         {
-            FileName = info.Name,
-            AbsolutePath = info.FullName,
-            SceneName = SaveLoadSystem.GetSavedSceneName(),
-            SavedUtc = info.LastWriteTimeUtc
-        };
+            Debug.LogWarning($"Save folder does not exist: {SaveLoadSystem.SaveFolder}");
+            yield break;
+        }
+
+        string[] files = Directory.GetFiles(SaveLoadSystem.SaveFolder, "save*.save");
+        if (files.Length == 0)
+        {
+            Debug.Log("No save files found in folder.");
+        }
+
+        foreach (var file in files)
+        {
+            var info = new FileInfo(file);
+
+            // Extract slot number from file name
+            string nameWithoutExt = Path.GetFileNameWithoutExtension(file); // "save1"
+            int slotIndex = int.Parse(nameWithoutExt.Replace("save", ""));
+
+            Debug.Log($"Detected save file: {info.Name}, Slot: {slotIndex}, Path: {info.FullName}");
+
+            yield return new SaveMeta
+            {
+                FileName = info.Name,
+                AbsolutePath = info.FullName,
+                SceneName = SaveLoadSystem.GetSavedSceneName(slotIndex),
+                SavedUtc = info.LastWriteTimeUtc
+            };
+        }
     }
 
     /// <summary>
@@ -117,8 +135,12 @@ public class SaveSlotsManager : MonoBehaviour
     {
         if (_current == null) return;
 
-        // Josh’s system does not support multiple files — always loads the single save
-        SaveLoadSystem.Load();
+        // Josh?s system does not support multiple files ? always loads the single save
+        // Extract slot index from meta
+        string fileName = _current.Meta.FileName; // "save1.save"
+        int slotIndex = int.Parse(Path.GetFileNameWithoutExtension(fileName).Replace("save", ""));
+
+        SaveLoadSystem.Load(slotIndex);
 
         // If your UIManager needs to be notified, you can still hook in here
         // UIManager.Instance.LoadFromData(SaveLoadSystem.GetSaveData());
@@ -141,6 +163,9 @@ public class SaveSlotsManager : MonoBehaviour
 
         if (File.Exists(meta.AbsolutePath))
             File.Delete(meta.AbsolutePath);
+
+        if (_current != null && _current.Meta.FileName == meta.FileName)
+            _current = null;
 
         Refresh();
     }
