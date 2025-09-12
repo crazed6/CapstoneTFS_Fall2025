@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public class LedgeSnapDown360 : MonoBehaviour
 {
     public Rigidbody rb;
@@ -8,15 +7,31 @@ public class LedgeSnapDown360 : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        Debug.Log("collision fired");
+        bool foundValidContact = false;
+
         foreach (ContactPoint contact in collision.contacts)
         {
             // Check if the surface is "ground-like" within a reasonable angle
             float angle = Vector3.Angle(contact.normal, Vector3.up);
-            if (angle <= groundNormalMaxAngle)
+
+            // Also check if contact point is below character center (hitting ledge top, not wall)
+            bool contactBelowCenter = contact.point.y < transform.position.y;
+
+            Debug.Log($"Contact: normal={contact.normal}, angle={angle:F1}°, below center={contactBelowCenter}, point Y={contact.point.y:F2}, player Y={transform.position.y:F2}");
+
+            if (angle <= groundNormalMaxAngle && contactBelowCenter)
             {
+                Debug.Log("SNAPPING!");
                 SnapDown();
+                foundValidContact = true;
                 break;
             }
+        }
+
+        if (!foundValidContact)
+        {
+            Debug.Log("NO SNAP - no valid contact found");
         }
     }
 
@@ -29,7 +44,6 @@ public class LedgeSnapDown360 : MonoBehaviour
             vel.y = 0f;
             rb.linearVelocity = vel;
         }
-
         // Apply strong downward force
         rb.AddForce(Vector3.down * downwardForce, ForceMode.VelocityChange);
     }
