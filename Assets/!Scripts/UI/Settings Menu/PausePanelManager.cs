@@ -8,6 +8,7 @@ public class PausePanelManager : MonoBehaviour
     public static PausePanelManager Instance { get; private set; }
 
     [SerializeField] private GameObject pauseMenuUI;
+    [SerializeField] private GameObject pauseMenuBackground;
     [SerializeField] private GameObject settingsMenuUI;
 
     [Header("Settings Sub Panels")]
@@ -86,6 +87,7 @@ public class PausePanelManager : MonoBehaviour
 
         Time.timeScale = isPaused ? 0 : 1;
         pauseMenuUI.SetActive(isPaused);
+        pauseMenuBackground.SetActive(isPaused);
 
         if (settingsMenuUI != null)
             settingsMenuUI.SetActive(false); // Always hide settings when toggling pause
@@ -126,6 +128,7 @@ public class PausePanelManager : MonoBehaviour
         isPaused = false;
         Time.timeScale = 1;
         pauseMenuUI.SetActive(false);
+        pauseMenuBackground.SetActive(false);
         Cursor.lockState = CursorLockMode.Locked; // Lock the cursor back (for FPS-style control)
         Cursor.visible = false;                   // Hide it again
     }
