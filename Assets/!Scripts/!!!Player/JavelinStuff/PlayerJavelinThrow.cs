@@ -47,6 +47,9 @@ public class PlayerJavelinThrow : MonoBehaviour
     private Camera playerCamera;                // Cache for raycasting -_-
     private PlayerInputActions input;           // Input actions (new Input System) -_-
 
+    private bool isHolding = false; // Anims for jav throw - Colton
+    public bool IsHolding => isHolding; // Anims for jav throw - Colton
+
     void Awake()
     {
         input = new PlayerInputActions(); // Create input actions -_-
@@ -94,6 +97,7 @@ public class PlayerJavelinThrow : MonoBehaviour
     {
         if (isAiming)
         {
+            isHolding = false; // Anims for jav throw - Colton
             ThrowJavelin();
             ResetTimeScaleInstantly(); // If slow-mo is mid-ramp, snap back to normal -_-
         }
@@ -112,6 +116,7 @@ public class PlayerJavelinThrow : MonoBehaviour
             currentJavelin = Instantiate(javelinPrefab, currentThrowPoint.position, currentThrowPoint.rotation);
             currentJavelin.transform.SetParent(currentThrowPoint);
             isAiming = true;
+            isHolding = true; // Anims for jav throw - Colton
 
             // Disable javelin colliders while aiming so it doesn't collide with the player -_-
             currentJavelin.GetComponent<JavelinController>()?.SetAimingMode(true);
