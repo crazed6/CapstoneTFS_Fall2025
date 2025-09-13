@@ -828,7 +828,7 @@ public class CharacterController : MonoBehaviour
     private void CheckEnemyInCrosshair()
     {
         // Start dash
-        if (Input.GetMouseButtonDown(0) && !isMoving)
+        if (Input.GetMouseButtonDown(0) && !isMoving && !Input.GetKeyDown(KeyCode.A) && !Input.GetKeyDown(KeyCode.D) && !Input.GetKeyDown(KeyCode.S))
         {
             // Find best target in cone
             Collider[] hits = Physics.OverlapSphere(transform.position, coneRange, enemyLayer);
@@ -908,7 +908,7 @@ public class CharacterController : MonoBehaviour
             }
 
             // --- Manual enemy overlap check (single-hit per dash) ---
-            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
+            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 5f, enemyLayer);
             foreach (var enemyCollider in enemiesHit)
             {
                 var enemy = enemyCollider.GetComponent<EnemyDamageComponent>();
