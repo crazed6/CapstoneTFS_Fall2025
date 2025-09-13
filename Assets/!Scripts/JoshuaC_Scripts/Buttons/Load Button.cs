@@ -3,68 +3,29 @@ using UnityEngine.SceneManagement;
 
 public class LoadButton : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void LoadGameFromSlot()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void LoadGameButton() //Josh's method to load the game
-    {
-        string sceneName = SaveLoadSystem.GetSavedSceneName(); // Get the saved scene name from the save file
-
-        if (!string.IsNullOrEmpty(sceneName))
+        // Get the currently selected slot from the SaveSlotsManager
+        int slotToLoad = GameSession.ActiveSaveSlot;
+        if (slotToLoad <= 0)
         {
-            Debug.LogError("Loading last scene." +sceneName);
-
-            //GameSession communicating that its a Loaded Game
-            GameSession.IsNewSession = false; // It's not a new session
-            GameSession.IsLoadedGame = true; // It's a loaded game
-
-            SceneManager.sceneLoaded += OnSceneLoaded; // Subscribe to the scene loaded event
-            SceneManager.LoadScene(sceneName);
-
-            SaveLoadSystem.Load(); // Load the save data after the scene is loaded
-        }
-        else
-        {
-            Debug.Log("No scene name found in save data.");
+            Debug.LogError("No save slot selected to load!");
+            return;
         }
 
+        // Get the scene name from the save file WITHOUT loading all the data yet
+        string sceneToLoad = SaveLoadSystem.GetSavedSceneName(slotToLoad);
 
+        if (string.IsNullOrEmpty(sceneToLoad))
+        {
+            Debug.LogError($"Could not find a scene name in save slot {slotToLoad}.");
+            return;
+        }
 
-    }
+        // IMPORTANT: Set a flag to tell the next scene it needs to apply loaded data
+        GameSession.IsLoadedGame = true;
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // This method can be used to handle any actions after the scene is loaded
-        Debug.Log("Scene loaded: " + scene.name);
-        SceneManager.sceneLoaded -= OnSceneLoaded; // Unsubscribe to avoid multiple calls
-
-        SaveLoadSystem.Load(); // Load the save data after the scene is loaded
-
-        //var player = GameObject.FindWithTag("Player");
-        //if (player != null)
-        //{
-        //    var playerSave = player.GetComponent<PlayerSave>();
-        //    if (playerSave != null)
-        //    {
-        //        playerSave.Load(SaveLoadSystem.GetSaveData().PlayerSaveData); // Load player data after scene load
-        //    }
-        //    else
-        //    {
-        //        Debug.LogError("PlayerSave component not found on player object.");
-        //    }
-        //}
-        //else
-        //{
-        //  Debug.LogError("Player object not found in the scene.");
-        //}
+        // Now, load the scene
+        SceneManager.LoadScene(sceneToLoad);
     }
 }
