@@ -1,38 +1,51 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class LookAtPlayerTextSmooth : MonoBehaviour
 {
-    public GameObject player;              // Reference to the player
-    public TextMeshPro textMeshPro;        // The TextMeshPro component (3D Text)
-    public float rotationSpeed = 5f;       // The speed at which the text rotates to face the player
+    public GameObject player;                 // Reference to the player
+    public TextMeshPro textMeshPro;           // The TextMeshPro component (3D Text)
+    public float rotationSpeed = 5f;          // Rotation speed for text facing player
+    public float fadeSpeed = 2f;              // How fast text fades in/out
+    public float visibleDistance = 70f;       // Distance threshold for visibility
 
-    private Renderer textRenderer;
+    private Color originalColor;
+    private float targetAlpha = 0f;           // Desired alpha (0 = invisible, 1 = fully visible)
 
     void Start()
     {
-        // Get the Renderer from the TextMeshPro component
-        textRenderer = textMeshPro.GetComponent<Renderer>();
-        textRenderer.enabled = false;  // Initially hide the text
+        // Store original text color but force alpha = 0 (invisible at start)
+        originalColor = textMeshPro.color;
+        textMeshPro.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
+
+        // ✅ Enable TextMeshPro shadow (via outline as a shadow hack)
+        textMeshPro.enableWordWrapping = false;
+        textMeshPro.enableAutoSizing = false;
+
+        // Set shadow look: use outline as drop shadow
+        textMeshPro.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
+        textMeshPro.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 0.6f));
     }
 
     void Update()
     {
-        // Calculate the distance between the player and this object (where the script is attached)
         float distance = Vector3.Distance(player.transform.position, transform.position);
 
-        // If the player is within range, show the text
-        if (distance <= 70f)  // You can adjust the distance threshold
-        {
-            textRenderer.enabled = true;
-        }
-        else
-        {
-            textRenderer.enabled = false;
-        }
+        // Decide if text should be visible
+        targetAlpha = (distance <= visibleDistance) ? 1f : 0f;
 
-        // If the text is visible, make it always look at the player
-        if (textRenderer.enabled)
+        // Smooth fade
+        Color currentColor = textMeshPro.color;
+        float newAlpha = Mathf.Lerp(currentColor.a, targetAlpha, fadeSpeed * Time.deltaTime);
+        textMeshPro.color = new Color(originalColor.r, originalColor.g, originalColor.b, newAlpha);
+
+        // Apply same alpha to shadow/outline
+        Color outlineColor = textMeshPro.fontMaterial.GetColor(ShaderUtilities.ID_OutlineColor);
+        textMeshPro.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor,
+            new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha * 0.6f));
+
+        // Rotate to face player if visible
+        if (newAlpha > 0.01f)
         {
             LookAtPlayer();
         }
@@ -40,16 +53,9 @@ public class LookAtPlayerTextSmooth : MonoBehaviour
 
     void LookAtPlayer()
     {
-        // Calculate the direction from the text to the player
         Vector3 directionToPlayer = player.transform.position - textMeshPro.transform.position;
-
-        // Calculate the target rotation using LookAt
         Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
-
-        // Correct the backwards issue by rotating the text 180 degrees on the Y-axis
-        targetRotation *= Quaternion.Euler(0, 180, 0);  // This flips the text correctly
-
-        // Smoothly rotate the text towards the target rotation
+        targetRotation *= Quaternion.Euler(0, 180, 0); // flip
         textMeshPro.transform.rotation = Quaternion.Slerp(textMeshPro.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 }
