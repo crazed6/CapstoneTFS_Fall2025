@@ -355,13 +355,12 @@ MonoBehaviour:
   patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
-  - {fileID: 0}
   patrolSpeed: 12
   chaseSpeed: 17
   detectionRadius: 40
   innerRadius: 3
-  middleRadius: 7
-  outerRadius: 12
+  middleRadius: 15
+  outerRadius: 20
   innerDamage: 100
   middleDamage: 50
   outerDamage: 25
@@ -418,11 +417,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   idleClip: IdleHum
-  idleVolume: 0.55
+  idleVolume: 0.41
   detectClip: ExploderBeep
-  detectVolume: 3
+  detectVolume: 1.66
   explosionClip: ExploderExplosion
-  explosionVolume: 5
+  explosionVolume: 2.86
   humRange: {fileID: 8191108666891003647}
 --- !u!1001 &5029357288625907969
 PrefabInstance:

@@ -4944,7 +4944,7 @@ Transform:
   m_GameObject: {fileID: 3429893893084665459}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 7.5}
+  m_LocalPosition: {x: 0, y: 1, z: 7.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5029,8 +5029,36 @@ LineRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  - {x: 201.47887, y: -37.986813, z: -676.7945}
+  - {x: 179.86769, y: -36.00265, z: -661.10913}
+  - {x: 158.25652, y: -34.032757, z: -645.42377}
+  - {x: 136.64534, y: -32.07713, z: -629.73846}
+  - {x: 115.03417, y: -30.135775, z: -614.0531}
+  - {x: 93.42299, y: -28.208683, z: -598.3678}
+  - {x: 71.81181, y: -26.295864, z: -582.6824}
+  - {x: 50.200638, y: -24.397314, z: -566.99713}
+  - {x: 28.589458, y: -22.513033, z: -551.31177}
+  - {x: 6.9782906, y: -20.64302, z: -535.6264}
+  - {x: -14.632896, y: -18.787275, z: -519.94104}
+  - {x: -36.244064, y: -16.9458, z: -504.25574}
+  - {x: -57.85525, y: -15.118591, z: -488.57034}
+  - {x: -79.46642, y: -13.3056555, z: -472.885}
+  - {x: -101.07759, y: -11.506986, z: -457.1997}
+  - {x: -122.68877, y: -9.722586, z: -441.51434}
+  - {x: -144.29994, y: -7.952452, z: -425.82898}
+  - {x: -165.91113, y: -6.196588, z: -410.14365}
+  - {x: -187.52228, y: -4.4549966, z: -394.4583}
+  - {x: -209.13348, y: -2.7276678, z: -378.77295}
+  - {x: -230.74466, y: -1.0146098, z: -363.0876}
+  - {x: -252.3558, y: 0.68417645, z: -347.40228}
+  - {x: -273.96698, y: 2.3686962, z: -331.71692}
+  - {x: -295.5782, y: 4.038949, z: -316.03156}
+  - {x: -317.1894, y: 5.694932, z: -300.34622}
+  - {x: -338.8005, y: 7.336643, z: -284.6609}
+  - {x: -360.4117, y: 8.964088, z: -268.97556}
+  - {x: -382.0229, y: 10.577266, z: -253.29019}
+  - {x: -403.63406, y: 12.176171, z: -237.60489}
+  - {x: -425.24524, y: 13.760811, z: -221.91953}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.25
@@ -5051,8 +5079,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0.07662869, g: 0.7735849, b: 0.07918085, a: 1}
+      key1: {r: 0.07662869, g: 0.7735849, b: 0.07918085, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -15136,13 +15164,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slamClip: LobberSmash
-  slamVolume: 1.22
+  slamVolume: 0.77
   throwClip: LobberProj.Woosh
-  throwVolume: 1.08
+  throwVolume: 0.4
   lockOnClip: LobberCharge2
-  lockOnVolume: 0.89
+  lockOnVolume: 0.51
   deathClip: LobberDeath
-  deathVolume: 0.61
+  deathVolume: 0.7
 --- !u!82 &9209802139219159768
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15487,9 +15515,9 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 1500
+      - m_Value: 750
         m_Name: ParticleRate
-        m_Overridden: 0
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
