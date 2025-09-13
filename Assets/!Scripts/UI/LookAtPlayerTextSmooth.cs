@@ -22,7 +22,7 @@ public class LookAtPlayerTextSmooth : MonoBehaviour
         float distance = Vector3.Distance(player.transform.position, transform.position);
 
         // If the player is within range, show the text
-        if (distance <= 65f)  // You can adjust the distance threshold
+        if (distance <= 70f)  // You can adjust the distance threshold
         {
             textRenderer.enabled = true;
         }
