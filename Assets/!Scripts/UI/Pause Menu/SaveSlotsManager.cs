@@ -125,6 +125,15 @@ public class SaveSlotsManager : MonoBehaviour
 
         _current = view;
         _current.SetSelected(true);
+
+        // --- ADD THIS CODE AT THE END ---
+        // Get the slot index from the file name (e.g., "save1.save" -> 1)
+        string fileName = view.Meta.FileName;
+        int slotIndex = int.Parse(Path.GetFileNameWithoutExtension(fileName).Replace("save", ""));
+
+        // Update the global game session with the newly selected slot
+        GameSession.ActiveSaveSlot = slotIndex;
+        Debug.Log($"GameSession.ActiveSaveSlot has been updated to: {slotIndex}");
     }
 
     /// <summary>

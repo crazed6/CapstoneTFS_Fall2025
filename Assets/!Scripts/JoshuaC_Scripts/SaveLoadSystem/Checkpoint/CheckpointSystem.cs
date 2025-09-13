@@ -95,7 +95,14 @@ public class CheckpointSystem : MonoBehaviour
     {
         if (!other.CompareTag("Checkpoint")) return;
 
-        lastCheckpoint = other.transform.position;
+        // Look for a child named RespawnPoint on the checkpoint object
+        Transform respawnPoint = other.transform.Find("RespawnPoint");
+
+        if (respawnPoint != null)
+            lastCheckpoint = respawnPoint.position;
+        else
+            lastCheckpoint = other.transform.position; // fallback if missing
+
         hasCheckpoint = true;
 
         Debug.Log($"Checkpoint activated at: {lastCheckpoint}");

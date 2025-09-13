@@ -6,7 +6,10 @@ using UnityEngine.SceneManagement;
 public class PausePanelManager : MonoBehaviour
 {
     public static PausePanelManager Instance { get; private set; }
-    
+
+    [Header("All Panels to Force-Hide on Resume")]
+    [SerializeField] private GameObject[] allUIPanels;
+
     [SerializeField] private GameObject pauseMenuBackground;
     [SerializeField] private GameObject pauseMenuUI;
     [SerializeField] private GameObject settingsMenuUI;
@@ -88,23 +91,21 @@ public class PausePanelManager : MonoBehaviour
         pauseMenuUI.SetActive(isPaused);
 
         if (settingsMenuUI != null)
-            settingsMenuUI.SetActive(false); // Always hide settings when toggling pause
+            settingsMenuUI.SetActive(false);
 
-        // Hide sub-panels when unpausing
         if (!isPaused)
         {
-            if (keybindsUI_View != null)
-                keybindsUI_View.SetActive(false);
-            if (volumeUI_View != null)
-                volumeUI_View.SetActive(false);
-            if (displayUI_View != null)
-                displayUI_View.SetActive(false);
+            // Hide everything in our forced list
+            foreach (var panel in allUIPanels)
+            {
+                if (panel != null)
+                    panel.SetActive(false);
+            }
         }
 
         Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isPaused;
     }
-
 
     public void ShowGameSettings()
     {

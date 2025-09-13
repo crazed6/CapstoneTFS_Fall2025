@@ -6229,13 +6229,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 177fe7fe885599144a6222072c91dcf8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseMenuUI: {fileID: 7677846316702011437}
+  allUIPanels:
+  - {fileID: 7677846316702011437}
+  - {fileID: 5973209457492469296}
+  - {fileID: 1236701057607884259}
+  - {fileID: 1937379984220750114}
+  - {fileID: 9112049753307054366}
   pauseMenuBackground: {fileID: 1921742919608295183}
+  pauseMenuUI: {fileID: 7677846316702011437}
   settingsMenuUI: {fileID: 5973209457492469296}
-  keyboardPanel: {fileID: 0}
-  gamepadPanel: {fileID: 0}
-  volumePanel: {fileID: 0}
-  volumeBtn: {fileID: 0}
+  buttonsVGroup: {fileID: 0}
+  keybindsUI_View: {fileID: 1236701057607884259}
+  volumeUI_View: {fileID: 1937379984220750114}
+  displayUI_View: {fileID: 9112049753307054366}
   inGameCheckPointsPanel: {fileID: 0}
   playerTransform: {fileID: 0}
   checkpointTransform: []
