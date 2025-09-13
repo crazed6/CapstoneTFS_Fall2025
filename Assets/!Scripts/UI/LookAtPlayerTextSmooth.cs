@@ -14,15 +14,11 @@ public class LookAtPlayerTextSmooth : MonoBehaviour
 
     void Start()
     {
-        // Store original text color but force alpha = 0 (invisible at start)
+        // Store original text color but start invisible
         originalColor = textMeshPro.color;
         textMeshPro.color = new Color(originalColor.r, originalColor.g, originalColor.b, 0f);
 
-        // ✅ Enable TextMeshPro shadow (via outline as a shadow hack)
-        textMeshPro.enableWordWrapping = false;
-        textMeshPro.enableAutoSizing = false;
-
-        // Set shadow look: use outline as drop shadow
+        // ✅ Shadow (using outline)
         textMeshPro.fontMaterial.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.2f);
         textMeshPro.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 0.6f));
     }
@@ -31,7 +27,7 @@ public class LookAtPlayerTextSmooth : MonoBehaviour
     {
         float distance = Vector3.Distance(player.transform.position, transform.position);
 
-        // Decide if text should be visible
+        // Decide target visibility
         targetAlpha = (distance <= visibleDistance) ? 1f : 0f;
 
         // Smooth fade
@@ -39,12 +35,12 @@ public class LookAtPlayerTextSmooth : MonoBehaviour
         float newAlpha = Mathf.Lerp(currentColor.a, targetAlpha, fadeSpeed * Time.deltaTime);
         textMeshPro.color = new Color(originalColor.r, originalColor.g, originalColor.b, newAlpha);
 
-        // Apply same alpha to shadow/outline
+        // Apply same alpha to shadow
         Color outlineColor = textMeshPro.fontMaterial.GetColor(ShaderUtilities.ID_OutlineColor);
         textMeshPro.fontMaterial.SetColor(ShaderUtilities.ID_OutlineColor,
             new Color(outlineColor.r, outlineColor.g, outlineColor.b, newAlpha * 0.6f));
 
-        // Rotate to face player if visible
+        // Rotate text toward player if visible
         if (newAlpha > 0.01f)
         {
             LookAtPlayer();
