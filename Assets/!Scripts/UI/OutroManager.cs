@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.UI;
 
 public class OutroManager : MonoBehaviour
 {
@@ -10,41 +11,31 @@ public class OutroManager : MonoBehaviour
 
     [Header("UI Panels")]
     public GameObject pauseMenuUI;       // UI with MainMenu + Quit buttons
+    public Image blackScreen;            // UI Image covering screen (black)
 
     [Header("Timers")]
     public float outroDuration = 5f;        // Outro duration
     public float creditsDuration = 10f;     // How long credits play before menu shows
 
     [Header("Fade Durations")]
-    public float fadeInDuration = 1.5f;     // Time to fade in
-    public float fadeOutDuration = 1.5f;    // Time to fade out
-
-    private CanvasGroup outroGroup;
-    private CanvasGroup creditsGroup;
-    private CanvasGroup pauseMenuGroup;
+    public float blackFadeDuration = 1.5f;  // Black screen fade in/out speed
 
     private bool menuActivated = false;
 
     private void Awake()
     {
-        outroGroup = outroObject.GetComponent<CanvasGroup>();
-        if (outroGroup == null) outroGroup = outroObject.AddComponent<CanvasGroup>();
-
-        creditsGroup = creditsObject.GetComponent<CanvasGroup>();
-        if (creditsGroup == null) creditsGroup = creditsObject.AddComponent<CanvasGroup>();
-
-        pauseMenuGroup = pauseMenuUI.GetComponent<CanvasGroup>();
-        if (pauseMenuGroup == null) pauseMenuGroup = pauseMenuUI.AddComponent<CanvasGroup>();
+        // Ensure black screen is active
+        if (blackScreen != null)
+        {
+            Color c = blackScreen.color;
+            c.a = 1f; // fully black at start
+            blackScreen.color = c;
+        }
 
         // Initial states
         outroObject.SetActive(true);
-        outroGroup.alpha = 1f;
-
         creditsObject.SetActive(false);
-        creditsGroup.alpha = 0f;
-
         pauseMenuUI.SetActive(false);
-        pauseMenuGroup.alpha = 0f;
     }
 
     private void Start()
@@ -54,52 +45,75 @@ public class OutroManager : MonoBehaviour
 
     private IEnumerator PlayOutroThenCredits()
     {
-        // Outro timing
+        // Fade from black into outro
+        yield return StartCoroutine(FadeBlack(1f, 0f));
+
+        // Wait outro duration
         yield return new WaitForSeconds(outroDuration);
 
-        // Fade out outro
-        yield return StartCoroutine(FadeCanvasGroup(outroGroup, 1f, 0f, fadeOutDuration));
+        // Fade to black before switching
+        yield return StartCoroutine(FadeBlack(0f, 1f));
         outroObject.SetActive(false);
-
-        // Fade in credits
         creditsObject.SetActive(true);
-        yield return StartCoroutine(FadeCanvasGroup(creditsGroup, 0f, 1f, fadeInDuration));
+
+        // Fade from black into credits
+        yield return StartCoroutine(FadeBlack(1f, 0f));
 
         // Wait credits duration
         yield return new WaitForSeconds(creditsDuration);
 
-        // Fade in pause menu (credits still playing or finished in background)
+        // Fade to black before switching
+        yield return StartCoroutine(FadeBlack(0f, 1f));
+        creditsObject.SetActive(true);  // keep credits running
         pauseMenuUI.SetActive(true);
-        yield return StartCoroutine(FadeCanvasGroup(pauseMenuGroup, 0f, 1f, fadeInDuration));
+
+        // Fade from black into pause menu
+        yield return StartCoroutine(FadeBlack(1f, 0f));
 
         menuActivated = true;
     }
 
-    private IEnumerator FadeCanvasGroup(CanvasGroup group, float start, float end, float duration)
+    private IEnumerator FadeBlack(float start, float end)
     {
         float elapsed = 0f;
-        group.alpha = start;
+        Color c = blackScreen.color;
 
-        while (elapsed < duration)
+        while (elapsed < blackFadeDuration)
         {
             elapsed += Time.deltaTime;
-            group.alpha = Mathf.Lerp(start, end, elapsed / duration);
+            c.a = Mathf.Lerp(start, end, elapsed / blackFadeDuration);
+            blackScreen.color = c;
             yield return null;
         }
 
-        group.alpha = end;
+        c.a = end;
+        blackScreen.color = c;
     }
 
-    // === BUTTON FUNCTIONS (no fade out) ===
+    // === BUTTON FUNCTIONS ===
     public void OnMainMenuButton()
     {
         if (!menuActivated) return;
-        SceneManager.LoadScene("Kadeem_MainMenu");
+        StartCoroutine(LoadSceneWithBlack("Kadeem_MainMenu"));
     }
 
     public void OnQuitButton()
     {
         if (!menuActivated) return;
+        StartCoroutine(QuitWithBlack());
+    }
+
+    private IEnumerator LoadSceneWithBlack(string sceneName)
+    {
+        // Fade to black
+        yield return StartCoroutine(FadeBlack(0f, 1f));
+        SceneManager.LoadScene(sceneName);
+    }
+
+    private IEnumerator QuitWithBlack()
+    {
+        // Fade to black
+        yield return StartCoroutine(FadeBlack(0f, 1f));
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
