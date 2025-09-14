@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using UnityEngine.UI;
@@ -24,15 +24,16 @@ public class OutroManager : MonoBehaviour
 
     private void Awake()
     {
-        // Ensure black screen is active
         if (blackScreen != null)
         {
             Color c = blackScreen.color;
             c.a = 1f; // fully black at start
             blackScreen.color = c;
+
+            // 🚫 Make sure the fade overlay never blocks button clicks
+            blackScreen.raycastTarget = false;
         }
 
-        // Initial states
         outroObject.SetActive(true);
         creditsObject.SetActive(false);
         pauseMenuUI.SetActive(false);
@@ -93,13 +94,11 @@ public class OutroManager : MonoBehaviour
     // === BUTTON FUNCTIONS ===
     public void OnMainMenuButton()
     {
-        if (!menuActivated) return;
         StartCoroutine(LoadSceneWithBlack("Kadeem_MainMenu"));
     }
 
     public void OnQuitButton()
     {
-        if (!menuActivated) return;
         StartCoroutine(QuitWithBlack());
     }
 
