@@ -9,7 +9,8 @@ public class PlayerAnimsController : MonoBehaviour
     public CharacterController cc;
     public PlayerJavelinThrow jt;
 
-    public GameObject backStick;
+    [Header("Sticks")]
+    public JavelinRespawnVFXController backStick; // VFX-based back stick
     public GameObject handStick;
 
     private bool isVaultingPrev = false;
@@ -17,6 +18,7 @@ public class PlayerAnimsController : MonoBehaviour
 
     [Header("Settings")]
     public float speedThreshold = 0.1f; // Minimum speed to count as running
+
     void Reset()
     {
         // Auto-assign references if not set
@@ -35,57 +37,17 @@ public class PlayerAnimsController : MonoBehaviour
         animator.SetFloat("Velo", cc.IsGrounded ? speed : 0f);
 
         animator.SetBool("IsSliding", cc.IsSliding);
-
         animator.SetBool("IsWallLeft", cc.IsWallRunLeft);
-
         animator.SetBool("IsWallRight", cc.IsWallRunRight);
-
         animator.SetBool("IsJumping", cc.IsJumping);
-
         animator.SetBool("IsVaulting", cc.isVaulting);
-
         animator.SetBool("IsThrow", jt.IsHolding);
-
         animator.SetBool("IsDashing", cc.IsDashing);
 
-        // Only swap when state changes
-        if (cc.isVaulting != isVaultingPrev)
-        {
-            if (cc.isVaulting)
-            {
-                // Hide back stick, show hand stick
-                backStick.SetActive(false);
-                handStick.SetActive(true);
-            }
-            else
-            {
-                // Show back stick, hide hand stick
-                backStick.SetActive(true);
-                handStick.SetActive(false);
-            }
+        // Handle stick visibility based on player state
+        HandleStickVisibility();
 
-            isVaultingPrev = cc.isVaulting;
-        }
-
-        // Only swap when state changes
-        if (jt.IsHolding != isThrowPrev)
-        {
-            if (jt.IsHolding)
-            {
-                // Hide back stick, show hand stick
-                backStick.SetActive(false);
-                handStick.SetActive(true);
-            }
-            else
-            {
-                // Show back stick, hide hand stick
-                backStick.SetActive(true);
-                handStick.SetActive(false);
-            }
-
-            isThrowPrev = jt.IsHolding;
-        }
-
+        // Falling/Grounded logic
         if (!cc.IsGrounded && rb.linearVelocity.y < -0.1f)
         {
             animator.SetBool("IsFalling", true);
@@ -95,8 +57,6 @@ public class PlayerAnimsController : MonoBehaviour
             animator.SetBool("IsFalling", false);
         }
 
-
-
         if (cc.IsGrounded)
         {
             animator.SetBool("IsGrounded", true);
@@ -104,6 +64,45 @@ public class PlayerAnimsController : MonoBehaviour
         else
         {
             animator.SetBool("IsGrounded", false);
+        }
+    }
+
+    private void HandleStickVisibility()
+    {
+        // Vaulting state change
+        if (cc.isVaulting != isVaultingPrev)
+        {
+            if (cc.isVaulting)
+            {
+                // Hide back stick with VFX, show hand stick
+                if (backStick != null) backStick.HideInstant();
+                if (handStick != null) handStick.SetActive(true);
+            }
+            else if (!jt.IsHolding) // Only show back stick if not currently throwing
+            {
+                // Show back stick with dissolve effect, hide hand stick
+                if (backStick != null) backStick.Respawn();
+                if (handStick != null) handStick.SetActive(false);
+            }
+            isVaultingPrev = cc.isVaulting;
+        }
+
+        // Throwing state change
+        if (jt.IsHolding != isThrowPrev)
+        {
+            if (jt.IsHolding)
+            {
+                // Hide back stick with VFX, show hand stick
+                if (backStick != null) backStick.HideInstant();
+                if (handStick != null) handStick.SetActive(true);
+            }
+            else if (!cc.isVaulting) // Only show back stick if not currently vaulting
+            {
+                // Show back stick with dissolve effect, hide hand stick
+                if (backStick != null) backStick.Respawn();
+                if (handStick != null) handStick.SetActive(false);
+            }
+            isThrowPrev = jt.IsHolding;
         }
     }
 
@@ -125,16 +124,17 @@ public class PlayerAnimsController : MonoBehaviour
         yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName(animationName));
 
         // Now the animation is playing → swap sticks
-        backStick.SetActive(false);
-        handStick.SetActive(true);
+        if (backStick != null) backStick.HideInstant();
+        if (handStick != null) handStick.SetActive(true);
 
         // Wait until animation finishes
         yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f);
 
-        // Reset sticks
-        backStick.SetActive(true);
-        handStick.SetActive(false);
+        // Only restore back stick if not in a state that requires hand stick
+        if (!cc.isVaulting && !jt.IsHolding)
+        {
+            if (backStick != null) backStick.Respawn();
+            if (handStick != null) handStick.SetActive(false);
+        }
     }
-
-
 }
