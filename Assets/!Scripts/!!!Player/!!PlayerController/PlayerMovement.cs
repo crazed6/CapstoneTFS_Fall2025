@@ -908,7 +908,7 @@ public class CharacterController : MonoBehaviour
             }
 
             // --- Manual enemy overlap check (single-hit per dash) ---
-            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 1f, enemyLayer);
+            Collider[] enemiesHit = Physics.OverlapSphere(transform.position, 5f, enemyLayer);
             foreach (var enemyCollider in enemiesHit)
             {
                 var enemy = enemyCollider.GetComponent<EnemyDamageComponent>();
