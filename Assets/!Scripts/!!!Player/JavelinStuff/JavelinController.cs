@@ -1,4 +1,4 @@
-﻿//Ritwik
+﻿// Ritwik
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -19,6 +19,8 @@ public class JavelinController : MonoBehaviour
     public float colliderActivationDelay = 0.1f;
 
     [Header("VFX")]
+    public VisualEffect launchVFXPrefab;
+    public Vector3 launchVFXRotationOffset = new Vector3(0, 180f, 0);
     public VisualEffect aoeVFXPrefab;
     public float aoeVFXLifetime = 3f;
 
@@ -30,10 +32,19 @@ public class JavelinController : MonoBehaviour
     private Vector3 hitPoint = Vector3.zero;
     private bool isAiming = false;
 
+    // Remove the backStick reference and related logic
+    // The PlayerAnimsController will handle all backstick visibility
     public void SetDirection(Vector3 dir)
     {
         direction = dir.normalized;
         transform.rotation = Quaternion.LookRotation(direction);
+
+        // Spawn launch VFX aligned with throw direction
+        if (launchVFXPrefab != null)
+        {
+            Quaternion rotation = Quaternion.LookRotation(direction) * Quaternion.Euler(launchVFXRotationOffset);
+            Instantiate(launchVFXPrefab, transform.position, rotation);
+        }
 
         // Enable collider & change layer AFTER aiming
         SetAimingMode(false);
@@ -47,6 +58,7 @@ public class JavelinController : MonoBehaviour
     {
         isAiming = aiming;
 
+        // Toggle colliders
         Collider[] colliders = GetComponentsInChildren<Collider>();
         foreach (var col in colliders)
             col.enabled = !aiming;
@@ -54,12 +66,17 @@ public class JavelinController : MonoBehaviour
         if (!aiming)
             gameObject.layer = LayerMask.NameToLayer("Default");
 
-        // --- NEW: toggle trails ---
+        // Toggle trails
         var trailController = GetComponent<JavelinVFXController>();
         if (trailController != null)
-        {
             trailController.SetTrailsActive(!aiming);
-        }
+
+        // Toggle prefab mesh renderers
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers)
+            r.enabled = !aiming;
+
+        // Removed all backStick logic - PlayerAnimsController handles this now
     }
 
     private async UniTaskVoid FlyForward(CancellationToken token)
@@ -117,15 +134,10 @@ public class JavelinController : MonoBehaviour
         if (aoeVFXPrefab != null)
         {
             VisualEffect vfxInstance = Instantiate(aoeVFXPrefab, hitPoint, Quaternion.identity);
-
-            // Optionally send events/parameters if your VFX Graph expects them
-            // vfxInstance.SetFloat("ExplosionRadius", aoeRadius);
-            // vfxInstance.SendEvent("OnExplode");
-
             Destroy(vfxInstance.gameObject, aoeVFXLifetime);
         }
 
-        // Damage logic unchanged
+        // Damage logic
         Collider[] hits = Physics.OverlapSphere(hitPoint, aoeRadius, damageMask);
         foreach (var hit in hits)
         {
@@ -144,7 +156,6 @@ public class JavelinController : MonoBehaviour
 
         Destroy(gameObject);
     }
-
 
     private void OnDestroy()
     {
