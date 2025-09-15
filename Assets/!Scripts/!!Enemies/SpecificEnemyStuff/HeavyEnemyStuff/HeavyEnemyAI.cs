@@ -1,7 +1,8 @@
-﻿using UnityEngine;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using UnityEngine;
+using UnityEngine.VFX;
 
 public class HeavyEnemyAI : MonoBehaviour
 {
@@ -62,15 +63,15 @@ public class HeavyEnemyAI : MonoBehaviour
     private float dashImmunityTimer = 0f;
     public GameObject LastDashedPlayer => lastDashedPlayer;
 
-    // === New Dash Cancel System ===
+    // === Dash Cancel System ===
     [Header("Dash Cancel Detection")]
-    public SphereCollider dashDetectionCollider; // Adjustable collider
+    public SphereCollider dashDetectionCollider; // Trigger collider
     public LayerMask playerLayer;
-    public ParticleSystem dashAttackEffect;
+    public VisualEffect dashCancelEffect; // assign in inspector
 
     [HideInInspector] public bool cantDashAttack = false;
-    private ParticleSystem activeEffectInstance;
-    // ===============================
+    private VisualEffect activeEffectInstance;
+    private bool activeEffectInstancePlaying = false;
 
     [Header("Animation")]
     public Animator animator;
@@ -82,8 +83,6 @@ public class HeavyEnemyAI : MonoBehaviour
     public event Action OnThrowRock; //audio hook
     public event Action OnLockOn; //audio hook
     public event Action OnStopTracking; //audio hook
-
-
 
     private void Start()
     {
@@ -104,54 +103,57 @@ public class HeavyEnemyAI : MonoBehaviour
                 lastDashedPlayer = null;
             }
         }
-
-        // 🔴 Dash Cancel Sphere Check
-        CheckDashAttack();
     }
 
-    private void CheckDashAttack()
+    // === Dash Cancel Trigger ===
+    private void OnTriggerEnter(Collider other)
     {
-        if (dashDetectionCollider == null) return;
-
-        // Sphere position/scale
-        Vector3 center = dashDetectionCollider.transform.TransformPoint(dashDetectionCollider.center);
-        float radius = dashDetectionCollider.radius * Mathf.Max(
-            dashDetectionCollider.transform.lossyScale.x,
-            dashDetectionCollider.transform.lossyScale.y,
-            dashDetectionCollider.transform.lossyScale.z
-        );
-
-        Collider[] hits = Physics.OverlapSphere(center, radius, playerLayer);
-
-        bool playerInside = false;
-        foreach (var hit in hits)
-        {
-            if (hit.CompareTag("Player"))
-            {
-                playerInside = true;
-                break;
-            }
-        }
-
-        if (playerInside && !cantDashAttack)
+        if (other.CompareTag("Player"))
         {
             cantDashAttack = true;
+            Debug.Log($"{name} → Player entered dash-cancel radius → cantDashAttack = TRUE");
 
-            if (dashAttackEffect != null && activeEffectInstance == null)
+            if (dashCancelEffect != null && !activeEffectInstancePlaying)
             {
-                activeEffectInstance = Instantiate(dashAttackEffect, transform.position, Quaternion.identity, transform);
-                activeEffectInstance.Play();
+                dashCancelEffect.SetBool("Active", true); // Start VFX via parameter
+                activeEffectInstance = dashCancelEffect;
+                activeEffectInstancePlaying = true;
             }
         }
-        else if (!playerInside && cantDashAttack)
+
+        if (other.CompareTag("javilin"))
         {
             cantDashAttack = false;
+            Debug.Log($"{name} → Hit by Javilin → cantDashAttack = FALSE, effect turned off");
 
             if (activeEffectInstance != null)
             {
-                activeEffectInstance.Stop();
-                Destroy(activeEffectInstance.gameObject, 2f);
+                activeEffectInstance.SetBool("Active", false); // Stop VFX
                 activeEffectInstance = null;
+                activeEffectInstancePlaying = false;
+            }
+
+            // Permanently disable the collider for this enemy only
+            if (dashDetectionCollider != null)
+            {
+                dashDetectionCollider.enabled = false;
+            }
+        }
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player") && cantDashAttack)
+        {
+            cantDashAttack = false;
+            Debug.Log($"{name} → Player exited dash-cancel radius → cantDashAttack = FALSE");
+
+            if (activeEffectInstance != null)
+            {
+                activeEffectInstance.SetBool("Active", false);
+                activeEffectInstance = null;
+                activeEffectInstancePlaying = false;
             }
         }
     }
