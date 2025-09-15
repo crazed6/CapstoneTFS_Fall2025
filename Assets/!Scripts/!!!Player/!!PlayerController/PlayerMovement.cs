@@ -13,6 +13,9 @@ public class CharacterController : MonoBehaviour
 
     public static CharacterController instance; // it's me -_-
     public PlayerJavelinThrow pjt;
+    public HeavyEnemyAI he1;
+    public HeavyEnemyAI he2;
+    public HeavyEnemyAI he3;
     //JoshuaC here :3, just adding my thing near the top for easy access
 
     [Header("Combat")]
@@ -841,7 +844,7 @@ public class CharacterController : MonoBehaviour
     private void CheckEnemyInCrosshair()
     {
         // Start dash
-        if (Input.GetMouseButtonDown(0) && !isMoving)
+        if (Input.GetMouseButtonDown(0) && !isMoving && !he1.cantDashAttack && !he2.cantDashAttack && !he3.cantDashAttack)
         {
             // Find best target in cone
             Collider[] hits = Physics.OverlapSphere(transform.position, coneRange, enemyLayer);
