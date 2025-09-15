@@ -47,4 +47,13 @@ public class LedgeSnapDown360 : MonoBehaviour
         // Apply strong downward force
         rb.AddForce(Vector3.down * downwardForce, ForceMode.VelocityChange);
     }
+
+    private void Update()
+    {
+        //check your move direction. check vel due to gravity (y-vel).
+        //Vector3 campusBottom = newVector3(col.bounds.center.x, col.bounds.min.y, col.bounds.center.z);
+
+        //Do a caapsule cast in the direction of movement and direction of gravity
+        //if you detect ground - do the appropriate snap down.
+    }
 }
