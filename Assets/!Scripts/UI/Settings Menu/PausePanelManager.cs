@@ -51,7 +51,7 @@ public class PausePanelManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current.vKey.wasPressedThisFrame) // Check if the V key is pressed
+        if (Keyboard.current.escapeKey.wasPressedThisFrame) // Check if the V key is pressed
         {
             // Prevent pause toggle if in settings menu or in-game checkpoints panel is active
             if (inGameCheckPointsPanel != null && inGameCheckPointsPanel.activeSelf)

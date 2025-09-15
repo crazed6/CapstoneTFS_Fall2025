@@ -62,6 +62,8 @@ public class ItemSlot : MonoBehaviour, IPointerClickHandler
     {
         inventoryManager.DeselectAllSlots(); // Deselect all other slots
 
+        inventoryManager.ResetDescriptionScroll();
+
         selectedShader.SetActive(true);      // Highlight this slot regardless
         thisItemSelected = true;             // Mark this one as selected
 

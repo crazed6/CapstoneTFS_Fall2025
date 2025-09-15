@@ -1,21 +1,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class InventoryManager : MonoBehaviour
 {
-
     public GameObject JournalMenu;
     private bool menuActivated;
     public ItemSlot[] itemSlot; // Array of item slots where items will be stored
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
+    [Header("Optional Scrollbar Reset")]
+    public ScrollRect descriptionScrollRect; // Assign your ItemDescription ScrollRect here
 
-    }
-
-    // Update is called once per frame
     void Update()
     {
         //Activating the Menu Canvas
@@ -27,7 +21,6 @@ public class InventoryManager : MonoBehaviour
                 JournalMenu.SetActive(false);
                 menuActivated = false;
 
-                // Hide the cursor and lock it
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
             }
@@ -37,34 +30,26 @@ public class InventoryManager : MonoBehaviour
                 JournalMenu.SetActive(true);
                 menuActivated = true;
 
-                // Show the cursor and unlock it
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
 
-                // Hide all item descriptions when opening
                 HideAllItemDescriptions();
             }
-
         }
     }
 
-
-    // Adds an item to the first available empty slot
     public void AddItem(string itemName, Sprite itemSprite, string itemDescription)
     {
-        // Loop through all item slots to find an empty one
         for (int i = 0; i < itemSlot.Length; i++)
         {
-            if (itemSlot[i].isFull == false) // Check if the slot is empty
+            if (itemSlot[i].isFull == false)
             {
-                // Assign the item details to the empty slot
                 itemSlot[i].AddItem(itemName, itemSprite, itemDescription);
-                return; // Stop loop
+                return;
             }
         }
     }
 
-    // Hides the description panel for all item slots
     public void HideAllItemDescriptions()
     {
         for (int i = 0; i < itemSlot.Length; i++)
@@ -76,8 +61,6 @@ public class InventoryManager : MonoBehaviour
         }
     }
 
-
-    // Deselects all item slots, removing selection highlights
     public void DeselectAllSlots()
     {
         for (int i = 0; i < itemSlot.Length; i++)
@@ -87,6 +70,15 @@ public class InventoryManager : MonoBehaviour
                 itemSlot[i].selectedShader.SetActive(false);
                 itemSlot[i].thisItemSelected = false;
             }
+        }
+    }
+
+    // Call this from ItemSlot when a new item is shown
+    public void ResetDescriptionScroll()
+    {
+        if (descriptionScrollRect != null)
+        {
+            descriptionScrollRect.verticalNormalizedPosition = 1f; // scrolls back to top
         }
     }
 }
