@@ -1026,6 +1026,10 @@ public class CharacterController : MonoBehaviour
 
         if (Physics.CapsuleCast(capsuleBottom, capsuleTop, radius, castDirection, out RaycastHit hit, ledgeSnapCheckDistance))
         {
+            if (hit.collider.CompareTag("Audio"))
+            {
+                return;
+            }
             float angle = Vector3.Angle(hit.normal, -gravityDir);
             if (angle <= groundNormalMaxAngle && hit.point.y < transform.position.y)
             {
