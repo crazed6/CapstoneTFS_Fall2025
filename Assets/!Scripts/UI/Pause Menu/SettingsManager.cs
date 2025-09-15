@@ -4,7 +4,8 @@ using UnityEngine.Audio; // For audio management Mixer reference needed
 using UnityEngine.UI; // For UI elements like Dropdown
 using TMPro; // For TextMeshPro Dropdown
 using System.IO; // For file
-using UnityEngine.SceneManagement; // For scene to hook into sceneLoaded event
+using UnityEngine.SceneManagement;
+using System.Collections; // For scene to hook into sceneLoaded event
 
 public class SettingsManager : MonoBehaviour
 {
@@ -24,6 +25,8 @@ public class SettingsManager : MonoBehaviour
     public Slider musicSlider;
     public Slider sfxSlider;
     public Slider voiceSlider;
+
+    private Dictionary<string, object> settings = new Dictionary<string, object>();
 
     [Header("Audio")]
     [SerializeField] private AudioMixer mixer; // Drag your AudioMixer asset here in Inspector
@@ -52,6 +55,17 @@ public class SettingsManager : MonoBehaviour
     //public int resolutionIndex = 0; // Default resolution index
     //public AudioSource audioSource = null;
 
+    public void RegisterUIObject(string key, object uiElement)
+    {
+        if (settings.ContainsKey(key))
+        {
+            settings[key] = uiElement;
+            return;
+        }
+
+        Debug.Log("UI Element not found, did you use the wrong key?");
+    }   
+
     private void Awake()
     {
         // [SINGLETON PATTERN]: If an instance already exists and it's not this -> destroy duplicate
@@ -73,6 +87,69 @@ public class SettingsManager : MonoBehaviour
 
         // Load Settings if available.
         LoadSettings(); // Try Loadfing settings from file or PlayerPrefs. If none exist, defaults are used.
+
+
+        // Store UI references in dictionary for easy access - also allows for dynamic assignment if needed
+        settings.Add("DisplayMenu", displayMenu);
+        settings.Add("SettingsMenu", settingsMenu);
+        settings.Add("ResolutionDropdown", resolutionDropdown);
+        settings.Add("QualityDropdown", qualityDropdown);
+        settings.Add("MasterSlider", masterSlider);
+        settings.Add("MusicSlider", musicSlider);
+        settings.Add("SFXSlider", sfxSlider);
+        settings.Add("VoiceSlider", voiceSlider);
+    }
+
+    public void UpdateRefences()
+    {
+        for (int i = 0; i < settings.Count; i++)
+        {
+            var key = new List<string>(settings.Keys)[i];
+            GameObject value = (GameObject)settings[key];
+            if (value != null)
+            {
+                // Attempt to find the UI element in the scene by name
+                switch (key)
+                {
+                    case "DisplayMenu":
+                        displayMenu = value;
+                        break;
+                    case "SettingsMenu":
+                        settingsMenu = value;
+                        break;
+                    case "ResolutionDropdown":
+                        resolutionDropdown = value.GetComponent<TMP_Dropdown>();
+                        break;
+                    case "QualityDropdown":
+                        qualityDropdown = value.GetComponent<TMP_Dropdown>();
+                        break;
+                    case "MasterSlider":
+                        masterSlider = value.GetComponent<Slider>();
+                        break;
+                    case "MusicSlider":
+                        musicSlider = value.GetComponent<Slider>();
+                        break;
+                    case "SFXSlider":
+                        sfxSlider = value.GetComponent<Slider>();
+                        break;
+                    case "VoiceSlider":
+                        voiceSlider = value.GetComponent<Slider>();
+                        break;
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"UI element for key '{key}' is null. Please ensure it is assigned correctly.");
+            }
+        }
+
+        // Populate Resolution Dropdown
+        SetupResolutionDropdown();
+        SetupQualityDropdown();
+        SetupVolumeSlider(); // Master volume slider setup - hanldes all (4) sliders
+        SetupFullscreenToggle();
+
+        LoadSettings();
     }
 
     private void Start()
@@ -94,7 +171,6 @@ public class SettingsManager : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         ApplyAllSettings(); // re-apply settings after new scene loads
@@ -338,6 +414,8 @@ public class SettingsManager : MonoBehaviour
 
     public void ApplyAllSettings()
     {
+        Debug.LogWarning($"Applying all settings... Master Vol: {masterVolume}, Music Vol: {musicVolume}, SFX Vol: {sfxVolume}, Voice Vol: {voiceVolume}");
+
         // Audio
         SetMasterVolume(masterVolume);
         SetMusicVolume(musicVolume);
