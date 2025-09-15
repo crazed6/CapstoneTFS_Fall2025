@@ -20100,6 +20100,7 @@ GameObject:
   - component: {fileID: 2143954802}
   - component: {fileID: 2143954801}
   - component: {fileID: 2143954800}
+  - component: {fileID: 2143954804}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -20200,6 +20201,36 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &2143954804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2143954799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a481d5737ba0ac43aa697e96e888da4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settingsNames:
+  - DisplayMenu
+  - SettingsMenu
+  - ResolutionDropdown
+  - QualityDropdown
+  - MasterSlider
+  - MusicSlider
+  - SFXSlider
+  - VoiceSlider
+  settingsPanel:
+  - {fileID: 848713805}
+  - {fileID: 1104081252}
+  - {fileID: 241204818}
+  - {fileID: 1955312500}
+  - {fileID: 1612310397}
+  - {fileID: 1425623135}
+  - {fileID: 903566677}
+  - {fileID: 1346704191}
 --- !u!1001 &5943064773761863436
 PrefabInstance:
   m_ObjectHideFlags: 0
