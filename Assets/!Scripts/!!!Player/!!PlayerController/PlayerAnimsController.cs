@@ -15,6 +15,7 @@ public class PlayerAnimsController : MonoBehaviour
 
     private bool isVaultingPrev = false;
     private bool isThrowPrev = false;
+    private bool isAttackingPrev = false;
 
     [Header("Settings")]
     public float speedThreshold = 0.1f; // Minimum speed to count as running
@@ -43,6 +44,7 @@ public class PlayerAnimsController : MonoBehaviour
         animator.SetBool("IsVaulting", cc.isVaulting);
         animator.SetBool("IsThrow", jt.IsHolding);
         animator.SetBool("IsDashing", cc.IsDashing);
+        animator.SetBool("IsDashForward", cc.IsDashForward);
 
         // Handle stick visibility based on player state
         HandleStickVisibility();
@@ -65,6 +67,8 @@ public class PlayerAnimsController : MonoBehaviour
         {
             animator.SetBool("IsGrounded", false);
         }
+
+
     }
 
     private void HandleStickVisibility()
@@ -104,34 +108,42 @@ public class PlayerAnimsController : MonoBehaviour
             }
             isThrowPrev = jt.IsHolding;
         }
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("enemy"))
+
+
+        // Detect when dashing starts
+        if (cc.IsDashing && !isAttackingPrev)
         {
-            // Play animation trigger
-            animator.SetTrigger("HitEnemy");
+            // Hide back stick instantly, show hand stick
+            if (backStick != null) backStick.HideInstant();
+            if (handStick != null) handStick.SetActive(true);
 
-            // Only handle stick swap if animation really plays
-            StartCoroutine(HandleStickSwap("KF_Dash_Attack 0"));
+            // Start coroutine to wait for dash animation to end
+            StartCoroutine(WaitForDashToEnd("KF_Dash_Attack 0"));
+
+            isAttackingPrev = true;
         }
+
+        // Reset state tracker when dash fully ends
+        if (!cc.IsDashing && isAttackingPrev == true)
+        {
+            isAttackingPrev = false;
+        }
+
+
     }
 
-    private IEnumerator HandleStickSwap(string animationName)
+    private IEnumerator WaitForDashToEnd(string dashAnimation)
     {
-        // Wait until animator switches to the animation
-        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName(animationName));
+        // Wait until the animator is actually playing the dash anim
+        yield return new WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).IsName(dashAnimation));
 
-        // Now the animation is playing → swap sticks
-        if (backStick != null) backStick.HideInstant();
-        if (handStick != null) handStick.SetActive(true);
+        // Stay in hand stick until dash animation finishes
+        yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).IsName(dashAnimation) &&
+                                         animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f);
 
-        // Wait until animation finishes
-        yield return new WaitWhile(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f);
-
-        // Only restore back stick if not in a state that requires hand stick
-        if (!cc.isVaulting && !jt.IsHolding)
+        // Only restore stick if player isn’t vaulting
+        if (!cc.IsDashing)
         {
             if (backStick != null) backStick.Respawn();
             if (handStick != null) handStick.SetActive(false);
