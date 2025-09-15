@@ -182,6 +182,10 @@ public class CharacterController : MonoBehaviour
     public GameObject cutScenePlayerCamera;
 
 
+    [Header("Ledge Snap Down")]
+    [SerializeField] private float ledgeSnapCheckDistance = 0.5f;
+    [SerializeField] private float groundNormalMaxAngle = 45f;
+    [SerializeField] private float downwardSnapForce = 20f;
 
 
     void Awake()
@@ -273,6 +277,11 @@ public class CharacterController : MonoBehaviour
         displacement = (transform.position - lastPosition) * 50;
         lastPosition = transform.position;
         LimitVelocity(maxSpeed);
+
+        if (!isJumping)
+        {
+            CheckLedgeSnap();
+        }
     }
     void Move()
     {
@@ -987,6 +996,53 @@ public class CharacterController : MonoBehaviour
 
             Gizmos.DrawLine(origin + dir1 * coneRange, origin + dir2 * coneRange);
         }
+    }
+
+    private void CheckLedgeSnap()
+    {
+        // Don't snap if we aren't moving
+        if (rb.linearVelocity.sqrMagnitude < 0.01f)
+            return;
+
+        // Get gravity direction (supports custom gravity)
+        Vector3 gravityDir = Physics.gravity.normalized;
+
+        // Get horizontal movement direction (ignore gravity influence)
+        Vector3 moveDir = rb.linearVelocity;
+        moveDir -= Vector3.Project(moveDir, gravityDir);
+        moveDir.Normalize();
+
+        CapsuleCollider col = GetComponent<CapsuleCollider>();
+        Vector3 capsuleBottom = new Vector3(col.bounds.center.x, col.bounds.min.y, col.bounds.center.z);
+        Vector3 capsuleTop = new Vector3(col.bounds.center.x, col.bounds.max.y, col.bounds.center.z);
+        float radius = col.radius * 0.9f;
+
+        // Combine forward movement + gravity direction for predictive cast
+        Vector3 castDirection = (moveDir + gravityDir).normalized;
+
+        if (Physics.CapsuleCast(capsuleBottom, capsuleTop, radius, castDirection, out RaycastHit hit, ledgeSnapCheckDistance))
+        {
+            float angle = Vector3.Angle(hit.normal, -gravityDir);
+            if (angle <= groundNormalMaxAngle && hit.point.y < transform.position.y)
+            {
+                Debug.Log("[LedgeSnap] Predictive ledge found -> snapping down");
+                SnapDown();
+            }
+        }
+    }
+
+    private void SnapDown()
+    {
+        // Cancel upward velocity
+        if (rb.linearVelocity.y > 0f)
+        {
+            Vector3 vel = rb.linearVelocity;
+            vel.y = 0f;
+            rb.linearVelocity = vel;
+        }
+
+        // Apply strong downward force
+        rb.AddForce(Vector3.down * downwardSnapForce, ForceMode.VelocityChange);
     }
 
     public void OnCollisionEnter(Collision collision)
