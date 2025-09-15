@@ -216,9 +216,11 @@ MonoBehaviour:
   damageAmount: 50
   damageMask:
     serializedVersion: 2
-    m_Bits: 448
+    m_Bits: 4294967295
   damageProfile: {fileID: 11400000, guid: 2002ad50c0508d040808b833e76a571d, type: 2}
   colliderActivationDelay: 0.025
+  launchVFXPrefab: {fileID: 8381473683148536262, guid: 906a7bc396e42544691656d4fb34ffd9, type: 3}
+  launchVFXRotationOffset: {x: 0, y: 180, z: 0}
   aoeVFXPrefab: {fileID: 6224173759682372910, guid: a48350227ed7f164099af2dff4900f88, type: 3}
   aoeVFXLifetime: 3
 --- !u!114 &5000072945069798699
@@ -274,6 +276,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1036504913110927787}
     m_Modifications:
+    - target: {fileID: 2868822763159700294, guid: 4668bd632f180bb4c90f5affec53ebdb, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6158774311275582668, guid: 4668bd632f180bb4c90f5affec53ebdb, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

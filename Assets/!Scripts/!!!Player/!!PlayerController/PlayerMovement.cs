@@ -28,6 +28,7 @@ public class CharacterController : MonoBehaviour
     public float maxSpeed = 30;
     private bool isDashOnCooldown = false;
     public float dashCooldown = 1.5f; // Cooldown duration in seconds
+    private bool isDashForward = false; // For dash animation - Colton  
 
     [Header("Player cam")]
     public CinemachineCameraController cameraController;
@@ -173,6 +174,7 @@ public class CharacterController : MonoBehaviour
     public bool IsJumping => isJumping; // Public getter for jump animation - Colton
     public bool IsWallRunLeft => isWallRunLeft; // Public getter for wallRuning directions - Colton
     public bool IsWallRunRight => isWallRunRight; // Public getter for wallRuning directions - Colton
+    public bool IsDashForward => isDashForward; // Public getter for dash animation - Colton
 
     public bool IsDashAttackActive => isDashing || isMoving; // Public getter for DashAttack -_-
 
@@ -231,13 +233,13 @@ public class CharacterController : MonoBehaviour
         }
 
         // Handle slide input with cooldown
-        if (Input.GetKeyDown(KeyCode.LeftShift) && slideCooldownTimer <= 0f)
+        if (Input.GetKeyDown(KeyCode.C) && slideCooldownTimer <= 0f)
         {
             slideInitiated = true;
             slideCooldownTimer = slideCooldownTime;
         }
 
-        if (Input.GetKeyUp(KeyCode.LeftShift))
+        if (Input.GetKeyUp(KeyCode.C))
         {
             StopSliding();
         }
@@ -249,7 +251,7 @@ public class CharacterController : MonoBehaviour
         CheckEnemyInCrosshair();
 
         // Dash if E pressed, and not dashing, wall running or sliding
-        if (Input.GetKeyDown(KeyCode.E) && !isDashing && !isWallRunning && !isSliding)
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDashing && !isWallRunning && !isSliding)
         {
             DashForward();
         }
@@ -759,7 +761,7 @@ public class CharacterController : MonoBehaviour
             isGrounded = false;
             isVaulting = true;
 
-            vaultRoutine = StartCoroutine(EndVaultAfterDelay(0.5f));
+            vaultRoutine = StartCoroutine(EndVaultAfterDelay(.8f));
         }
     }
 
@@ -801,6 +803,7 @@ public class CharacterController : MonoBehaviour
         {
             GetComponent<PlayerAudio>()?.PlayDash(); //audio hook
             StartCoroutine(DashRoutine());
+            isDashForward = true; // For dash animation - Colton
         }
     }
 
@@ -825,6 +828,7 @@ public class CharacterController : MonoBehaviour
         }
 
         isDashing = false;
+        isDashForward = false; // For dash animation - Colton
 
         // Start cooldown timer
         yield return new WaitForSeconds(dashCooldown);
