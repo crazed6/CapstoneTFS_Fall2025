@@ -4,6 +4,7 @@ using UnityEngine;
 public class EnemyDamageComponent : MonoBehaviour
 {
     public event Action OnDeath; //Event to notify when the enemy dies
+    public HeavyEnemyAI hea;
 
     [Header("Health Settings")]
     public float maxHealth = 100f;
@@ -81,7 +82,7 @@ public class EnemyDamageComponent : MonoBehaviour
         UpdateHealthUI();
 
         if (currentHealth <= 0)
-            Die();
+        Die();
         
     }
 
