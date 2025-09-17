@@ -87,6 +87,8 @@ public class ExplodingEnemy : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale == 0) return;
+
         if (player == null || hasExploded) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
